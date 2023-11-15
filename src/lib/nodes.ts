@@ -20,6 +20,7 @@ export interface Parameter {
 export interface Property {
     Name: string;
     Type: string;
+    HtmlType: string;
     DefaultValue: string;
 }
 

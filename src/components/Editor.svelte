@@ -28,7 +28,6 @@
         height: 100vh;
         font-size: 1rem;
         text-align: left;
-        border: 1px solid #cbd0db;
         background-color: #131313;
     }
 

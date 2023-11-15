@@ -32,20 +32,25 @@
     <div class="controls">
         <!-- Controls -->
         {#each controls as [key, control]}
-            <Ref
-                class="control"
-                data-testid={"control-" + key}
-                init={(element) =>
-                    emit({
-                        type: "render",
-                        data: {
-                            type: "control",
-                            element,
-                            payload: control,
-                        },
-                    })}
-                unmount={(ref) => emit({ type: "unmount", data: { element: ref } })}
-            />
+            <div class="control">
+                <div class="control-title" data-testid="input-title">
+                    {key || ""}
+                </div>
+                <Ref
+                    class="control"
+                    data-testid={"control-" + key}
+                    init={(element) =>
+                        emit({
+                            type: "render",
+                            data: {
+                                type: "control",
+                                element,
+                                payload: control,
+                            },
+                        })}
+                    unmount={(ref) => emit({ type: "unmount", data: { element: ref } })}
+                />
+            </div>
         {/each}
     </div>
 
@@ -54,7 +59,7 @@
             <div class="inputs">
                 <!-- Inputs -->
                 {#each inputs as [key, input]}
-                    <div class="input" data-testid="'input-'+key">
+                    <div class="input" data-testid={"input-" + key}>
                         <Ref
                             class="input-socket"
                             data-testid="input-socket"
@@ -79,7 +84,7 @@
                         {/if}
                         {#if input.control && input.showControl}
                             <Ref
-                                class="input-control"
+                                class="socket"
                                 data-testid="input-control"
                                 init={(element) =>
                                     emit({
@@ -102,11 +107,11 @@
                 <!-- Outputs -->
                 {#each outputs as [key, output]}
                     <div class="output" data-testid="'output-'+key">
-                        <div class="output-title" data-testid="output-title">
+                        <div class="title" data-testid="output-title">
                             {output.label || ""}
                         </div>
                         <Ref
-                            class="output-socket"
+                            class="socket"
                             data-testid="output-socket"
                             init={(element) =>
                                 emit({
@@ -139,20 +144,40 @@
     .node {
         background-color: #343434;
         min-width: 200px;
-    }
+        border-radius: 10px;
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
 
-    .title {
-        background-color: #ad50a3;
-        padding: 12px;
-        font-weight: bold;
+        > .title {
+            background-color: #ad50a3;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 10px 10px 0 0;
+        }
     }
 
     .controls {
         padding: 12px;
+
+        .control {
+            display: flex;
+            align-items: center;
+
+            input {
+                color: black;
+            }
+        }
     }
 
     .inout {
         display: flex;
+
+        :first-child {
+            border-bottom-left-radius: 10px;
+        }
+
+        :last-child {
+            border-bottom-right-radius: 10px;
+        }
 
         .inputs,
         .outputs {

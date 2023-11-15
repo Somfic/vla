@@ -1003,6 +1003,11 @@ svelte@^4.0.5:
     magic-string "^0.30.4"
     periscopic "^3.1.0"
 
+svelvet@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/svelvet/-/svelvet-8.1.0.tgz#f783d1ad631d32f36c1f0379dc88a7896db42b7c"
+  integrity sha512-rH67tgb7e2aTBQZBCW+V5hSvulLwvzBiOml9Dzdz2ATkgQr58mHi2WtlQFOOb+eZt6zH/J10a2MataC29Qdpuw==
+
 to-regex-range@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/to-regex-range/-/to-regex-range-5.0.1.tgz#1648c44aae7c8d988a326018ed72f5b4dd0392e4"

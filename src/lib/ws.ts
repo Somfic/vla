@@ -27,6 +27,7 @@ export function startListening() {
             case "NodesStructureMessage":
                 types.set(data["Types"]);
                 structures.set(data["Nodes"]);
+                console.log(data);
                 break;
         }
     };

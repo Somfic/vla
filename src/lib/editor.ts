@@ -52,6 +52,9 @@ export async function createEditor(container: HTMLElement) {
                 connection() {
                     return EditorConnection;
                 },
+                control() {
+                    return EditorControl;
+                },
             },
         })
     );
@@ -81,7 +84,7 @@ export async function loadStructures(structures: NodeStructure[]) {
         const node = new ClassicPreset.Node(structure.Type.split(",")[0].split(".").slice(-1)[0].replace("Node", ""));
 
         for (const property of structure.Properties) {
-            node.addControl(property.Name, new ClassicPreset.InputControl("text", { initial: property.DefaultValue }));
+            node.addControl(property.Name, new ClassicPreset.InputControl(property.HtmlType, { initial: property.DefaultValue }));
         }
 
         for (const input of structure.Inputs) {
