@@ -1,15 +1,22 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { nodeStructures } from "../lib/nodes";
-    import { createEditor } from "../lib/editor";
+    import { structures, types } from "../lib/nodes";
+    import { createEditor, loadStructures, loadTypes } from "../lib/editor";
 
     let el: HTMLElement;
 
-    nodeStructures.subscribe((nodes) => {
-        createEditor(el, nodes);
+    structures.subscribe(async (nodes) => {
+        await loadStructures(nodes);
     });
 
-    onMount(async () => {});
+    types.subscribe(async (types) => {
+        await loadTypes(types);
+    });
+
+    onMount(async () => {
+        await createEditor(el);
+        await loadStructures($structures);
+    });
 </script>
 
 <div class="rete" bind:this={el} />
@@ -22,6 +29,7 @@
         font-size: 1rem;
         text-align: left;
         border: 1px solid #cbd0db;
+        background-color: #131313;
     }
 
     :global(body) {

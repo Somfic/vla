@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { partialRecognition, recognition, startListening, messages } from "./lib/ws";
-    import { nodeStructures } from "./lib/nodes";
+    import { structures } from "./lib/nodes";
     import Editor from "./components/Editor.svelte";
 
     onMount(() => {
@@ -15,7 +15,7 @@
     <p>{$recognition}</p>
     <p>{$partialRecognition}</p>
 
-    {#each $nodeStructures as node}
+    {#each $structures as node}
         <div>{node.Type.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
     {/each}
 </main>

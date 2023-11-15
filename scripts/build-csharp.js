@@ -7,7 +7,7 @@ let arch = "";
 switch (process.platform) {
     case "win32":
         extension = ".exe";
-        arch = "x64";
+        arch = "win-x64";
         break;
     case "darwin":
         extension = "";
@@ -60,7 +60,7 @@ async function main() {
 
         if (file.endsWith(".dll") || file.endsWith(".dylib")) {
             targetFile = join(targetDll, file);
-            dllFiles.push(targetFile.replace("src-tauri/", "./"));
+            dllFiles.push(targetFile.replace("src-tauri", "."));
         }
 
         console.log(`Copying ${sourceFile} to ${targetFile}`);

@@ -29,7 +29,7 @@ public static class NodeStructureBuilderExtensions {
         return node with { Outputs = node.Outputs.AddRange(outputs) };
     }
 	
-    public static NodeStructure WithProperty<TValue>(this NodeStructure node, string name, string type, TValue defaultValue)
+    public static NodeStructure WithProperty<TValue>(this NodeStructure node, string name, Type type, TValue defaultValue)
     {
         return node with { Properties = node.Properties.Add(new PropertyStructure(name, type, JsonConvert.SerializeObject(defaultValue))) };
     }

@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { nodeStructures } from "./nodes";
+import { types, structures } from "./nodes";
 
 let ws: WebSocket = null as any;
 
@@ -25,7 +25,9 @@ export function startListening() {
 
         switch (data["Id"]) {
             case "NodesStructureMessage":
-                nodeStructures.set(data["Nodes"]);
+                types.set(data["Types"]);
+                structures.set(data["Nodes"]);
+                break;
         }
     };
 

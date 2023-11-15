@@ -5,6 +5,7 @@ using Somfic.Common;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
+using Vla.Nodes.Types;
 using Vla.Nodes.Web;
 
 namespace Vla.Nodes;
@@ -39,5 +40,16 @@ public class NodeService
             .Validate()
             .On(new WebExecutor().ExecuteWeb)
             .OnError(x => _log.LogWarning(x, "Could not execute web"));
+    }
+
+    public IReadOnlyCollection<NodeTypeDefinition> GenerateTypeDefinitions()
+    {
+        var inputTypes = Structures.SelectMany(x => x.Inputs).Select(x => x.Type);
+        var outputTypes = Structures.SelectMany(x => x.Outputs).Select(x => x.Type);
+        var propertyTypes = Structures.SelectMany(x => x.Properties).Select(x => x.Type);
+        
+        var allTypes = inputTypes.Concat(outputTypes).Concat(propertyTypes).Distinct();
+
+        return allTypes.Select(type => new NodeTypeDefinition(type)).ToList();
     }
 }

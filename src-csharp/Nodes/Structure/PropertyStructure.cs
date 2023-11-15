@@ -2,7 +2,7 @@
 
 public readonly struct PropertyStructure
 {
-    public PropertyStructure(string name, string type, string defaultValue)
+    public PropertyStructure(string name, Type type, string defaultValue)
     {
         Name = name;
         Type = type;
@@ -11,7 +11,7 @@ public readonly struct PropertyStructure
 
     public string Name { get; init; }
 	
-    public string Type { get; init; }
+    public Type Type { get; init; }
 	
     public string DefaultValue { get; init; }
 }

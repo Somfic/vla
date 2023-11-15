@@ -33,7 +33,7 @@ node.Register<MathNode>()
 
 server.ClientConnected.OnChange(async c =>
 {
-    await server.Send(c, new NodesStructureMessage(node.Structures));
+    await server.Send(c, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
 });
 
 // recogniser.Recognised.OnChange(async s =>

@@ -5,7 +5,7 @@ namespace Vla.Nodes;
 [Node]
 public class PrinterNode : INode
 {
-    public void Execute([NodeInput("Value")] double value)
+    public void Execute([NodeInput("Value")] string value)
     {
         Console.WriteLine(value);
     }
