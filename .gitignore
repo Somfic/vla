@@ -588,4 +588,8 @@ package
 
 src-tauri/*.dll
 src-tauri/*.exe
+src-tauri/*.pdb
+src-tauri/*.dylib
 src-tauri/binaries
+
+.idea
