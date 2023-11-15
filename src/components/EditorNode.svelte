@@ -1,195 +1,93 @@
 <script lang="ts">
-    import type { ClassicScheme, SvelteArea2D } from "rete-svelte-plugin";
-    import { Ref } from "rete-svelte-plugin";
-    type NodeExtraData = { width?: number; height?: number };
+    import { Anchor, Node, type CSSColorString } from "svelvet";
+    import { types, type NodeStructure } from "../lib/nodes";
+    import EditorProperty from "./EditorProperty.svelte";
+    import { get, type Readable } from "svelte/store";
+    import NodeAnchor from "./EditorAnchor.svelte";
+    import EditorAnchor from "./EditorAnchor.svelte";
 
-    function sortByIndex<K, I extends undefined | { index?: number }>(entries: [K, I][]) {
-        entries.sort((a, b) => {
-            const ai = (a[1] && a[1].index) || 0;
-            const bi = (b[1] && b[1].index) || 0;
-            return ai - bi;
-        });
-        return entries as [K, Exclude<I, undefined>][];
-    }
+    export let structure: NodeStructure;
 
-    export let data: ClassicScheme["Node"] & NodeExtraData;
-    export let emit: (props: SvelteArea2D<ClassicScheme>) => void;
+    function getColorFromType(type: string): CSSColorString | null {
+        let rgb = get(types).find((t) => t.Name === type)?.Color;
 
-    $: width = Number.isFinite(data.width) ? `${data.width}px` : "";
-    $: height = Number.isFinite(data.height) ? `${data.height}px` : "";
+        if (rgb) {
+            return `rgba(${rgb})` as CSSColorString;
+        }
 
-    $: inputs = sortByIndex(Object.entries(data.inputs));
-    $: controls = sortByIndex(Object.entries(data.controls));
-    $: outputs = sortByIndex(Object.entries(data.outputs));
-    function any<T>(arg: T): any {
-        return arg;
+        return null;
     }
 </script>
 
-<div class="node {data.selected ? 'selected' : ''}" style:width style:height data-testid="node">
-    <div class="title" data-testid="title">{data.label}</div>
-
-    <div class="controls">
-        <!-- Controls -->
-        {#each controls as [key, control]}
-            <div class="control">
-                <div class="control-title" data-testid="input-title">
-                    {key || ""}
-                </div>
-                <Ref
-                    class="control"
-                    data-testid={"control-" + key}
-                    init={(element) =>
-                        emit({
-                            type: "render",
-                            data: {
-                                type: "control",
-                                element,
-                                payload: control,
-                            },
-                        })}
-                    unmount={(ref) => emit({ type: "unmount", data: { element: ref } })}
-                />
-            </div>
-        {/each}
-    </div>
-
-    <div class="inout">
-        {#if inputs.length > 0}
-            <div class="inputs">
-                <!-- Inputs -->
-                {#each inputs as [key, input]}
-                    <div class="input" data-testid={"input-" + key}>
-                        <Ref
-                            class="input-socket"
-                            data-testid="input-socket"
-                            init={(element) =>
-                                emit({
-                                    type: "render",
-                                    data: {
-                                        type: "socket",
-                                        side: "input",
-                                        key,
-                                        nodeId: data.id,
-                                        element,
-                                        payload: input.socket,
-                                    },
-                                })}
-                            unmount={(ref) => emit({ type: "unmount", data: { element: ref } })}
-                        />
-                        {#if !input.control || !input.showControl}
-                            <div class="input-title" data-testid="input-title">
-                                {input.label || ""}
+<Node let:grabHandle let:selected>
+    <div use:grabHandle class:selected class="node">
+        <div class="title">{structure.Type.split(",")[0].split(".").slice(-1)}</div>
+        <div class="properties">
+            {#each structure.Properties as property}
+                <EditorProperty {property} />
+            {/each}
+        </div>
+        <div class="input-output">
+            {#if structure.Inputs.length > 0}
+                <div class="inputs">
+                    {#each structure.Inputs as input}
+                        <div class="input">
+                            <div class="anchor">
+                                <Anchor let:linked let:hovering let:connecting input id={input.Id} nodeConnect>
+                                    <EditorAnchor parameter={input} {linked} {hovering} {connecting} />
+                                </Anchor>
                             </div>
-                        {/if}
-                        {#if input.control && input.showControl}
-                            <Ref
-                                class="socket"
-                                data-testid="input-control"
-                                init={(element) =>
-                                    emit({
-                                        type: "render",
-                                        data: {
-                                            type: "control",
-                                            element,
-                                            payload: any(input).control,
-                                        },
-                                    })}
-                                unmount={(ref) => emit({ type: "unmount", data: { element: ref } })}
-                            />
-                        {/if}
-                    </div>
-                {/each}
-            </div>
-        {/if}
-        {#if outputs.length > 0}
-            <div class="outputs">
-                <!-- Outputs -->
-                {#each outputs as [key, output]}
-                    <div class="output" data-testid="'output-'+key">
-                        <div class="title" data-testid="output-title">
-                            {output.label || ""}
+                            <div class="name">{input.Name}</div>
                         </div>
-                        <Ref
-                            class="socket"
-                            data-testid="output-socket"
-                            init={(element) =>
-                                emit({
-                                    type: "render",
-                                    data: {
-                                        type: "socket",
-                                        side: "output",
-                                        key,
-                                        nodeId: data.id,
-                                        element,
-                                        payload: output.socket,
-                                    },
-                                })}
-                            unmount={(ref) => emit({ type: "unmount", data: { element: ref } })}
-                        />
-                    </div>
-                {/each}
-            </div>
-        {/if}
+                    {/each}
+                </div>
+            {/if}
+            {#if structure.Outputs.length > 0}
+                <div class="outputs">
+                    {#each structure.Outputs as output}
+                        <div class="output">
+                            <div class="name">{output.Name}</div>
+                            <div class="anchor">
+                                <Anchor let:linked let:hovering let:connecting output id={output.Id} nodeConnect>
+                                    <EditorAnchor parameter={output} {linked} {hovering} {connecting} />
+                                </Anchor>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+        </div>
     </div>
-</div>
+</Node>
 
 <style lang="scss">
-    $node-width: 200px;
-    $socket-margin: 6px;
-    $socket-size: 16px;
-
-    @use "sass:math";
-
     .node {
-        background-color: #343434;
-        min-width: 200px;
-        border-radius: 10px;
-        box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
-
-        > .title {
-            background-color: #ad50a3;
-            padding: 12px;
-            font-weight: bold;
-            border-radius: 10px 10px 0 0;
-        }
-    }
-
-    .controls {
-        padding: 12px;
-
-        .control {
-            display: flex;
-            align-items: center;
-
-            input {
-                color: black;
-            }
-        }
-    }
-
-    .inout {
         display: flex;
+        flex-direction: column;
+        background-color: #343434;
+    }
 
-        :first-child {
-            border-bottom-left-radius: 10px;
-        }
+    .title {
+        background-color: #ad50a3;
+        padding: 12px;
+    }
 
-        :last-child {
-            border-bottom-right-radius: 10px;
-        }
+    .input-output {
+        display: flex;
 
         .inputs,
         .outputs {
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding-top: 16px;
-            padding-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .inputs {
+            align-items: left;
         }
 
         .outputs {
+            align-items: end;
             background-color: #1f1f1f;
         }
 
@@ -197,17 +95,11 @@
         .output {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
 
-        .input {
-            justify-content: left;
-            margin-left: -5px;
-        }
-
-        .output {
-            justify-content: right;
-            margin-right: -5px;
+            .name {
+                padding: 12px;
+                font-weight: bold;
+            }
         }
     }
 </style>

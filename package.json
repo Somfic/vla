@@ -15,14 +15,7 @@
     "dependencies": {
         "@tauri-apps/api": "^1.5.0",
         "execa": "^8.0.1",
-        "fs-extra": "^11.1.1",
-        "rete": "^2.0.2",
-        "rete-area-plugin": "^2.0.1",
-        "rete-connection-plugin": "^2.0.0",
-        "rete-minimap-plugin": "^2.0.1",
-        "rete-render-utils": "^2.0.1",
-        "rete-svelte-plugin": "^2.0.0",
-        "sass": "^1.69.5"
+        "fs-extra": "^11.1.1"
     },
     "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^2.4.2",
@@ -33,6 +26,8 @@
         "svelte-preprocess": "^5.0.0",
         "tslib": "^2.6.0",
         "typescript": "^5.0.2",
-        "vite": "^4.4.4"
+        "vite": "^4.4.4",
+        "sass": "^1.69.5",
+        "svelvet": "^8.1.0"
     }
 }

@@ -1,38 +1,19 @@
-<script lang="ts">
-    import { onMount } from "svelte";
-    import { structures, types } from "../lib/nodes";
-    import { createEditor, loadStructures, loadTypes } from "../lib/editor";
-
-    let el: HTMLElement;
-
-    structures.subscribe(async (nodes) => {
-        await loadStructures(nodes);
-    });
-
-    types.subscribe(async (types) => {
-        await loadTypes(types);
-    });
-
-    onMount(async () => {
-        await createEditor(el);
-        await loadStructures($structures);
-    });
+<script>
+    import { Node, Svelvet, Minimap, Controls } from "svelvet";
+    import EditorNode from "./EditorNode.svelte";
+    import { structures } from "../lib/nodes";
 </script>
 
-<div class="rete" bind:this={el} />
+<div class="editor">
+    <Svelvet theme="dark">
+        {#each $structures as structure}
+            <EditorNode {structure} />
+        {/each}
+    </Svelvet>
+</div>
 
-<style>
-    .rete {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        font-size: 1rem;
-        text-align: left;
-        background-color: #131313;
-    }
-
-    :global(body) {
-        margin: 0;
-        overflow: hidden;
+<style lang="scss">
+    .editor {
+        height: 400px;
     }
 </style>
