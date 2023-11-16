@@ -1,8 +1,8 @@
-﻿namespace Vla.Nodes.Instance;
+﻿namespace Vla.Nodes.Connection;
 
-public readonly struct InstancedProperty
+public readonly struct ConnectedProperty
 {
-    public InstancedProperty(string instanceId, string propertyId)
+    public ConnectedProperty(string instanceId, string propertyId)
     {
         InstanceId = instanceId;
         PropertyId = propertyId;

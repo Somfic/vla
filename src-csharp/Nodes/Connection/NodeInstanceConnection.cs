@@ -3,7 +3,7 @@
 namespace Vla.Nodes.Connection;
 
 public readonly struct NodeConnection {
-    public InstancedProperty From { get; init; }
+    public ConnectedProperty From { get; init; }
 
-    public InstancedProperty To { get; init; }
+    public ConnectedProperty To { get; init; }
 }

@@ -15,15 +15,15 @@ public class WebExecutor
     {
         foreach (var instance in web.Instances)
         {
-            var structure = web.Structures.First(s => s.Type == instance.Type);
+            var structure = web.Structures.First(s => s.NodeType == instance.NodeType);
 
-            var nodeInstance = Activator.CreateInstance(structure.Type)!;
+            var nodeInstance = Activator.CreateInstance(structure.NodeType)!;
 
             if (structure.Properties.Any())
             {
                 foreach (var property in structure.Properties)
                 {
-                    var propInfo = structure.Type.GetProperty(property.Name);
+                    var propInfo = structure.NodeType.GetProperty(property.Name);
                     var propType = propInfo?.PropertyType;
                     var castedDefaultValue = JsonConvert.DeserializeObject(property.DefaultValue, propType);
                     propInfo?.SetValue(nodeInstance, castedDefaultValue);
@@ -31,7 +31,7 @@ public class WebExecutor
 
                 foreach (var property in instance.Properties)
                 {
-                    var propInfo = structure.Type.GetProperty(property.Name);
+                    var propInfo = structure.NodeType.GetProperty(property.Name);
                     var propType = propInfo?.PropertyType;
                     var castedValue = JsonConvert.DeserializeObject(property.Value, propType);
                     propInfo?.SetValue(nodeInstance, castedValue);
@@ -40,7 +40,7 @@ public class WebExecutor
             
             _instances.Add(instance.Id, nodeInstance);
             
-            Console.WriteLine($"Created instance {instance.Id} of type {structure.Type}");
+            Console.WriteLine($"Created instance {instance.Id} of type {structure.NodeType}");
         }
 
         foreach (var connection in web.Connections)
@@ -52,7 +52,7 @@ public class WebExecutor
     private void SetNodeOutput(Web web, string instanceId)
     {
         var instance = web.Instances.First(i => i.Id == instanceId);
-        var structure = web.Structures.First(s => s.Type == instance.Type);
+        var structure = web.Structures.First(s => s.NodeType == instance.NodeType);
         
         if (structure.Inputs.Any())
         {
@@ -72,7 +72,7 @@ public class WebExecutor
         if (structure.Inputs.All(input =>
             web.Connections.Any(c => c.To.InstanceId == instanceId && c.To.PropertyId == input.Id)))
         {
-            var method = structure.Type.GetMethod(structure.ExecuteMethod);
+            var method = structure.NodeType.GetMethod(structure.ExecuteMethod);
             
             var inputParameters = structure.Inputs.Select<ParameterStructure, dynamic>(i => _values[$"{instance.Id}.{i.Id}"]).ToArray();
             var outputParameters = structure.Outputs.Select<ParameterStructure, dynamic>(_ => null).ToArray();

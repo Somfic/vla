@@ -44,7 +44,7 @@ public static class WebExtensions
                 w.Instances.Any(instance => instance.Id == connection.To.InstanceId));
 
         bool InstancesEnsureStructureExists(Web w) =>
-            w.Instances.All(instance => w.Structures.Any(structure => structure.Type == instance.Type));
+            w.Instances.All(instance => w.Structures.Any(structure => structure.NodeType == instance.NodeType));
 
         bool InstancesEnsureStructurePropertyExists(Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
@@ -52,7 +52,7 @@ public static class WebExtensions
 
         bool StructureEnsureUniqueNodeTypes(Web w) =>
             w.Structures
-                .Select(x => x.Type)
+                .Select(x => x.NodeType)
                 .Distinct()
                 .Count() == w.Structures.Length;
 

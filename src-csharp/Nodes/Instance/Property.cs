@@ -1,8 +1,8 @@
 ﻿namespace Vla.Nodes.Instance;
 
-public readonly struct Property
+public readonly struct PropertyInstance
 {
-    public Property(string name, string value)
+    public PropertyInstance(string name, string value)
     {
         Name = name;
         Value = value;

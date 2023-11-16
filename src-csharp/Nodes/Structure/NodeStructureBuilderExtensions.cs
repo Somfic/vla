@@ -6,7 +6,7 @@ namespace Vla.Nodes.Structure;
 public static class NodeStructureBuilderExtensions {
     public static NodeStructure WithType(this NodeStructure node, Type type)
     {
-        return node with { Type = type };
+        return node with { NodeType = type };
     }
 	
     public static NodeStructure WithInput(this NodeStructure node, string id, string name, Type type)

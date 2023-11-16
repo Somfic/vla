@@ -8,7 +8,7 @@ public readonly struct NodeStructure
 	{
 	}
 
-	public Type Type { get; init; } = null;
+	public Type NodeType { get; init; } = null;
 	
 	public ImmutableArray<PropertyStructure> Properties { get; init; } = ImmutableArray<PropertyStructure>.Empty;
 
