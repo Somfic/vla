@@ -1,7 +1,10 @@
-# Tauri + Svelte + Typescript
 
-This template should help get you started developing with Tauri, Svelte and TypeScript in Vite.
 
-## Recommended IDE Setup
+<img src="https://github.com/Somfic/vla/assets/29230467/1cc57697-c949-43bc-bd1f-fc9126f8e83a"
+     title="Vla by Somfic">
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+<div text-align="center">
+<h1 align="center">Vla</h1>
+
+
+<p align="center"><i>A visual macros tool</i></p>
