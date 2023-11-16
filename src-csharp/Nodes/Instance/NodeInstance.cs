@@ -8,11 +8,11 @@ public readonly struct NodeInstance
 	{
 	}
 
-	public Guid Id { get; init; } = Guid.NewGuid();
+	public string Id { get; init; }
 	
-	public Type Type { get; init; } = null;
+	public Type Type { get; init; }
 	
-	public ImmutableArray<Property> Properties { get; init; } = ImmutableArray<Property>.Empty;
+	public ImmutableArray<Property> Properties { get; init; }
 	
-	public Metadata Metadata { get; init; } = new();
+	public Metadata Metadata { get; init; }
 }

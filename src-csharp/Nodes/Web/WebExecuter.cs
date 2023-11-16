@@ -8,7 +8,7 @@ namespace Vla.Nodes.Web;
 
 public class WebExecutor
 {
-    private readonly Dictionary<Guid, object> _instances = new();
+    private readonly Dictionary<string, object> _instances = new();
     private readonly Dictionary<string, object> _values = new();
 
     public void ExecuteWeb(Web web)
@@ -49,7 +49,7 @@ public class WebExecutor
         }
     }
 
-    private void SetNodeOutput(Web web, Guid instanceId)
+    private void SetNodeOutput(Web web, string instanceId)
     {
         var instance = web.Instances.First(i => i.Id == instanceId);
         var structure = web.Structures.First(s => s.Type == instance.Type);
