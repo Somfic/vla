@@ -34,7 +34,7 @@
                         <div class="input">
                             <div class="anchor">
                                 <Anchor let:linked let:hovering let:connecting input id={input.Id} nodeConnect>
-                                    <EditorAnchor parameter={input} {linked} {hovering} {connecting} />
+                                    <EditorAnchor parameter={input} {linked} {hovering} {connecting} input />
                                 </Anchor>
                             </div>
                             <div class="name">{input.Name}</div>
@@ -49,7 +49,7 @@
                             <div class="name">{output.Name}</div>
                             <div class="anchor">
                                 <Anchor let:linked let:hovering let:connecting output id={output.Id} nodeConnect>
-                                    <EditorAnchor parameter={output} {linked} {hovering} {connecting} />
+                                    <EditorAnchor parameter={output} {linked} {hovering} {connecting} output />
                                 </Anchor>
                             </div>
                         </div>
@@ -65,15 +65,26 @@
         display: flex;
         flex-direction: column;
         background-color: #343434;
+        box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+        border-radius: 10px;
     }
 
     .title {
         background-color: #ad50a3;
         padding: 12px;
+        border-radius: 10px 10px 0 0;
     }
 
     .input-output {
         display: flex;
+
+        :first-child {
+            border-bottom-left-radius: 10px;
+        }
+
+        :last-child {
+            border-bottom-right-radius: 10px;
+        }
 
         .inputs,
         .outputs {

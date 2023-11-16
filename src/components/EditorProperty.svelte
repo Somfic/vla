@@ -13,5 +13,12 @@
     .property {
         display: flex;
         align-items: center;
+
+        padding: 15px;
+        gap: 6px;
+
+        input {
+            width: 80px;
+        }
     }
 </style>
