@@ -46,6 +46,7 @@ export interface TypeDefinition {
     Name: string;
     Type: string;
     Color: string;
+    Shape: string;
 }
 
 export interface NodeInstance {

@@ -13,7 +13,7 @@
 
 <Node let:grabHandle let:selected id={instance.Id}>
     <div use:grabHandle class:selected class="node">
-        <div class="title">{structure.NodeType.split(",")[0].split(".").slice(-1)}</div>
+        <div class="title">{structure.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
         <div class="properties">
             {#each instance.Properties as property, i}
                 <EditorProperty {property} {structure} bind:value={instance.Properties[i].Value} />
@@ -30,7 +30,7 @@
                                 </Anchor>
                             </div>
                             <div class="name">{input.Name}</div>
-                            <ComputedValue id={`${instance.Id}.${input.Id}`} input />
+                            <!-- <ComputedValue id={`${instance.Id}.${input.Id}`} input /> -->
                         </div>
                     {/each}
                 </div>
@@ -39,7 +39,9 @@
                 <div class="outputs">
                     {#each structure.Outputs as output}
                         <div class="output">
-                            <ComputedValue id={`${instance.Id}.${output.Id}`} output />
+                            <div class="value">
+                                <ComputedValue id={`${instance.Id}.${output.Id}`} output />
+                            </div>
                             <div class="name">{output.Name}</div>
                             <div class="anchor">
                                 <Anchor let:linked let:hovering let:connecting output id={output.Id} multiple={false}>
@@ -80,19 +82,14 @@
             border-bottom-right-radius: 10px;
         }
 
-        .inputs,
-        .outputs {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
         .inputs {
+            flex-grow: 1;
             align-items: left;
             padding-right: 12px;
         }
 
         .outputs {
+            flex-grow: 1;
             align-items: end;
             background-color: #1f1f1f;
             padding-left: 12px;
@@ -101,12 +98,19 @@
         .input,
         .output {
             display: flex;
+            flex-grow: 1;
             align-items: center;
             margin: 6px 0px;
+            min-height: 2rem;
+            width: 100%;
 
             .name {
                 margin: 0 8px;
                 font-weight: bold;
+            }
+
+            .value {
+                flex-grow: 1;
             }
         }
     }

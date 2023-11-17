@@ -32,13 +32,14 @@
         padding: 5px;
         opacity: 0;
         transition: opacity ease 200ms;
+        display: flex;
 
-        &.input {
-            text-align: right;
+        &.input p {
+            text-align: left;
         }
 
-        &.output {
-            text-align: left;
+        &.output p {
+            text-align: right;
         }
 
         &.value {
@@ -46,8 +47,11 @@
         }
 
         p {
+            flex-grow: 1;
             margin: 0;
             color: #696969; // nice
+            // hide overflow with ...
+            overflow: hidden;
         }
     }
 </style>

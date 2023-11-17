@@ -22,6 +22,7 @@ export function startListening() {
         messages.update((old) => [...old, e.data]);
 
         const data = JSON.parse(e.data);
+        console.log(">", data);
 
         switch (data["Id"]) {
             case "NodesStructure":

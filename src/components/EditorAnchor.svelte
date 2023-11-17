@@ -9,38 +9,51 @@
     export let hovering: boolean;
     export let connecting: boolean;
 
-    function getColorFromType(type: string) {
-        return get(types).find((t) => t.Type === type.replace("&", ""))?.Color;
-    }
+    $: typeDefinition = get(types).find((t) => t.Type == parameter.Type.replace("&", ""))!;
 </script>
 
-<div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${getColorFromType(parameter.Type)})`} />
+<div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${typeDefinition.Color})`}>
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        {#if typeDefinition.Shape == "circle"}
+            <circle cx="50" cy="50" r="40" />
+        {:else if typeDefinition.Shape == "diamond"}
+            <polygon points="49,1 99,49 49,99 1,49" />
+        {/if}
+    </svg>
+</div>
 
 <style lang="scss">
     .anchor {
-        height: 10px;
-        width: 10px;
-
-        border-radius: 100%;
-
-        background-color: black;
-        border: 2px solid var(--type-color);
-        transition: background-color ease 200ms, border-color ease 200ms, transform ease 200ms;
-
-        &.connecting {
-            background-color: var(--type-color);
-        }
-
-        &.linked {
-            background-color: var(--type-color);
-        }
+        position: relative;
+        width: 12px;
+        height: 12px;
 
         &.input {
-            margin-left: -7px;
+            margin-left: -5px;
         }
 
         &.output {
-            margin-right: -7px;
+            margin-right: -5px;
+        }
+
+        &.connecting,
+        &.linked {
+            svg {
+                fill: var(--type-color);
+            }
+        }
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            fill: rgb(45, 45, 45);
+            stroke: var(--type-color);
+            stroke-width: 10px;
+
+            transition: all ease 200ms;
         }
     }
 </style>

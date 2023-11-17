@@ -27,7 +27,21 @@
         gap: 6px;
 
         input {
+            all: unset;
             width: 80px;
+            text-align: right;
+            height: 1rem;
+            border: 2px solid #424242;
+            border-radius: 5px;
+            background-color: #1f1f1f;
+            padding: 5px;
+            color: #696969; // nice
+            transition: all ease 200ms;
+
+            &:focus {
+                border-color: #696969;
+                color: white;
+            }
         }
     }
 </style>
