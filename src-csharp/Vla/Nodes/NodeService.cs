@@ -31,14 +31,15 @@ public class NodeService
         return this;
     }
 
-    public void Execute(IEnumerable<NodeInstance> instances, IEnumerable<NodeConnection> connections)
+    public void Execute(IEnumerable<NodeInstance> instances, IEnumerable<NodeConnection> connections, IEnumerable<NodeStructure> structures)
     {
+        var nodeStructures = structures as NodeStructure[] ?? structures.ToArray();
+        
         var web = new Web.Web()
-            .WithStructures(_structures.ToArray())
             .WithInstances(instances.ToArray())
             .WithConnections(connections.ToArray())
-            .Validate()
-            .On(new WebExecutor().ExecuteWeb)
+            .Validate(nodeStructures.ToList())
+            .On(x => new WebExecutor().ExecuteWeb(x, nodeStructures.ToList()))
             .OnError(x => _log.LogWarning(x, "Could not execute web"));
     }
 

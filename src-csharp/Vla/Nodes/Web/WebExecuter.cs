@@ -11,11 +11,11 @@ public class WebExecutor
     private readonly Dictionary<string, object> _instances = new();
     private readonly Dictionary<string, object> _values = new();
 
-    public void ExecuteWeb(Web web)
+    public void ExecuteWeb(Web web, IReadOnlyCollection<NodeStructure> structures)
     {
         foreach (var instance in web.Instances)
         {
-            var structure = web.Structures.First(s => s.NodeType == instance.NodeType);
+            var structure = structures.First(s => s.NodeType == instance.NodeType);
 
             var nodeInstance = Activator.CreateInstance(structure.NodeType)!;
 
@@ -43,14 +43,14 @@ public class WebExecutor
 
         foreach (var connection in web.Connections)
         {
-            SetNodeOutput(web, connection.To.InstanceId);
+            SetNodeOutput(web, structures, connection.To.InstanceId);
         }
     }
 
-    private void SetNodeOutput(Web web, string instanceId)
+    private void SetNodeOutput(Web web, IReadOnlyCollection<NodeStructure> structures, string instanceId)
     {
         var instance = web.Instances.First(i => i.Id == instanceId);
-        var structure = web.Structures.First(s => s.NodeType == instance.NodeType);
+        var structure = structures.First(s => s.NodeType == instance.NodeType);
         
         if (structure.Inputs.Any())
         {
@@ -61,7 +61,7 @@ public class WebExecutor
                 {
                     var connection = web.Connections.FirstOrDefault(c =>
                         c.To.InstanceId == instanceId && c.To.PropertyId == input.Id);
-                    SetNodeOutput(web, connection.From.InstanceId);
+                    SetNodeOutput(web, structures, connection.From.InstanceId);
                 }
             }
         }

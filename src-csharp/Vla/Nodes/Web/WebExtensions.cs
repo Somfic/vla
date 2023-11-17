@@ -7,11 +7,6 @@ namespace Vla.Nodes.Web;
 
 public static class WebExtensions
 {
-    public static Web WithStructures(this Web web, params NodeStructure[] structures)
-    {
-        return web with { Structures = structures };
-    }
-
     public static Web WithInstances(this Web web, params NodeInstance[] instances)
     {
         return web with { Instances = instances };
@@ -22,7 +17,7 @@ public static class WebExtensions
         return web with { Connections = connections };
     }
 
-    public static Result<Web> Validate(this Web web)
+    public static Result<Web> Validate(this Web web, IReadOnlyCollection<NodeStructure> structures)
     {
         return Result.Value(web)
             .Guard(StructureEnsureUniqueNodeTypes, "All nodes must have a unique type")
@@ -35,8 +30,8 @@ public static class WebExtensions
 
         bool ConnectionsEnsureStructureInputOutputExists(Web w) =>
             w.Connections.All(connection =>
-                w.Structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&
-                w.Structures.Any(structure => structure.Inputs.Any(x => x.Id == connection.To.PropertyId)));
+                structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&
+                structures.Any(structure => structure.Inputs.Any(x => x.Id == connection.To.PropertyId)));
 
         bool ConnectionsEnsureInstanceExists(Web w) =>
             w.Connections.All(connection =>
@@ -44,27 +39,27 @@ public static class WebExtensions
                 w.Instances.Any(instance => instance.Id == connection.To.InstanceId));
 
         bool InstancesEnsureStructureExists(Web w) =>
-            w.Instances.All(instance => w.Structures.Any(structure => structure.NodeType == instance.NodeType));
+            w.Instances.All(instance => structures.Any(structure => structure.NodeType == instance.NodeType));
 
         bool InstancesEnsureStructurePropertyExists(Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
-                w.Structures.Any(structure => structure.Properties.Any(x => x.Name == property.Name)));
+                structures.Any(structure => structure.Properties.Any(x => x.Name == property.Name)));
 
         bool StructureEnsureUniqueNodeTypes(Web w) =>
-            w.Structures
+            structures
                 .Select(x => x.NodeType)
                 .Distinct()
-                .Count() == w.Structures.Length;
+                .Count() == structures.Count;
 
         bool StructureEnsureUniqueInputIds(Web w) =>
-            w.Structures.All(structure =>
+            structures.All(structure =>
                 structure.Inputs
                     .Select(x => x.Id)
                     .Distinct()
                     .Count() == structure.Inputs.Length);
 
         bool StructureEnsureUniqueOutputIds(Web w) =>
-            w.Structures.All(structure =>
+            structures.All(structure =>
                 structure.Outputs
                     .Select(x => x.Id)
                     .Distinct()
