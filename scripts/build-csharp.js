@@ -17,6 +17,10 @@ switch (process.platform) {
         throw new Error(`Unsupported platform: ${process.platform}`);
 }
 
+if (arch == "win-x64") {
+    execa("taskkill", ["/IM", "csharp.exe", "/F"]);
+}
+
 const source = `src-csharp/Vla/bin/Release/net7.0/${arch}/publish`;
 const targetExe = "src-tauri/binaries";
 const targetDll = "src-tauri";
