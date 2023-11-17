@@ -1,10 +1,13 @@
 <script lang="ts">
     import { Anchor, Node } from "svelvet";
-    import { type NodeStructure } from "../lib/nodes";
+    import { type NodeInstance, type NodeStructure } from "../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
+    import { get } from "svelte/store";
+    import { structures } from "../lib/nodes";
 
-    export let structure: NodeStructure;
+    export let instance: NodeInstance;
+    $: structure = get(structures).find((s) => s.NodeType == instance.NodeType)!;
 </script>
 
 <Node let:grabHandle let:selected>
@@ -36,7 +39,7 @@
                         <div class="output">
                             <div class="name">{output.Name}</div>
                             <div class="anchor">
-                                <Anchor let:linked let:hovering let:connecting output id={output.Id} nodeConnect>
+                                <Anchor let:linked let:hovering let:connecting output id={output.Id} multiple={false}>
                                     <EditorAnchor parameter={output} {linked} {hovering} {connecting} output />
                                 </Anchor>
                             </div>
