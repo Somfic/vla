@@ -29,11 +29,43 @@ node.Register<MathNode>()
     .Register<NumberConstantNode>()
     .Register<PrinterNode>();
 
-// register nodes through plugins
+var constantInstance1 = new NodeInstance()
+    .From<NumberConstantNode>()
+    .WithProperty("Value", 2);
+
+var constantInstance2 = new NodeInstance()
+    .From<NumberConstantNode>()
+    .WithProperty("Value", 3);
+
+var mathInstance = new NodeInstance()
+    .From<MathNode>();
+
+var printInstance = new NodeInstance()
+    .From<PrinterNode>();
+
+var constant1ToMathA = new NodeConnection()
+    .From(constantInstance1, "value")
+    .To(mathInstance, "a");
+
+var constant2ToMathB = new NodeConnection()
+    .From(constantInstance2, "value")
+    .To(mathInstance, "b");
+
+var mathToPrint = new NodeConnection()
+    .From(mathInstance, "result")
+    .To(printInstance, "value");
+
+var instances = new[] { constantInstance1, constantInstance2, mathInstance, printInstance };
+var connections = new[] { constant1ToMathA, constant2ToMathB, mathToPrint };
+var web = new Web()
+    .WithInstances(instances)
+    .WithConnections(connections)
+    .Validate(node.Structures);
 
 server.ClientConnected.OnChange(async c =>
 {
     await server.Send(c, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
+    web.On(async x => await server.Send(c, new WebMessage(x)));
 });
 
 // recogniser.Recognised.OnChange(async s =>
