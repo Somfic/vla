@@ -1,4 +1,6 @@
-﻿using Vla.Nodes.Structure;
+﻿using System.Collections.Immutable;
+using Newtonsoft.Json;
+using Vla.Nodes.Structure;
 
 namespace Vla.Nodes.Instance;
 
@@ -14,8 +16,8 @@ public static class NodeInstanceBuilderExtensions
         return node with { NodeType = typeof(TNode) };
     }
 	
-    public static NodeInstance WithProperty(this NodeInstance node, string name, string value)
+    public static NodeInstance WithProperty<T>(this NodeInstance node, string name,T value)
     {
-        return node with { Properties = node.Properties.Add(new PropertyInstance(name, value)) };
+        return node with { Properties = node.Properties.Add(new PropertyInstance(name, typeof(T), JsonConvert.SerializeObject(value))) };
     }
 }
