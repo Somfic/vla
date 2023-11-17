@@ -1,27 +1,15 @@
 <script lang="ts">
-    import { Anchor, Node, type CSSColorString } from "svelvet";
-    import { types, type NodeStructure } from "../lib/nodes";
+    import { Anchor, Node } from "svelvet";
+    import { type NodeStructure } from "../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
-    import { get, type Readable } from "svelte/store";
-    import NodeAnchor from "./EditorAnchor.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
 
     export let structure: NodeStructure;
-
-    function getColorFromType(type: string): CSSColorString | null {
-        let rgb = get(types).find((t) => t.Name === type)?.Color;
-
-        if (rgb) {
-            return `rgba(${rgb})` as CSSColorString;
-        }
-
-        return null;
-    }
 </script>
 
 <Node let:grabHandle let:selected>
     <div use:grabHandle class:selected class="node">
-        <div class="title">{structure.Type.split(",")[0].split(".").slice(-1)}</div>
+        <div class="title">{structure.NodeType.split(",")[0].split(".").slice(-1)}</div>
         <div class="properties">
             {#each structure.Properties as property}
                 <EditorProperty {property} />

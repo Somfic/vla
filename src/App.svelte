@@ -14,10 +14,6 @@
 
     <p>{$recognition}</p>
     <p>{$partialRecognition}</p>
-
-    {#each $structures as node}
-        <div>{node.Type.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
-    {/each}
 </main>
 
 <style>

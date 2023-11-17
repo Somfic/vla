@@ -1,11 +1,15 @@
-<script>
-    import { Node, Svelvet, Minimap, Controls } from "svelvet";
+<script lang="ts">
+    import { Svelvet } from "svelvet";
     import EditorNode from "./EditorNode.svelte";
     import { structures } from "../lib/nodes";
+
+    function connection(e: any) {
+        console.log(e);
+    }
 </script>
 
 <div class="editor">
-    <Svelvet theme="dark">
+    <Svelvet theme="dark" on:connection={connection} controls>
         {#each $structures as structure}
             <EditorNode {structure} />
         {/each}
