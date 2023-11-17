@@ -20,7 +20,7 @@ public static class WebExtensions
     public static Result<Web> Validate(this Web web, IReadOnlyCollection<NodeStructure> structures)
     {
         return Somfic.Common.Result.Value(web)
-            .Guard(StructureEnsureUniqueNodeTypes, "All nodes must have a unique type")
+            .Guard(StructureEnsureUniqueNodeTypes, "All structures must only be registered once")
             .Guard(StructureEnsureUniqueInputIds, "All inputs must have a unique id")
             .Guard(StructureEnsureUniqueOutputIds, "All outputs must have a unique id")
             .Guard(InstancesEnsureStructureExists, "All instances must have a registered structure")

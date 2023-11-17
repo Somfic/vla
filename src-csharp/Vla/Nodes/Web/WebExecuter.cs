@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Runtime.Serialization;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vla.Nodes.Connection;
@@ -18,7 +19,7 @@ public class WebExecutor
     }
     
     private readonly Dictionary<string, object> _instances = new();
-    private readonly Dictionary<string, object> _values = new();
+    private readonly Dictionary<string, object?> _values = new();
 
     public WebResult ExecuteWeb(Web web, IReadOnlyCollection<NodeStructure> structures)
     {
@@ -91,10 +92,9 @@ public class WebExecutor
                 {
                     // If there is no connection, set the value of the input to the default value
                     var key = $"{instance.Id}.{input.Id}";
-                    var value = input.Type.IsValueType ? Activator.CreateInstance(input.Type) : null;
+                    var value = GetDefaultValueForType(input.Type);
                     _values.TryAdd(key, value);
                 }
-                
             }
         }
 
@@ -141,9 +141,18 @@ public class WebExecutor
     private object? GetValue(NodeInstance instance, ParameterStructure parameter)
     {
         var id = $"{instance.Id}.{parameter.Id}";
-        
-        var defaultValue = parameter.Type.IsValueType ? Activator.CreateInstance(parameter.Type) : null;
-
+        var defaultValue = GetDefaultValueForType(parameter.Type);
         return _values.TryGetValue(id, out var value) ? Convert.ChangeType(value, parameter.Type) : defaultValue;
+    }
+
+    private object? GetDefaultValueForType(Type type)
+    {
+        if(type == typeof(string))
+            return string.Empty;
+        
+        if(type.IsValueType)
+            return Activator.CreateInstance(type);
+        else 
+            return FormatterServices.GetUninitializedObject(type);
     }
 }

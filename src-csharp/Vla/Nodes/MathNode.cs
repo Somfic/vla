@@ -8,7 +8,7 @@ public class MathNode : INode
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Addition;
 
-	public void Execute([NodeInput("A")]double a, [NodeInput("B")]double b, [NodeOutput("Result")]out double result)
+	public void Execute([NodeInput("A")]int a, [NodeInput("B")]int b, [NodeOutput("Result")]out int result)
 	{
 		result = Mode switch
 		{
@@ -22,5 +22,21 @@ public class MathNode : INode
 	{
 		Addition,
 		Subtraction
+	}
+}
+
+[Node]
+public class MathModulo : INode
+{
+	public void Execute(
+		[NodeInput("Value")] double value, 
+		[NodeInput("Modulo")] double modulo, 
+		[NodeOutput("Result")] out int result, 
+		[NodeOutput("Rest")]out int rest, 
+		[NodeOutput("Has rest")]out bool hasRest)
+	{
+		result = (int) (value % modulo);
+		rest = (int) (value - result);
+		hasRest = result != 0;
 	}
 }

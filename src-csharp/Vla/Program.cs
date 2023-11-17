@@ -29,7 +29,9 @@ var node = host.Services.GetRequiredService<NodeService>();
 
 node.Register<MathNode>()
     .Register<NumberConstantNode>()
-    .Register<PrinterNode>();
+    .Register<PrinterNode>()
+    .Register<MathModulo>()
+    .Register<ConditionalNode>();
 
 var constantInstance1 = new NodeInstance()
     .From<NumberConstantNode>()
@@ -37,32 +39,23 @@ var constantInstance1 = new NodeInstance()
 
 var constantInstance2 = new NodeInstance()
     .From<NumberConstantNode>()
-    .WithProperty("Value", 3m);
+    .WithProperty("Value", 2m);
 
-var mathInstance = new NodeInstance()
-    .From<MathNode>();
+var moduloInstance = new NodeInstance()
+    .From<MathModulo>();
+
+var conditionalInstance = new NodeInstance()
+    .From<ConditionalNode>();
 
 var printInstance = new NodeInstance()
     .From<PrinterNode>();
 
-var constant1ToMathA = new NodeConnection()
-    .From(constantInstance1, "value")
-    .To(mathInstance, "a");
-
-var constant2ToMathB = new NodeConnection()
-    .From(constantInstance2, "value")
-    .To(mathInstance, "b");
-
-var mathToPrint = new NodeConnection()
-    .From(mathInstance, "result")
-    .To(printInstance, "value");
-
-var instances = new[] { constantInstance1, constantInstance2, mathInstance, printInstance };
-var connections = new[] { constant1ToMathA, constant2ToMathB, mathToPrint };
+var instances = new[] { constantInstance1, constantInstance2, moduloInstance, conditionalInstance, printInstance };
 var web = new Web()
     .WithInstances(instances)
     .WithConnections()
-    .Validate(node.Structures);
+    .Validate(node.Structures)
+    .OnError(Console.WriteLine);
 
 server.ClientConnected.OnChange(async c =>
 {
