@@ -41,6 +41,7 @@ export interface NodeInstance {
 
 export interface PropertyInstance {
     Name: string;
+    Type: string;
     Value: string;
 }
 export interface NodeInstanceConnection {
