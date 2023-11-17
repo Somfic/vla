@@ -17,7 +17,7 @@ switch (process.platform) {
         throw new Error(`Unsupported platform: ${process.platform}`);
 }
 
-const source = `src-csharp/bin/Release/net7.0/${arch}/publish`;
+const source = `src-csharp/Vla/bin/Release/net7.0/${arch}/publish`;
 const targetExe = "src-tauri/binaries";
 const targetDll = "src-tauri";
 
