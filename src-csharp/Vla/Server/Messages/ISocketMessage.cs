@@ -4,6 +4,7 @@ using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
 using Vla.Nodes.Types;
 using Vla.Nodes.Web;
+using Vla.Nodes.Web.Result;
 
 namespace Vla.Server.Messages;
 
@@ -14,6 +15,9 @@ public record SocketMessage
 
 public record NodesStructureMessage(IEnumerable<NodeStructure> Nodes, IEnumerable<NodeTypeDefinition> Types) : SocketMessage;
 
+public record RunWebMessage(Web Web) : SocketMessage;
 public record WebMessage(Web Web) : SocketMessage;
+
+public record WebResultMessage(WebResult Result) : SocketMessage;
 public record RecogniserRecognisedPartialMessage(string Json) : SocketMessage;
 public record RecogniserRecognisedMessage(string Json) : SocketMessage;

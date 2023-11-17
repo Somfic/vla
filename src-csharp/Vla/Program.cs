@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Somfic.Common;
 using Vla.Nodes;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
 using Vla.Nodes.Web;
+using Vla.Nodes.Web.Result;
 using Vla.Server;
 using Vla.Server.Messages;
 using Vla.Voice;
@@ -31,11 +33,11 @@ node.Register<MathNode>()
 
 var constantInstance1 = new NodeInstance()
     .From<NumberConstantNode>()
-    .WithProperty("Value", 2);
+    .WithProperty("Value", 2m);
 
 var constantInstance2 = new NodeInstance()
     .From<NumberConstantNode>()
-    .WithProperty("Value", 3);
+    .WithProperty("Value", 3m);
 
 var mathInstance = new NodeInstance()
     .From<MathNode>();
@@ -59,13 +61,34 @@ var instances = new[] { constantInstance1, constantInstance2, mathInstance, prin
 var connections = new[] { constant1ToMathA, constant2ToMathB, mathToPrint };
 var web = new Web()
     .WithInstances(instances)
-    .WithConnections(connections)
+    .WithConnections()
     .Validate(node.Structures);
 
 server.ClientConnected.OnChange(async c =>
 {
     await server.Send(c, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
     web.On(async x => await server.Send(c, new WebMessage(x)));
+});
+
+server.MessageReceived.OnChange(async args =>
+{
+    var (client, json) = args;
+    
+    var message = JObject.Parse(json);
+    
+    switch (message["Id"].Value<string>().ToLower())
+    {
+        case "runweb":
+            var runWeb = JsonConvert.DeserializeObject<RunWebMessage>(json);
+            runWeb
+                .Web
+                .Validate(node.Structures)
+                .Pipe(x => node.Execute(x))
+                .On(async x => await server.Send(client, new WebResultMessage(x)))
+                .OnError(Console.WriteLine);
+            break;
+    }
+    
 });
 
 // recogniser.Recognised.OnChange(async s =>

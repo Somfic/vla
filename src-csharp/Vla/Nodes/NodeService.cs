@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
@@ -7,17 +8,20 @@ using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
 using Vla.Nodes.Types;
 using Vla.Nodes.Web;
+using Vla.Nodes.Web.Result;
 
 namespace Vla.Nodes;
 
 public class NodeService
 {
     private readonly ILogger<NodeService> _log;
+    private readonly IServiceProvider _services;
     private readonly List<NodeStructure> _structures = new();
 
-    public NodeService(ILogger<NodeService> log)
+    public NodeService(ILogger<NodeService> log, IServiceProvider services)
     {
         _log = log;
+        _services = services;
     }
 
     public IReadOnlyCollection<NodeStructure> Structures => _structures.ToImmutableArray();
@@ -31,17 +35,19 @@ public class NodeService
         return this;
     }
 
-    public void Execute(IEnumerable<NodeInstance> instances, IEnumerable<NodeConnection> connections, IEnumerable<NodeStructure> structures)
+    public Result<WebResult> Execute(Web.Web web)
     {
-        var nodeStructures = structures as NodeStructure[] ?? structures.ToArray();
-        
-        var web = new Web.Web()
-            .WithInstances(instances.ToArray())
-            .WithConnections(connections.ToArray())
-            .Validate(nodeStructures.ToList())
-            .On(x => new WebExecutor().ExecuteWeb(x, nodeStructures.ToList()))
+        return web
+            .Validate(_structures)
+            .Pipe(ExecuteWeb)
             .OnError(x => _log.LogWarning(x, "Could not execute web"));
     }
+
+    private Result<WebResult> ExecuteWeb(Web.Web web) =>
+        Result.Try(() => {
+            var executor = ActivatorUtilities.CreateInstance<WebExecutor>(_services);
+            return executor.ExecuteWeb(web, _structures);
+        });
 
     public IReadOnlyCollection<NodeTypeDefinition> GenerateTypeDefinitions()
     {

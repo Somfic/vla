@@ -45,6 +45,7 @@ public class WebsocketService
     
     private async Task OnClientConnected(ConnectionEventArgs e)
     {
+        _log.LogInformation("Client connected: {Guid}", e.Client.Guid);
         await ClientConnected.Set(e.Client);
     }
     

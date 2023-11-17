@@ -19,15 +19,22 @@ public static class WebExtensions
 
     public static Result<Web> Validate(this Web web, IReadOnlyCollection<NodeStructure> structures)
     {
-        return Result.Value(web)
+        return Somfic.Common.Result.Value(web)
             .Guard(StructureEnsureUniqueNodeTypes, "All nodes must have a unique type")
             .Guard(StructureEnsureUniqueInputIds, "All inputs must have a unique id")
             .Guard(StructureEnsureUniqueOutputIds, "All outputs must have a unique id")
             .Guard(InstancesEnsureStructureExists, "All instances must have a registered structure")
             .Guard(InstancesEnsureStructurePropertyExists,"All instance properties must have a registered structure property")
+            .Guard(InstancesEnsureStructurePropertyTypeMatches, "All instance properties must have a matching structure property type")
             .Guard(ConnectionsEnsureInstanceExists, "All connections must have a registered instance")
             .Guard(ConnectionsEnsureStructureInputOutputExists, "All connections must have a registered structure input/output");
 
+        // FIXME: This check does not work. When using the .WithProperty extension method, the type is not promised to be the same as the structure property type.
+        //  This check *should* fail if that is the case, but it does not.
+        bool InstancesEnsureStructurePropertyTypeMatches(Web w) =>
+            w.Instances.SelectMany(x => x.Properties).All(property =>
+                structures.Any(structure => structure.Properties.All(x => x.Name == property.Name && x.Type == property.Type)));
+        
         bool ConnectionsEnsureStructureInputOutputExists(Web w) =>
             w.Connections.All(connection =>
                 structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&
