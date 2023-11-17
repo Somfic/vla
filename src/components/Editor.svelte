@@ -1,9 +1,15 @@
 <script lang="ts">
     import { Svelvet } from "svelvet";
     import EditorNode from "./EditorNode.svelte";
-    import { structures, type NodeInstance, type NodeInstanceConnection, connections, instances } from "../lib/nodes";
+    import { result, structures, type NodeInstance, type NodeInstanceConnection, connections, instances, runWeb } from "../lib/nodes";
+    import { get } from "svelte/store";
+
+    connections.subscribe((c) => runWeb());
+    instances.subscribe((i) => runWeb());
 
     function connection(e: any) {
+        // FIXME: Make sure this is distinct
+        if (get(connections).find((c) => JSON.stringify(c) == JSON.stringify(detailToInstance(e.detail)))) return;
         connections.update((c) => [...c, detailToInstance(e.detail)]);
     }
 
@@ -12,7 +18,7 @@
 
         connections.update((c) =>
             c.filter((c) => {
-                return !(c.From.InstanceId == connection.From.InstanceId && c.From.PropertyId == connection.From.PropertyId && c.To.InstanceId == connection.To.InstanceId && c.To.PropertyId == connection.To.PropertyId);
+                return JSON.stringify(c) != JSON.stringify(connection);
             })
         );
     }
@@ -20,24 +26,25 @@
     function detailToInstance(detail: any): NodeInstanceConnection {
         return {
             From: {
-                InstanceId: detail.sourceNode.id,
-                PropertyId: detail.sourceAnchor.id.split("-")[1].split("/")[0],
+                InstanceId: detail.sourceNode.id.substring(2), // remove "n-"
+                PropertyId: detail.sourceAnchor.id.split("-")[1].split("/")[0], // go from "a-id/2" to "id"
             },
             To: {
-                InstanceId: detail.targetNode.id,
-                PropertyId: detail.targetAnchor.id.split("-")[1].split("/")[0],
+                InstanceId: detail.targetNode.id.substring(2), // remove "n-"
+                PropertyId: detail.targetAnchor.id.split("-")[1].split("/")[0], // go from "a-id/2" to "id"
             },
         };
     }
 </script>
 
+<button on:click={() => runWeb()}>RUN</button>
 <div class="editor">
     <Svelvet theme="dark" on:connection={connection} on:disconnection={disconnection} controls>
-        {#each $instances as instance}
-            <EditorNode {instance} />
+        {#each $instances as instance, i}
+            <EditorNode bind:instance={$instances[i]} />
         {/each}
     </Svelvet>
-    <p>{JSON.stringify($connections)}</p>
+    <p>{JSON.stringify($result)}</p>
 </div>
 
 <style lang="scss">

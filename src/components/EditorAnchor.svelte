@@ -25,6 +25,7 @@
 
         background-color: black;
         border: 2px solid var(--type-color);
+        transition: background-color ease 200ms, border-color ease 200ms, transform ease 200ms;
 
         &.connecting {
             background-color: var(--type-color);

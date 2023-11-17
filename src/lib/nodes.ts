@@ -1,10 +1,25 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
+import { sendMessage } from "./ws";
 
 export let structures = writable<NodeStructure[]>([]);
 export let types = writable<TypeDefinition[]>([]);
 
 export let instances = writable<NodeInstance[]>([]);
 export let connections = writable<NodeInstanceConnection[]>([]);
+
+export let result = writable<WebResult>({} as WebResult);
+
+export function runWeb() {
+    let message = {
+        Web: {
+            Instances: get(instances),
+            Connections: get(connections),
+        },
+        Id: "RunWeb",
+    };
+
+    sendMessage(message);
+}
 
 export interface NodeStructure {
     NodeType: string;
@@ -52,4 +67,13 @@ export interface NodeInstanceConnection {
 export interface ConnectedProperty {
     InstanceId: string;
     PropertyId: string;
+}
+
+export interface WebResult {
+    Values: ParameterValue[];
+}
+
+export interface ParameterValue {
+    Id: string;
+    Value: string;
 }

@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { types, structures, instances, connections } from "./nodes";
+import { types, structures, instances, connections, result, type WebResult } from "./nodes";
 
 let ws: WebSocket = null as any;
 
@@ -30,8 +30,13 @@ export function startListening() {
                 break;
 
             case "Web":
-                instances.set(data["Instances"]);
-                connections.set(data["Connections"]);
+                instances.set(data["Web"]["Instances"]);
+                connections.set(data["Web"]["Connections"]);
+                break;
+
+            case "WebResult":
+                result.set(data["Result"]);
+                break;
         }
     };
 
@@ -47,4 +52,11 @@ export function startListening() {
             startListening();
         }, 5000);
     };
+}
+
+export function sendMessage(message: any) {
+    if (!ws) return;
+    if (ws.readyState !== ws.OPEN) return console.log("Not open");
+
+    ws.send(JSON.stringify(message));
 }

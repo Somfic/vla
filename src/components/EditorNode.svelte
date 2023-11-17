@@ -5,17 +5,18 @@
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
     import { structures } from "../lib/nodes";
+    import ComputedValue from "./ComputedValue.svelte";
 
     export let instance: NodeInstance;
     $: structure = get(structures).find((s) => s.NodeType == instance.NodeType)!;
 </script>
 
-<Node let:grabHandle let:selected>
+<Node let:grabHandle let:selected id={instance.Id}>
     <div use:grabHandle class:selected class="node">
         <div class="title">{structure.NodeType.split(",")[0].split(".").slice(-1)}</div>
         <div class="properties">
-            {#each structure.Properties as property}
-                <EditorProperty {property} />
+            {#each instance.Properties as property, i}
+                <EditorProperty {property} {structure} bind:value={instance.Properties[i].Value} />
             {/each}
         </div>
         <div class="input-output">
@@ -29,6 +30,7 @@
                                 </Anchor>
                             </div>
                             <div class="name">{input.Name}</div>
+                            <ComputedValue id={`${instance.Id}.${input.Id}`} input />
                         </div>
                     {/each}
                 </div>
@@ -37,6 +39,7 @@
                 <div class="outputs">
                     {#each structure.Outputs as output}
                         <div class="output">
+                            <ComputedValue id={`${instance.Id}.${output.Id}`} output />
                             <div class="name">{output.Name}</div>
                             <div class="anchor">
                                 <Anchor let:linked let:hovering let:connecting output id={output.Id} multiple={false}>
@@ -86,20 +89,23 @@
 
         .inputs {
             align-items: left;
+            padding-right: 12px;
         }
 
         .outputs {
             align-items: end;
             background-color: #1f1f1f;
+            padding-left: 12px;
         }
 
         .input,
         .output {
             display: flex;
             align-items: center;
+            margin: 6px 0px;
 
             .name {
-                padding: 12px;
+                margin: 0 8px;
                 font-weight: bold;
             }
         }

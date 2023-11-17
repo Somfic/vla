@@ -1,12 +1,21 @@
 <script lang="ts">
-    import type { Property } from "../lib/nodes";
+    import { get } from "svelte/store";
+    import type { NodeStructure, PropertyInstance } from "../lib/nodes";
 
-    export let property: Property;
+    export let property: PropertyInstance;
+    export let structure: NodeStructure;
+    export let value: string;
+
+    $: structureProperty = structure.Properties.find((p) => p.Name == property.Name)!;
 </script>
 
 <div class="property">
     <div class="property-name">{property.Name}</div>
-    <input type={property.HtmlType} placeholder={property.DefaultValue} />
+    {#if structureProperty.HtmlType == "text"}
+        <input bind:value type="text" placeholder={structureProperty.DefaultValue} />
+    {:else if structureProperty.HtmlType == "number"}
+        <input bind:value type="number" placeholder={structureProperty.DefaultValue} />
+    {/if}
 </div>
 
 <style lang="scss">
