@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { types, structures } from "./nodes";
+import { types, structures, instances, connections } from "./nodes";
 
 let ws: WebSocket = null as any;
 
@@ -24,10 +24,14 @@ export function startListening() {
         const data = JSON.parse(e.data);
 
         switch (data["Id"]) {
-            case "NodesStructureMessage":
+            case "NodesStructure":
                 types.set(data["Types"]);
                 structures.set(data["Nodes"]);
                 break;
+
+            case "Web":
+                instances.set(data["Instances"]);
+                connections.set(data["Connections"]);
         }
     };
 
