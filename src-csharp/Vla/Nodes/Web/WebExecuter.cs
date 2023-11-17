@@ -39,8 +39,6 @@ public class WebExecutor
             }
             
             _instances.Add(instance.Id, nodeInstance);
-            
-            Console.WriteLine($"Created instance {instance.Id} of type {structure.NodeType}");
         }
 
         foreach (var connection in web.Connections)
@@ -89,7 +87,6 @@ public class WebExecutor
                     var key = $"{instance.Id}.{o.Id}";
                     var value = methodParameters[inputParameters.Length + index];
                     _values.TryAdd(key, value);
-                    Console.WriteLine($"Set output value {key} to {value}");
                 }
                 
                 // Find all the inputs that use this output, and set their values
@@ -99,7 +96,6 @@ public class WebExecutor
                     var key = $"{connection.To.InstanceId}.{connection.To.PropertyId}";
                     var value = methodParameters[inputParameters.Length + index];
                     _values.TryAdd(key, value);
-                    Console.WriteLine($"Set input value {key} to {value}");
                 }
             }
         }

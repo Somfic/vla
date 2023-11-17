@@ -50,9 +50,6 @@ public static class NodeExtensions
 
     private static MethodInfo[] GetApplicableMethods(Type type)
     {
-        Console.WriteLine($"Getting applicable methods for {type}");
-        Console.WriteLine(JsonConvert.SerializeObject(type.GetMethods().Select(x => x.GetParameters().Select(x => $"{x.Name}: {x.ParameterType}"))));
-        
         return type.GetMethods()
             .Where(x => x.GetParameters().Any(y =>
                 y.GetCustomAttribute<NodeInputAttribute>() is not null ||
