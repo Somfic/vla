@@ -9,12 +9,7 @@
     });
 </script>
 
-<main class="container">
-    <Editor />
+<Editor />
 
-    <p>{$recognition}</p>
-    <p>{$partialRecognition}</p>
-</main>
-
-<style>
-</style>
+<p>{$recognition}</p>
+<p>{$partialRecognition}</p>

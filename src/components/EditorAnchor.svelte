@@ -23,10 +23,13 @@
 </div>
 
 <style lang="scss">
+    @import "../theme.scss";
+
     .anchor {
         position: relative;
         width: 12px;
         height: 12px;
+        filter: drop-shadow(0px 0px 0px var(--type-color));
 
         &.input {
             margin-left: -5px;
@@ -43,13 +46,17 @@
             }
         }
 
+        &.linked {
+            filter: drop-shadow(0px 0px 5px var(--type-color));
+        }
+
         svg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            fill: rgb(45, 45, 45);
+            fill: $background;
             stroke: var(--type-color);
             stroke-width: 10px;
 

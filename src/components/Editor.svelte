@@ -39,7 +39,7 @@
 
 <button on:click={() => runWeb()}>RUN</button>
 <div class="editor">
-    <Svelvet theme="dark" on:connection={connection} on:disconnection={disconnection} controls>
+    <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} controls>
         {#each $instances as instance, i}
             <EditorNode bind:instance={$instances[i]} />
         {/each}
@@ -49,6 +49,19 @@
 
 <style lang="scss">
     .editor {
-        height: 400px;
+        flex-grow: 1;
+        min-height: 500px;
+        outline: none;
+    }
+
+    :root[svelvet-theme="dark"] {
+        outline: none;
+        height: 0px;
+
+        --background-color: $background;
+        --text-color: $foreground;
+
+        --node-border-radius: 10px;
+        --node-shadow: none;
     }
 </style>

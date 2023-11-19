@@ -1,0 +1,18 @@
+@import 'theme';
+
+html,
+body,
+main {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  font-family: $font;
+  background-color: $background;
+  color: $foreground;
+  min-height: 100vh;
+}
+
+* {
+  font-family: $font;
+}

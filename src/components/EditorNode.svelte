@@ -41,7 +41,7 @@
                                 </Anchor>
                             </div>
                             <div class="name">{input.Name}</div>
-                            <ComputedValue id={`${instance.Id}.${input.Id}`} input />
+                            <!-- <ComputedValue id={`${instance.Id}.${input.Id}`} input /> -->
                         </div>
                     {/each}
                 </div>
@@ -68,12 +68,20 @@
 </Node>
 
 <style lang="scss">
+    @import "../theme.scss";
+
     .node {
         display: flex;
         flex-direction: column;
         background-color: #343434;
-        box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
-        border-radius: 10px;
+        box-shadow: 0px 0px 50px 0px rgba(0, 0, 0, 0.75);
+        border-radius: 11px;
+        transition: 200ms ease all;
+        outline: 2px solid transparent;
+
+        &.selected {
+            outline: 2px solid transparentize($accent, 0.5);
+        }
     }
 
     .title {
@@ -110,7 +118,6 @@
         .output {
             display: flex;
             flex-grow: 1;
-            justify-content: space-between;
             align-items: center;
             margin: 6px 0px;
             min-height: 2rem;
@@ -119,9 +126,17 @@
             .name {
                 margin: 0 8px;
                 font-weight: bold;
+                text-align: left;
             }
 
             .value {
+                flex-grow: 1;
+            }
+        }
+
+        .input {
+            .name {
+                text-align: left;
                 flex-grow: 1;
             }
         }

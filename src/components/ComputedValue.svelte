@@ -23,12 +23,14 @@
 </div>
 
 <style lang="scss">
+    @import "../theme.scss";
+
     .computed {
         width: 50px;
         height: 1rem;
-        border: 2px solid #424242;
+        border: 2px solid $border-color;
         border-radius: 5px;
-        background-color: #1f1f1f;
+        background-color: $background-dark;
         padding: 5px;
         opacity: 0;
         transition: opacity ease 200ms;
@@ -47,6 +49,8 @@
         }
 
         p {
+            font-family: $font-mono;
+            font-weight: bold;
             flex-grow: 1;
             margin: 0;
             color: #696969; // nice
