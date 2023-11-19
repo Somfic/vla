@@ -35,6 +35,8 @@ public static class WebExtensions
             w.Instances.SelectMany(x => x.Properties).All(property =>
                 structures.Any(structure => structure.Properties.All(x => x.Name == property.Name && x.Type == property.Type)));
         
+        // TODO: Add check that all connection properties exist on the structure
+        
         bool ConnectionsEnsureStructureInputOutputExists(Web w) =>
             w.Connections.All(connection =>
                 structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&
