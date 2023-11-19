@@ -2,7 +2,7 @@
 
 public readonly struct Position
 {
-    public int X { get; init; }
+    public double X { get; init; }
 			
-    public int Y { get; init; }
+    public double Y { get; init; }
 }
