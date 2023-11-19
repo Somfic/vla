@@ -53,8 +53,19 @@ export interface NodeInstance {
     Id: string;
     NodeType: string;
     Properties: PropertyInstance[];
+    Metadata: NodeMetadata;
 }
 
+export interface NodeMetadata {
+    Position: NodePosition;
+}
+
+export interface NodePosition {
+    X: number;
+    Y: number;
+    x: number;
+    y: number;
+}
 export interface PropertyInstance {
     Name: string;
     Type: string;
