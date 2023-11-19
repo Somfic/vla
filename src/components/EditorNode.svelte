@@ -1,14 +1,25 @@
 <script lang="ts">
     import { Anchor, Node } from "svelvet";
-    import { type NodeInstance, type NodeStructure } from "../lib/nodes";
+    import { type NodeInstance, type Parameter } from "../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
-    import { structures } from "../lib/nodes";
+    import { structures, connections } from "../lib/nodes";
     import ComputedValue from "./ComputedValue.svelte";
 
     export let instance: NodeInstance;
     $: structure = get(structures).find((s) => s.NodeType == instance.NodeType)!;
+
+    function getConnections(input: Parameter): [string, string][] {
+        let array: [string, string][] = [];
+
+        get(connections)
+            .filter((c) => c.From.InstanceId == instance.Id && c.From.PropertyId == input.Id)
+            .forEach((c) => array.push([`${c.To.InstanceId}`, `${c.To.PropertyId}`]));
+
+        console.log(array);
+        return array;
+    }
 </script>
 
 <Node let:grabHandle let:selected id={instance.Id}>
@@ -25,12 +36,12 @@
                     {#each structure.Inputs as input}
                         <div class="input">
                             <div class="anchor">
-                                <Anchor let:linked let:hovering let:connecting input id={input.Id} nodeConnect>
+                                <Anchor let:linked let:hovering let:connecting input id={input.Id} nodeConnect connections={getConnections(input)}>
                                     <EditorAnchor parameter={input} {linked} {hovering} {connecting} input />
                                 </Anchor>
                             </div>
                             <div class="name">{input.Name}</div>
-                            <!-- <ComputedValue id={`${instance.Id}.${input.Id}`} input /> -->
+                            <ComputedValue id={`${instance.Id}.${input.Id}`} input />
                         </div>
                     {/each}
                 </div>
@@ -44,7 +55,7 @@
                             </div>
                             <div class="name">{output.Name}</div>
                             <div class="anchor">
-                                <Anchor let:linked let:hovering let:connecting output id={output.Id} multiple={false}>
+                                <Anchor let:linked let:hovering let:connecting output id={output.Id} multiple={false} connections={getConnections(output)}>
                                     <EditorAnchor parameter={output} {linked} {hovering} {connecting} output />
                                 </Anchor>
                             </div>
