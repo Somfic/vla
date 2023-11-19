@@ -110,6 +110,7 @@
         .output {
             display: flex;
             flex-grow: 1;
+            justify-content: space-between;
             align-items: center;
             margin: 6px 0px;
             min-height: 2rem;
