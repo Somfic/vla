@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Attributes;
+﻿using System;
+
+namespace Vla.Nodes.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class NodePropertyAttribute : Attribute

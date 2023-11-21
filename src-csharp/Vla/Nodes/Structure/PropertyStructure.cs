@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Structure;
+﻿using System;
+
+namespace Vla.Nodes.Structure;
 
 public readonly struct PropertyStructure
 {

@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Attributes;
+﻿using System;
+
+namespace Vla.Nodes.Attributes;
 
 [AttributeUsage(AttributeTargets.Parameter)]
 public class NodeInputAttribute : Attribute

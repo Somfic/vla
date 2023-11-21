@@ -1,7 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NAudio.Wave;
 using Somfic.Common;
-using Vosk;
 using Whisper.net;
 using Whisper.net.Ggml;
 

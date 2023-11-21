@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
