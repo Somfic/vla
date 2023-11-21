@@ -12,8 +12,9 @@
       <PackageReference Include="NAudio" Version="2.2.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="Somfic.Common" Version="0.2.4" />
-      <PackageReference Include="Vosk" Version="0.3.38" />
       <PackageReference Include="WatsonWebsocket" Version="4.0.11" />
+      <PackageReference Include="Whisper.net" Version="1.4.7" />
+      <PackageReference Include="Whisper.net.Runtime" Version="1.4.7" />
 
 
 
