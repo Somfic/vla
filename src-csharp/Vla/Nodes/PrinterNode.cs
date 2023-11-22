@@ -1,11 +1,12 @@
-﻿using System;
-using Vla.Nodes.Attributes;
+﻿using Vla.Nodes.Attributes;
 
 namespace Vla.Nodes;
 
 [Node]
 public class PrinterNode : INode
 {
+    public string Name => "Print";
+    
     public void Execute([NodeInput]NodeFlow flow, [NodeInput("Value")] string value = "")
     {
         if(flow.Triggered)
@@ -16,6 +17,8 @@ public class PrinterNode : INode
 [Node]
 public class ConditionalNode : INode
 {
+    public string Name => "If block";
+    
     public void Execute(
         [NodeInput("Condition")] bool condition, 
         [NodeOutput("True")] out NodeFlow onTrue,
@@ -34,7 +37,7 @@ public class ConditionalNode : INode
     }
 }
 
-public readonly struct NodeFlow : INode
+public readonly struct NodeFlow
 {
     public bool Triggered { get; init; }
     

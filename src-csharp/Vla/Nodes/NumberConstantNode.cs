@@ -5,6 +5,8 @@ namespace Vla.Nodes;
 [Node]
 public class NumberConstantNode : INode
 {
+    public string Name => "Number constant";
+    
     [NodeProperty]
     public double Value { get; set; }
 
