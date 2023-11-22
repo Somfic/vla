@@ -70,6 +70,7 @@ export interface PropertyInstance {
     Name: string;
     Type: string;
     Value: string;
+    DefaultValue: any;
 }
 export interface NodeInstanceConnection {
     From: ConnectedProperty;
