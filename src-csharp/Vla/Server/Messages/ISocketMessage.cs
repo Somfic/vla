@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using Vla.Nodes.Connection;
-using Vla.Nodes.Instance;
+﻿using Catalyst;
 using Vla.Nodes.Structure;
 using Vla.Nodes.Types;
 using Vla.Nodes.Web;
 using Vla.Nodes.Web.Result;
+using Whisper.net;
 
 namespace Vla.Server.Messages;
 
@@ -20,5 +18,7 @@ public record RunWebMessage(Web Web) : SocketMessage;
 public record WebMessage(Web Web) : SocketMessage;
 
 public record WebResultMessage(WebResult Result) : SocketMessage;
-public record RecogniserRecognisedPartialMessage(string Json) : SocketMessage;
-public record RecogniserRecognisedMessage(string Json) : SocketMessage;
+public record RecogniserRecognisedPartial(SegmentData Speech) : SocketMessage;
+public record RecogniserRecognised(IReadOnlyCollection<IToken> SpeechTokens) : SocketMessage;
+
+public record Progress(float Percentage, string Label) : SocketMessage;
