@@ -1,6 +1,5 @@
 ﻿using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
-using Vla.Nodes.Structure;
 
 namespace Vla.Nodes.Web;
 

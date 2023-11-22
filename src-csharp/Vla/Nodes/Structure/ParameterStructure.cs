@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Vla.Nodes.Structure;
+﻿namespace Vla.Nodes.Structure;
 
 public readonly struct ParameterStructure
 {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Somfic.Common;
+﻿using Somfic.Common;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
