@@ -57,5 +57,13 @@ public class WebsocketService
     {
         await MessageReceived.Set((e.Client, Encoding.UTF8.GetString(e.Data.ToArray())));
     }
+
+    public async Task MarkReady(bool state = true)
+    {
+        _isReady = state;
+        await BroadcastAsync(new ReadyState(_isReady));
+    }
+
+    private record ReadyState(bool Ready) : SocketMessage;
 }
 
