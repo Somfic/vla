@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
 using Vla.Nodes.Web.Result;
@@ -15,10 +11,12 @@ namespace Vla.Nodes.Web;
 public class WebExecutor
 {
     private readonly ILogger<WebExecutor> _log;
+    private readonly IServiceProvider _services;
 
-    public WebExecutor(ILogger<WebExecutor> log)
+    public WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
     {
         _log = log;
+        _services = services;
     }
     
     private readonly Dictionary<string, object> _instances = new();
@@ -33,7 +31,7 @@ public class WebExecutor
             
             var structure = structures.First(s => s.NodeType == instance.NodeType);
 
-            var nodeInstance = Activator.CreateInstance(structure.NodeType)!;
+            var nodeInstance = ActivatorUtilities.CreateInstance(_services, structure.NodeType);
 
             if (structure.Properties.Any())
             {
