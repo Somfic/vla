@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Vla.Nodes.Attributes;
+﻿namespace Vla.Nodes.Attributes;
 
 [AttributeUsage(AttributeTargets.Parameter)]
 public class NodeOutputAttribute : Attribute
