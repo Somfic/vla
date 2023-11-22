@@ -11,6 +11,7 @@ main {
   background-color: $background;
   color: $foreground;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 * {
