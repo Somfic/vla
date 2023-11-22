@@ -7,6 +7,8 @@ export let hasConnected = writable(false);
 export let messages: Writable<string[]> = writable([]);
 export let partialRecognition: Writable<string> = writable("");
 export let recognition: Writable<string> = writable("");
+export let progress: Writable<Progress> = writable({ Percentage: 0, Label: "Initialising" });
+export let isReady: Writable<boolean> = writable(false);
 
 export function startListening() {
     console.log("Connecting to websocket...");
@@ -18,7 +20,6 @@ export function startListening() {
     };
 
     ws.onmessage = (e) => {
-        console.log("Message", e);
         messages.update((old) => [...old, e.data]);
 
         const data = JSON.parse(e.data);
@@ -37,6 +38,10 @@ export function startListening() {
 
             case "WebResult":
                 result.set(data["Result"]);
+                break;
+
+            case "Progress":
+                progress.set(data);
                 break;
         }
     };
@@ -60,4 +65,9 @@ export function sendMessage(message: any) {
     if (ws.readyState !== ws.OPEN) return console.log("Not open");
 
     ws.send(JSON.stringify(message));
+}
+
+export interface Progress {
+    Percentage: number;
+    Label: string;
 }
