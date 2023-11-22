@@ -17,7 +17,6 @@
             .filter((c) => c.From.InstanceId == instance.Id && c.From.PropertyId == input.Id)
             .forEach((c) => array.push([`${c.To.InstanceId}`, `${c.To.PropertyId}`]));
 
-        console.log(array);
         return array;
     }
 </script>
