@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
@@ -13,6 +12,7 @@ public class WebsocketService
 {
     private readonly ILogger<WebsocketService> _log;
     private readonly WatsonWsServer _server;
+    private bool _isReady;
 
     public AsyncCallback<ClientMetadata> ClientConnected { get; } = new();
     public AsyncCallback<(ClientMetadata, string)> MessageReceived { get; } = new();
@@ -25,21 +25,23 @@ public class WebsocketService
          _server.MessageReceived += async (_, e) => await OnMessageReceived(e);
     }
 
-    public async Task Start()
+    public async Task StartAsync()
     {
         await _server.StartAsync();
         _log.LogInformation("Websocket server started");
     }
     
-    public async Task Broadcast<TMessage>(TMessage message) where TMessage : SocketMessage
+    public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : SocketMessage
     {
+        Console.WriteLine($"Broadcasting {message.GetType().Name}");
+        
         foreach (var client in _server.ListClients())
         {
-            await Send(client, message);
+            await SendAsync(client, message);
         }
     }
     
-    public async Task Send<TMessage>(ClientMetadata client, TMessage message) where TMessage : SocketMessage
+    public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : SocketMessage
     {
         await _server.SendAsync(client.Guid, JsonConvert.SerializeObject(message));
     }
@@ -48,6 +50,7 @@ public class WebsocketService
     {
         _log.LogInformation("Client connected: {Guid}", e.Client.Guid);
         await ClientConnected.Set(e.Client);
+        await SendAsync(e.Client, new ReadyState(_isReady));
     }
     
     private async Task OnMessageReceived(MessageReceivedEventArgs e)
