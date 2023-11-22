@@ -43,6 +43,10 @@ export function startListening() {
             case "Progress":
                 progress.set(data);
                 break;
+
+            case "ReadyState":
+                isReady.set(data["Ready"]);
+                break;
         }
     };
 
