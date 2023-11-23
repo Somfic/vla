@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Anchor, Node } from "svelvet";
-    import { type NodeInstance, type Parameter } from "../lib/nodes";
+    import { result as r, type NodeInstance, type Parameter } from "../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
@@ -8,7 +8,8 @@
     import ComputedValue from "./ComputedValue.svelte";
 
     export let instance: NodeInstance;
-    $: structure = get(structures).find((s) => s.NodeType == instance.NodeType)!;
+    $: structure = get(structures)?.find((s) => s.NodeType == instance.NodeType)!;
+    $: result = get(r)?.Instances?.find((i) => i.Id == instance.Id);
 
     function getConnections(input: Parameter): [string, string][] {
         let array: [string, string][] = [];
@@ -21,9 +22,10 @@
     }
 </script>
 
+<p>{JSON.stringify(result)}</p>
 <Node let:grabHandle let:selected id={instance.Id} bind:position={instance.Metadata.Position}>
     <div use:grabHandle class:selected class="node">
-        <div class="title">{structure.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
+        <div class="title">{result?.Value?.Name ?? structure.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
         <div class="properties">
             {#each instance.Properties as property, i}
                 <EditorProperty {property} {structure} bind:value={instance.Properties[i].Value} />
