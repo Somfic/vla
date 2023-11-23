@@ -19,7 +19,7 @@ public class WebExecutor
         _services = services;
     }
     
-    private readonly Dictionary<string, object> _instances = new();
+    private readonly Dictionary<string, object?> _instances = new();
     private readonly Dictionary<string, object?> _values = new();
 
     public WebResult ExecuteWeb(Web web, IReadOnlyCollection<NodeStructure> structures)
@@ -59,8 +59,10 @@ public class WebExecutor
         {
             SetNodeOutput(web, structures, connection.To.InstanceId);
         }
-        
-        return new WebResult().WithValues(_values);
+
+        return new WebResult()
+            .WithValues(_values)
+            .WithInstances(_instances);
     }
 
     private void SetNodeOutput(Web web, IReadOnlyCollection<NodeStructure> structures, string instanceId)
