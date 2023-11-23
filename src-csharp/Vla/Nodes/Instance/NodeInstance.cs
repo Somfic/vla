@@ -2,14 +2,9 @@
 
 namespace Vla.Nodes.Instance;
 
-public readonly struct NodeInstance
+public readonly struct NodeInstance()
 {
-	public NodeInstance()
-	{
-		Id = Guid.NewGuid().ToString();
-	}
-
-	public string Id { get; init; }
+	public string Id { get; init; } = Guid.NewGuid().ToString();
 
 	public Type NodeType { get; init; } = typeof(object);
 
