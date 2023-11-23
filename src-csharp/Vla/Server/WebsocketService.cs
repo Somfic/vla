@@ -33,8 +33,6 @@ public class WebsocketService
     
     public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : SocketMessage
     {
-        Console.WriteLine($"Broadcasting {message.GetType().Name}");
-        
         foreach (var client in _server.ListClients())
         {
             await SendAsync(client, message);
@@ -49,8 +47,8 @@ public class WebsocketService
     private async Task OnClientConnected(ConnectionEventArgs e)
     {
         _log.LogInformation("Client connected: {Guid}", e.Client.Guid);
-        await ClientConnected.Set(e.Client);
         await SendAsync(e.Client, new ReadyState(_isReady));
+        await ClientConnected.Set(e.Client);
     }
     
     private async Task OnMessageReceived(MessageReceivedEventArgs e)
