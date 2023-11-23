@@ -586,11 +586,11 @@ package
 
 # End of https://www.toptal.com/developers/gitignore/api/rust,csharp,dotnetcore,svelte,node,git
 
-src-tauri/**.dll
-src-tauri/*.exe
-src-tauri/*.pdb
-src-tauri/*.dylib
+src-tauri/**/*.bin
+src-tauri/**/*.dll
+src-tauri/**/*.exe
+src-tauri/**/*.pdb
+src-tauri/**/*.dylib
 src-tauri/binaries
 
 .idea
-.bin
