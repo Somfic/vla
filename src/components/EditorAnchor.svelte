@@ -40,7 +40,8 @@
         }
 
         &.connecting,
-        &.linked {
+        &.linked,
+        &:hover {
             svg {
                 fill: var(--type-color);
             }
