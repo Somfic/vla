@@ -7,7 +7,7 @@ export let types = writable<TypeDefinition[]>([]);
 export let instances = writable<NodeInstance[]>([]);
 export let connections = writable<NodeInstanceConnection[]>([]);
 
-export let result = writable<WebResult>({} as WebResult);
+export let result = writable<WebResult>({ Instances: [], Values: [] } as WebResult);
 
 export function runWeb() {
     let message = {
@@ -84,9 +84,17 @@ export interface ConnectedProperty {
 
 export interface WebResult {
     Values: ParameterValue[];
+    Instances: InstanceValue[];
 }
 
 export interface ParameterValue {
     Id: string;
     Value: string;
+}
+
+export interface InstanceValue {
+    Id: string;
+    Value: {
+        Name: string;
+    };
 }
