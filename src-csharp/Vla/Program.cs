@@ -3,29 +3,53 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Somfic.Common;
+using Vla.Input;
 using Vla.Nodes;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
-using Vla.Nodes.Structure;
 using Vla.Nodes.Web;
-using Vla.Nodes.Web.Result;
 using Vla.Server;
 using Vla.Server.Messages;
 using Vla.Voice;
-using WatsonWebsocket;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureServices(s =>
     {
+        s.AddHttpClient();
         s.AddSingleton<RecogniserService>();
+        s.AddSingleton<SpeechProcessorService>();
         s.AddSingleton<WebsocketService>();
         s.AddSingleton<NodeService>();
+        s.AddSingleton<InputService>();
     })
     .Build();
 
-// var recogniser = host.Services.GetRequiredService<RecogniserService>();
 var server = host.Services.GetRequiredService<WebsocketService>();
+await server.StartAsync();
+
+var recogniser = host.Services.GetRequiredService<RecogniserService>();
+var processor = host.Services.GetRequiredService<SpeechProcessorService>();
 var node = host.Services.GetRequiredService<NodeService>();
+
+await recogniser.InitialiseAsync();
+await processor.InitialiseAsync();
+
+recogniser.Progress.OnChange(e =>
+{
+    Console.WriteLine($"{e.Percentage}%: {e.Label}");
+    server.BroadcastAsync(new Progress(e.Percentage, e.Label)).GetAwaiter().GetResult();
+});
+
+recogniser.Recognised.OnChange(e =>
+{
+    var processedText = processor.Process(e.Text);
+    server.BroadcastAsync(new RecogniserRecognised(processedText)).GetAwaiter().GetResult();
+});
+
+recogniser.PartlyRecognised.OnChange(e =>
+{
+    server.BroadcastAsync(new RecogniserRecognisedPartial(e)).GetAwaiter().GetResult();
+});
 
 node.Register<MathNode>()
     .Register<NumberConstantNode>()
@@ -35,14 +59,16 @@ node.Register<MathNode>()
 
 var constantInstance1 = new NodeInstance()
     .From<NumberConstantNode>()
-    .WithProperty("Value", 2m);
+    .WithProperty("Value", 2m)
+    .WithPosition(0, 0);
 
 var constantInstance2 = new NodeInstance()
     .From<NumberConstantNode>()
     .WithProperty("Value", 2m);
 
 var moduloInstance = new NodeInstance()
-    .From<MathModulo>();
+    .From<MathModulo>()
+    .WithPosition(10, 0);
 
 var conditionalInstance = new NodeInstance()
     .From<ConditionalNode>();
@@ -50,17 +76,22 @@ var conditionalInstance = new NodeInstance()
 var printInstance = new NodeInstance()
     .From<PrinterNode>();
 
-var instances = new[] { constantInstance1, constantInstance2, moduloInstance, conditionalInstance, printInstance };
+var constant1ToMathA = new NodeConnection()
+    .From(constantInstance1, "value")
+    .To(moduloInstance, "modulo");
+
+var instances = new[] { constantInstance1, moduloInstance };
+var connections = new[] { constant1ToMathA };
 var web = new Web()
     .WithInstances(instances)
-    .WithConnections()
+    .WithConnections(connections)
     .Validate(node.Structures)
     .OnError(Console.WriteLine);
 
 server.ClientConnected.OnChange(async c =>
 {
-    await server.Send(c, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
-    web.On(async x => await server.Send(c, new WebMessage(x)));
+    await server.SendAsync(c, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
+    web.On(async x => await server.SendAsync(c, new WebMessage(x)));
 });
 
 server.MessageReceived.OnChange(async args =>
@@ -77,51 +108,17 @@ server.MessageReceived.OnChange(async args =>
                 .Web
                 .Validate(node.Structures)
                 .Pipe(x => node.Execute(x))
-                .On(async x => await server.Send(client, new WebResultMessage(x)))
+                .On(async x => await server.SendAsync(client, new WebResultMessage(x)))
                 .OnError(Console.WriteLine);
             break;
+        
+        case "getweb":
+            await server.SendAsync(args.Item1, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
+            break;
     }
-    
 });
 
-// recogniser.Recognised.OnChange(async s =>
-// {
-//     await server.Broadcast(new RecogniserRecognisedMessage(s));
-// });
-//
-// recogniser.PartlyRecognised.OnChange(async s =>
-// {
-//     await server.Broadcast(new RecogniserRecognisedPartialMessage(s));
-// });
-
-// var constantInstance1 = new NodeInstance()
-//     .From<NumberConstantNode>()
-//     .WithProperty("Value", "2");
-//
-// var constantInstance2 = new NodeInstance()
-//     .From<NumberConstantNode>()
-//     .WithProperty("Value", "2");
-//
-// var mathInstance = new NodeInstance()
-//     .From<MathNode>();
-//
-// var printInstance = new NodeInstance()
-//     .From<PrinterNode>();
-//
-// var constant1ToMathA = new NodeConnection()
-//     .From(constantInstance1, "value")
-//     .To(mathInstance, "a");
-//
-// var constant2ToMathB = new NodeConnection()
-//     .From(constantInstance2, "value")
-//     .To(mathInstance, "b");
-//
-// var mathToPrint = new NodeConnection()
-//     .From(mathInstance, "result")
-//     .To(printInstance, "value");
-//
-// node.Execute(new[] { constantInstance1, constantInstance2, mathInstance, printInstance }, new[] { constant1ToMathA, constant2ToMathB, mathToPrint });
-
-await server.Start();
+await server.MarkReady();
+await recogniser.StartAsync();
 
 Thread.Sleep(-1);
