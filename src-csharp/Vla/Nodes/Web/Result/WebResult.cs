@@ -10,4 +10,6 @@ public readonly struct WebResult
     }
 
     public ImmutableArray<ParameterValue> Values { get; init; } = ImmutableArray<ParameterValue>.Empty;
+    
+    public ImmutableArray<InstanceValue> Instances { get; init; } = ImmutableArray<InstanceValue>.Empty;
 }
