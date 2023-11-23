@@ -37,20 +37,17 @@
     }
 </script>
 
-<button on:click={() => runWeb()}>RUN</button>
 <div class="editor">
-    <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} controls>
+    <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} edgeStyle="step">
         {#each $instances as instance, i}
             <EditorNode bind:instance={$instances[i]} />
         {/each}
     </Svelvet>
-    <p>{JSON.stringify($result)}</p>
 </div>
 
 <style lang="scss">
     .editor {
         flex-grow: 1;
-        min-height: 500px;
         outline: none;
     }
 
