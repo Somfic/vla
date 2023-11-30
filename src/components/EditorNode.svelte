@@ -22,7 +22,7 @@
     }
 </script>
 
-<Node let:grabHandle let:selected id={instance.Id} bind:position={instance.Metadata.Position}>
+<Node let:grabHandle let:selected id={instance.Id}>
     <div use:grabHandle class:selected class="node">
         <div class="title">{result?.Value?.Name ?? structure.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
         <div class="properties">

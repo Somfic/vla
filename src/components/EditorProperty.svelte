@@ -12,9 +12,9 @@
 <div class="property">
     <div class="property-name">{property.Name}</div>
     {#if structureProperty.HtmlType == "text"}
-        <input bind:value type="text" placeholder={structureProperty.DefaultValue} />
+        <input tabindex="-1" bind:value type="text" placeholder={structureProperty.DefaultValue} />
     {:else if structureProperty.HtmlType == "number"}
-        <input bind:value type="number" placeholder={structureProperty.DefaultValue} />
+        <input tabindex="-1" bind:value type="number" placeholder={structureProperty.DefaultValue} />
     {/if}
 </div>
 

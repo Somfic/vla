@@ -3,6 +3,10 @@
     import EditorNode from "./EditorNode.svelte";
     import { result, structures, type NodeInstance, type NodeInstanceConnection, connections, instances, runWeb } from "../lib/nodes";
     import { get } from "svelte/store";
+    import ContextMenu from "./ContextMenu.svelte";
+    import { addNode, type ContextResult } from "../lib/context";
+
+    let contextMenu: ((query: string) => ContextResult[]) | undefined = undefined;
 
     connections.subscribe((c) => runWeb());
     instances.subscribe((i) => runWeb());
@@ -35,9 +39,25 @@
             },
         };
     }
+
+    function handleKeyPress(e: KeyboardEvent) {
+        console.log(e);
+
+        if (e.key == "Enter") {
+            runWeb();
+            return;
+        }
+
+        if (e.key == " ") {
+            contextMenu = addNode;
+            return;
+        }
+    }
 </script>
 
-<div class="editor">
+<ContextMenu bind:menu={contextMenu} />
+
+<div class="editor" on:keydown={handleKeyPress}>
     <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} edgeStyle="step">
         {#each $instances as instance, i}
             <EditorNode bind:instance={$instances[i]} />
