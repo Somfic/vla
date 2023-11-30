@@ -33,12 +33,11 @@
         }
 
         if (e.key == "Enter") {
-            menu?.(inputValue ?? "")?.[activeIndex]?.action();
+            execute(activeIndex);
             close();
         }
 
         setTimeout(() => {
-            inputValue = inputValue.trim();
             search();
         }, 1);
     }
@@ -59,6 +58,19 @@
     function search() {
         results = menu?.(inputValue ?? "") ?? [];
     }
+
+    function handleMouseOver(i: number) {
+        activeIndex = i;
+    }
+
+    function handleMouseClick(i: number) {
+        execute(i);
+        close();
+    }
+
+    function execute(i: number) {
+        menu?.(inputValue ?? "")?.[i]?.action();
+    }
 </script>
 
 <div class="context-wrapper" on:keydown={handleKeyPress} on:click={handleClick} class:show>
@@ -66,7 +78,7 @@
         <input class="input" bind:value={inputValue} bind:this={input} type="text" />
         {#if results.length > 0}
             {#each results as result, i}
-                <div class="result" class:active={activeIndex == i}>
+                <div class="result" class:active={activeIndex == i} on:mouseover={() => handleMouseOver(i)} on:click={() => handleMouseClick(i)}>
                     <div class="name">
                         {result.name}
                     </div>
@@ -102,9 +114,14 @@
         &.show {
             opacity: 1;
             pointer-events: all;
+
+            > .context {
+                transform: translateY(0px);
+            }
         }
 
         > .context {
+            transform: translateY(100px);
             margin: auto;
             min-width: 300px;
             width: 50vw;
@@ -117,6 +134,7 @@
             border-radius: 10px;
             backdrop-filter: blur(5px);
             overflow: hidden;
+            transition: 200ms ease all;
         }
     }
 
@@ -141,6 +159,7 @@
         background-color: inherit;
         color: $foreground;
         transition: all ease 200ms;
+        cursor: pointer;
 
         .context {
             opacity: 0.5;

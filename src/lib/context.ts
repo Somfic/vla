@@ -8,8 +8,6 @@ export function addNode(query: string): ContextResult[] {
         threshold: 0.4,
     });
 
-    console.log("Searching for", query, "in", get(structures));
-
     const result = search.search(query);
 
     return result.map((r) => {
