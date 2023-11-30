@@ -6,14 +6,14 @@
     export let input: boolean = false;
     export let output: boolean = false;
 
+    let value: string | undefined = undefined;
+
     result.subscribe((r) => {
         if (r == undefined) return;
         if (r.Values == undefined) return;
 
         value = r.Values.find((v) => v.Id == id)?.Value;
     });
-
-    let value: string | undefined = undefined;
 </script>
 
 <div class="computed" class:input class:output class:value>

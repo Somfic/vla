@@ -22,7 +22,6 @@
     }
 </script>
 
-<p>{JSON.stringify(result)}</p>
 <Node let:grabHandle let:selected id={instance.Id} bind:position={instance.Metadata.Position}>
     <div use:grabHandle class:selected class="node">
         <div class="title">{result?.Value?.Name ?? structure.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
