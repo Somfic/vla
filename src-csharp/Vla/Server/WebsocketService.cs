@@ -31,7 +31,7 @@ public class WebsocketService
         _log.LogInformation("Websocket server started");
     }
     
-    public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : SocketMessage
+    public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
     {
         foreach (var client in _server.ListClients())
         {
@@ -39,15 +39,17 @@ public class WebsocketService
         }
     }
     
-    public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : SocketMessage
+    public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage
     {
-        await _server.SendAsync(client.Guid, JsonConvert.SerializeObject(message));
+        var wrappedMessage = new ServerMessage<TMessage>(message);
+        var json = JsonConvert.SerializeObject(wrappedMessage);
+        await _server.SendAsync(client.Guid, json);
     }
     
     private async Task OnClientConnected(ConnectionEventArgs e)
     {
         _log.LogInformation("Client connected: {Guid}", e.Client.Guid);
-        await SendAsync(e.Client, new ReadyState(_isReady));
+        await SendAsync(e.Client, new ReadyStateMessage(_isReady));
         await ClientConnected.Set(e.Client);
     }
     
@@ -59,9 +61,17 @@ public class WebsocketService
     public async Task MarkReady(bool state = true)
     {
         _isReady = state;
-        await BroadcastAsync(new ReadyState(_isReady));
+        await BroadcastAsync(new ReadyStateMessage(_isReady));
     }
+    
+    private readonly struct ServerMessage<TMessage>(TMessage message) where TMessage : ISocketMessage
+    {
+        public static implicit operator ServerMessage<TMessage>(TMessage message) => new(message);
 
-    private record ReadyState(bool Ready) : SocketMessage;
+        [JsonProperty("type")]
+        public static string Type => typeof(TMessage).Name.Replace("Message", string.Empty);
+        
+        [JsonProperty("data")]
+        public TMessage Data { get; init; } = message;
+    }
 }
-

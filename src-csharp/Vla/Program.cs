@@ -37,18 +37,18 @@ await processor.InitialiseAsync();
 recogniser.Progress.OnChange(e =>
 {
     Console.WriteLine($"{e.Percentage}%: {e.Label}");
-    server.BroadcastAsync(new Progress(e.Percentage, e.Label)).GetAwaiter().GetResult();
+    server.BroadcastAsync(new ProgressMessage(e.Percentage, e.Label)).GetAwaiter().GetResult();
 });
 
 recogniser.Recognised.OnChange(e =>
 {
     var processedText = processor.Process(e.Text);
-    server.BroadcastAsync(new RecogniserRecognised(processedText)).GetAwaiter().GetResult();
+    server.BroadcastAsync(new RecogniserRecognisedMessage(processedText)).GetAwaiter().GetResult();
 });
 
 recogniser.PartlyRecognised.OnChange(e =>
 {
-    server.BroadcastAsync(new RecogniserRecognisedPartial(e)).GetAwaiter().GetResult();
+    server.BroadcastAsync(new RecogniserRecognisedPartialMessage(e)).GetAwaiter().GetResult();
 });
 
 node.Register<MathNode>()

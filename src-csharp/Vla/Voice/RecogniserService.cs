@@ -12,7 +12,7 @@ public class RecogniserService
 {
     private const double AudioSampleLengthS = 1;
     private const double TotalBufferLength = 10 / AudioSampleLengthS;
-    
+
     private readonly ILogger<RecogniserService> _log;
     private readonly HttpClient _http;
     private readonly WaveInEvent _waveIn;
@@ -23,11 +23,11 @@ public class RecogniserService
     private WebsocketService _server;
 
     public record ProgressData(float Percentage, string Label);
-    
+
     public Callback<SegmentData> Recognised { get; } = new();
     public Callback<SegmentData> PartlyRecognised { get; } = new();
     public Callback<ProgressData> Progress { get; } = new();
-    
+
     public RecogniserService(ILogger<RecogniserService> log, WebsocketService server, IHttpClientFactory http)
     {
         _log = log;
@@ -46,22 +46,22 @@ public class RecogniserService
     public async Task InitialiseAsync()
     {
         var modelPath = Path.Join("speech-recognition.bin");
-        
+
         if (!File.Exists(modelPath))
         {
             _log.LogInformation("Downloading model");
             const string url = "https://huggingface.co/sandrohanea/whisper.net/resolve/v1/classic/ggml-tiny.en.bin";
 
-            
+
             await using var fileWriter = File.OpenWrite(modelPath);
-            await _http.DownloadAsync(url, fileWriter, new Progress<float>(x => _server.BroadcastAsync(new Progress(x, "Downloading speech model"))));
-            
+            await _http.DownloadAsync(url, fileWriter, new Progress<float>(x => _server.BroadcastAsync(new ProgressMessage(x, "Downloading speech model"))));
+
             await fileWriter.FlushAsync();
             fileWriter.Close();
-            
+
             _log.LogDebug("Downloaded model");
         }
-        
+
         _processor = WhisperFactory.FromPath(modelPath)
             .CreateBuilder()
             .WithSegmentEventHandler(s =>
@@ -74,14 +74,14 @@ public class RecogniserService
             .WithProbabilities()
             .Build();
     }
-    
+
     public async Task StartAsync()
     {
         await InitialiseAsync();
-        
+
         _waveIn.StartRecording();
     }
-    
+
     public void Stop()
     {
         _waveIn.StopRecording();
@@ -95,9 +95,9 @@ public class RecogniserService
             var values = new short[e.Buffer.Length / 2];
             Buffer.BlockCopy(e.Buffer, 0, values, 0, e.Buffer.Length);
             var samples = values.Select(x => x / (short.MaxValue + 1f)).ToArray();
-            
+
             var silenceCount = samples.Count(x => IsSilence(x, -40));
-            
+
             if (silenceCount < values.Length - values.Length / 12)
             {
                 _slidingBuffer.Add(samples);
