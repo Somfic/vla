@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Newtonsoft.Json;
 
 namespace Vla.Nodes.Structure;
 
@@ -8,13 +9,18 @@ public readonly struct NodeStructure
 	{
 	}
 
+	[JsonProperty("nodeType")]
 	public Type NodeType { get; init; } = null;
-	
+
+	[JsonProperty("properties")]
 	public ImmutableArray<PropertyStructure> Properties { get; init; } = ImmutableArray<PropertyStructure>.Empty;
 
+	[JsonProperty("inputs")]
 	public ImmutableArray<ParameterStructure> Inputs { get; init; } = ImmutableArray<ParameterStructure>.Empty;
-	
+
+	[JsonProperty("outputs")]
 	public ImmutableArray<ParameterStructure> Outputs { get; init; } = ImmutableArray<ParameterStructure>.Empty;
-	
+
+	[JsonProperty("executeMethod")]
 	public string ExecuteMethod { get; init; } = null;
 }

@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Structure;
+﻿using Newtonsoft.Json;
+
+namespace Vla.Nodes.Structure;
 
 public readonly struct ParameterStructure
 {
@@ -9,9 +11,12 @@ public readonly struct ParameterStructure
         Type = type;
     }
 
+    [JsonProperty("id")]
     public string Id { get; init; }
-	
+
+    [JsonProperty("name")]
     public string Name { get; init; }
-	
+
+    [JsonProperty("type")]
     public Type Type { get; init; }
 }

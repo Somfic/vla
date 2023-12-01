@@ -7,11 +7,11 @@ namespace Vla.Nodes;
 public class MathNode : INode
 {
 	public string Name => "Math";
-    
+
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Addition;
 
-	public void Execute([NodeInput("A")]int a, [NodeInput("B")]int b, [NodeOutput("Result")]out int result)
+	public void Execute([NodeInput("A")] int a, [NodeInput("B")] int b, [NodeOutput("Result")] out int result)
 	{
 		result = Mode switch
 		{
@@ -20,7 +20,7 @@ public class MathNode : INode
 			_ => throw new ArgumentOutOfRangeException(nameof(Mode), Mode, null)
 		};
 	}
-	
+
 	public enum MathMode
 	{
 		Addition,
@@ -32,16 +32,16 @@ public class MathNode : INode
 public class MathModulo : INode
 {
 	public string Name => "Modulo";
-	
+
 	public void Execute(
-		[NodeInput("Value")] double value, 
-		[NodeInput("Modulo")] double modulo, 
-		[NodeOutput("Result")] out int result, 
-		[NodeOutput("Rest")]out int rest, 
-		[NodeOutput("Has rest")]out bool hasRest)
+		[NodeInput("Value")] double value,
+		[NodeInput("Modulo")] double modulo,
+		[NodeOutput("Result")] out int result,
+		[NodeOutput("Rest")] out int rest,
+		[NodeOutput("Has rest")] out bool hasRest)
 	{
-		result = (int) (value % modulo);
-		rest = (int) (value - result);
+		result = (int)(value % modulo);
+		rest = (int)(value - result);
 		hasRest = result != 0;
 	}
 }
@@ -50,7 +50,7 @@ public class MathModulo : INode
 public class PressKeyNode(InputService input) : INode
 {
 	public string Name => "Press key";
-	
+
 	public void Execute([NodeInput("Key")] string key)
 	{
 		input.Press(key);

@@ -1,7 +1,13 @@
-﻿namespace Vla.Nodes.Connection;
+﻿using Newtonsoft.Json;
 
-public readonly struct NodeConnection {
+namespace Vla.Nodes.Connection;
+
+public readonly struct NodeConnection
+{
+
+    [JsonProperty("from")]
     public ConnectedProperty From { get; init; }
 
+    [JsonProperty("to")]
     public ConnectedProperty To { get; init; }
 }

@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Structure;
+﻿using Newtonsoft.Json;
+
+namespace Vla.Nodes.Structure;
 
 public readonly struct PropertyStructure
 {
@@ -17,11 +19,15 @@ public readonly struct PropertyStructure
         };
     }
 
+    [JsonProperty("name")]
     public string Name { get; init; }
-	
+
+    [JsonProperty("type")]
     public Type Type { get; init; }
-    
+
+    [JsonProperty("htmlType")]
     public string HtmlType { get; init; }
-	
+
+    [JsonProperty("defaultValue")]
     public string DefaultValue { get; init; }
 }

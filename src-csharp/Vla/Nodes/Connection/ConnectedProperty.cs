@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Connection;
+﻿using Newtonsoft.Json;
+
+namespace Vla.Nodes.Connection;
 
 public readonly struct ConnectedProperty
 {
@@ -7,8 +9,10 @@ public readonly struct ConnectedProperty
         InstanceId = instanceId;
         PropertyId = propertyId;
     }
-	
+
+    [JsonProperty("instanceId")]
     public string InstanceId { get; init; }
 
+    [JsonProperty("propertyId")]
     public string PropertyId { get; init; }
 }

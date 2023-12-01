@@ -1,4 +1,6 @@
-﻿namespace Vla.Nodes.Web.Result;
+﻿using Newtonsoft.Json;
+
+namespace Vla.Nodes.Web.Result;
 
 public readonly struct ParameterValue
 {
@@ -8,7 +10,9 @@ public readonly struct ParameterValue
         Value = value;
     }
 
+    [JsonProperty("id")]
     public string Id { get; init; }
-    
+
+    [JsonProperty("value")]
     public string Value { get; init; }
 }
