@@ -10,9 +10,9 @@
 
     result.subscribe((r) => {
         if (r == undefined) return;
-        if (r.Values == undefined) return;
+        if (r.values == undefined) return;
 
-        value = r.Values.find((v) => v.Id == id)?.Value;
+        value = r.values.find((v) => v.id == id)?.value;
     });
 </script>
 

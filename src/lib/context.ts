@@ -12,27 +12,25 @@ export function addNode(query: string): ContextResult[] {
 
     return result.map((r) => {
         return {
-            name: r.item.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", ""),
-            context: r.item.NodeType.split(".")[0],
+            name: r.item.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", ""),
+            context: r.item.nodeType.split(".")[0],
             action: () => {
                 instances.update((i) => {
                     i.push({
-                        Id: generateGuid(),
-                        NodeType: r.item.NodeType,
-                        Metadata: {
-                            Position: {
-                                X: 0,
-                                Y: 0,
+                        id: generateGuid(),
+                        nodeType: r.item.nodeType,
+                        metadata: {
+                            position: {
                                 x: 0,
                                 y: 0,
                             },
                         },
-                        Properties: r.item.Properties.map((p) => {
+                        properties: r.item.properties.map((p) => {
                             return {
-                                Name: p.Name,
-                                Type: p.Type,
-                                Value: p.DefaultValue,
-                                DefaultValue: p.DefaultValue,
+                                name: p.name,
+                                type: p.type,
+                                value: p.defaultValue,
+                                defaultValue: p.defaultValue,
                             };
                         }),
                     });

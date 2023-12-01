@@ -9,14 +9,14 @@
     export let hovering: boolean;
     export let connecting: boolean;
 
-    $: typeDefinition = get(types).find((t) => t.Type == parameter.Type.replace("&", ""))!;
+    $: typeDefinition = get(types).find((t) => t.type == parameter.type.replace("&", ""))!;
 </script>
 
-<div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${typeDefinition.Color})`}>
+<div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${typeDefinition.color})`}>
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        {#if typeDefinition.Shape == "circle"}
+        {#if typeDefinition.shape == "circle"}
             <circle cx="50" cy="50" r="40" />
-        {:else if typeDefinition.Shape == "diamond"}
+        {:else if typeDefinition.shape == "diamond"}
             <polygon points="49,1 99,49 49,99 1,49" />
         {/if}
     </svg>

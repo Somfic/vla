@@ -29,13 +29,13 @@
 
     function detailToInstance(detail: any): NodeInstanceConnection {
         return {
-            From: {
-                InstanceId: detail.sourceNode.id.substring(2), // remove "n-"
-                PropertyId: detail.sourceAnchor.id.split("-")[1].split("/")[0], // go from "a-id/2" to "id"
+            from: {
+                instanceId: detail.sourceNode.id.substring(2), // remove "n-"
+                propertyId: detail.sourceAnchor.id.split("-")[1].split("/")[0], // go from "a-id/2" to "id"
             },
-            To: {
-                InstanceId: detail.targetNode.id.substring(2), // remove "n-"
-                PropertyId: detail.targetAnchor.id.split("-")[1].split("/")[0], // go from "a-id/2" to "id"
+            to: {
+                instanceId: detail.targetNode.id.substring(2), // remove "n-"
+                propertyId: detail.targetAnchor.id.split("-")[1].split("/")[0], // go from "a-id/2" to "id"
             },
         };
     }

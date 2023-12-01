@@ -18,9 +18,9 @@
 {#if show}
     <div class="splashscreen-background" class:ready={$isReady}>
         <div class="splashscreen">
-            <p class="label">{$progress.Label}</p>
+            <p class="label">{$progress.label}</p>
             <div class="progress">
-                <div class="progress-bar" style={`width: ${$progress.Percentage * 100}%`}></div>
+                <div class="progress-bar" style={`width: ${$progress.percentage * 100}%`}></div>
             </div>
         </div>
     </div>

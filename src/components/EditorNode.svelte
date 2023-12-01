@@ -8,54 +8,54 @@
     import ComputedValue from "./ComputedValue.svelte";
 
     export let instance: NodeInstance;
-    $: structure = get(structures)?.find((s) => s.NodeType == instance.NodeType)!;
-    $: result = get(r)?.Instances?.find((i) => i.Id == instance.Id);
+    $: structure = get(structures)?.find((s) => s.nodeType == instance.nodeType)!;
+    $: result = get(r)?.instances?.find((i) => i.id == instance.id);
 
     function getConnections(input: Parameter): [string, string][] {
         let array: [string, string][] = [];
 
         get(connections)
-            .filter((c) => c.From.InstanceId == instance.Id && c.From.PropertyId == input.Id)
-            .forEach((c) => array.push([`${c.To.InstanceId}`, `${c.To.PropertyId}`]));
+            .filter((c) => c.from.instanceId == instance.id && c.from.propertyId == input.id)
+            .forEach((c) => array.push([`${c.to.instanceId}`, `${c.to.propertyId}`]));
 
         return array;
     }
 </script>
 
-<Node let:grabHandle let:selected id={instance.Id}>
+<Node let:grabHandle let:selected id={instance.id}>
     <div use:grabHandle class:selected class="node">
-        <div class="title">{result?.Value?.Name ?? structure.NodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
+        <div class="title">{result?.value?.name ?? structure.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
         <div class="properties">
-            {#each instance.Properties as property, i}
-                <EditorProperty {property} {structure} bind:value={instance.Properties[i].Value} />
+            {#each instance.properties as property, i}
+                <EditorProperty {property} {structure} bind:value={instance.properties[i].value} />
             {/each}
         </div>
         <div class="input-output">
-            {#if structure.Inputs.length > 0}
+            {#if structure.inputs.length > 0}
                 <div class="inputs">
-                    {#each structure.Inputs as input}
+                    {#each structure.inputs as input}
                         <div class="input">
                             <div class="anchor">
-                                <Anchor let:linked let:hovering let:connecting input id={input.Id} nodeConnect connections={getConnections(input)}>
+                                <Anchor let:linked let:hovering let:connecting input id={input.id} nodeConnect connections={getConnections(input)}>
                                     <EditorAnchor parameter={input} {linked} {hovering} {connecting} input />
                                 </Anchor>
                             </div>
-                            <div class="name">{input.Name}</div>
+                            <div class="name">{input.name}</div>
                             <!-- <ComputedValue id={`${instance.Id}.${input.Id}`} input /> -->
                         </div>
                     {/each}
                 </div>
             {/if}
-            {#if structure.Outputs.length > 0}
+            {#if structure.outputs.length > 0}
                 <div class="outputs">
-                    {#each structure.Outputs as output}
+                    {#each structure.outputs as output}
                         <div class="output">
                             <div class="value">
-                                <ComputedValue id={`${instance.Id}.${output.Id}`} output />
+                                <ComputedValue id={`${instance.id}.${output.id}`} output />
                             </div>
-                            <div class="name">{output.Name}</div>
+                            <div class="name">{output.name}</div>
                             <div class="anchor">
-                                <Anchor let:linked let:hovering let:connecting output id={output.Id} multiple={false} connections={getConnections(output)}>
+                                <Anchor let:linked let:hovering let:connecting output id={output.id} multiple={false} connections={getConnections(output)}>
                                     <EditorAnchor parameter={output} {linked} {hovering} {connecting} output />
                                 </Anchor>
                             </div>

@@ -7,7 +7,7 @@ export let types = writable<TypeDefinition[]>([]);
 export let instances = writable<NodeInstance[]>([]);
 export let connections = writable<NodeInstanceConnection[]>([]);
 
-export let result = writable<WebResult>({ Instances: [], Values: [] } as WebResult);
+export let result = writable<WebResult>({ instances: [], values: [] } as WebResult);
 
 export function runWeb() {
     let message = {
@@ -22,79 +22,77 @@ export function runWeb() {
 }
 
 export interface NodeStructure {
-    NodeType: string;
-    Properties: Property[];
-    Inputs: Parameter[];
-    Outputs: Parameter[];
-    ExecuteMethod: string;
+    nodeType: string;
+    properties: Property[];
+    inputs: Parameter[];
+    outputs: Parameter[];
+    executeMethod: string;
 }
 
 export interface Parameter {
-    Id: string;
-    Name: string;
-    Type: string;
+    id: string;
+    name: string;
+    type: string;
 }
 
 export interface Property {
-    Name: string;
-    Type: string;
-    HtmlType: string;
-    DefaultValue: string;
+    name: string;
+    type: string;
+    htmlType: string;
+    defaultValue: string;
 }
 
 export interface TypeDefinition {
-    Name: string;
-    Type: string;
-    Color: string;
-    Shape: string;
+    name: string;
+    type: string;
+    color: string;
+    shape: string;
 }
 
 export interface NodeInstance {
-    Id: string;
-    NodeType: string;
-    Properties: PropertyInstance[];
-    Metadata: NodeMetadata;
+    id: string;
+    nodeType: string;
+    properties: PropertyInstance[];
+    metadata: NodeMetadata;
 }
 
 export interface NodeMetadata {
-    Position: NodePosition;
+    position: NodePosition;
 }
 
 export interface NodePosition {
-    X: number;
-    Y: number;
     x: number;
     y: number;
 }
 export interface PropertyInstance {
-    Name: string;
-    Type: string;
-    Value: string;
-    DefaultValue: any;
+    name: string;
+    type: string;
+    value: string;
+    defaultValue: any;
 }
 export interface NodeInstanceConnection {
-    From: ConnectedProperty;
-    To: ConnectedProperty;
+    from: ConnectedProperty;
+    to: ConnectedProperty;
 }
 
 export interface ConnectedProperty {
-    InstanceId: string;
-    PropertyId: string;
+    instanceId: string;
+    propertyId: string;
 }
 
 export interface WebResult {
-    Values: ParameterValue[];
-    Instances: InstanceValue[];
+    values: ParameterValue[];
+    instances: InstanceValue[];
 }
 
 export interface ParameterValue {
-    Id: string;
-    Value: string;
+    id: string;
+    value: string;
 }
 
 export interface InstanceValue {
-    Id: string;
-    Value: {
-        Name: string;
+    id: string;
+    value: {
+        name: string;
     };
 }

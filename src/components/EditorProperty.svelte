@@ -6,15 +6,15 @@
     export let structure: NodeStructure;
     export let value: string;
 
-    $: structureProperty = structure.Properties.find((p) => p.Name == property.Name)!;
+    $: structureProperty = structure.properties.find((p) => p.name == property.name)!;
 </script>
 
 <div class="property">
-    <div class="property-name">{property.Name}</div>
-    {#if structureProperty.HtmlType == "text"}
-        <input tabindex="-1" bind:value type="text" placeholder={structureProperty.DefaultValue} />
-    {:else if structureProperty.HtmlType == "number"}
-        <input tabindex="-1" bind:value type="number" placeholder={structureProperty.DefaultValue} />
+    <div class="property-name">{property.name}</div>
+    {#if structureProperty.htmlType == "text"}
+        <input tabindex="-1" bind:value type="text" placeholder={structureProperty.defaultValue} />
+    {:else if structureProperty.htmlType == "number"}
+        <input tabindex="-1" bind:value type="number" placeholder={structureProperty.defaultValue} />
     {/if}
 </div>
 
