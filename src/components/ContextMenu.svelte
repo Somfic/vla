@@ -26,8 +26,7 @@
             let delta = e.key == "ArrowDown" ? 1 : -1;
             delta = e.shiftKey || e.ctrlKey ? delta * 5 : delta;
 
-            activeIndex = Math.min(activeIndex + delta, results.length - 1);
-            activeIndex = Math.max(activeIndex, 0);
+            santiseIndex();
 
             e.preventDefault();
         }
@@ -71,11 +70,16 @@
     function execute(i: number) {
         menu?.(inputValue ?? "")?.[i]?.action();
     }
+
+    function santiseIndex() {
+        activeIndex = Math.min(activeIndex, results.length - 1);
+        activeIndex = Math.max(activeIndex, 0);
+    }
 </script>
 
 <div class="context-wrapper" on:keydown={handleKeyPress} on:click={handleClick} class:show>
     <div class="context" on:click={(e) => e.stopPropagation()}>
-        <input class="input" bind:value={inputValue} bind:this={input} type="text" />
+        <input class="input" on:input={santiseIndex} bind:value={inputValue} bind:this={input} type="text" />
         {#if results.length > 0}
             {#each results as result, i}
                 <div class="result" class:active={activeIndex == i} on:mouseover={() => handleMouseOver(i)} on:click={() => handleMouseClick(i)}>
@@ -135,6 +139,7 @@
             backdrop-filter: blur(5px);
             overflow: hidden;
             transition: 200ms ease all;
+            box-shadow: 0px 0px 100px 0px rgba(0, 0, 0, 1);
         }
     }
 
