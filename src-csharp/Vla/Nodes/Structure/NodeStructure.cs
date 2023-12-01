@@ -10,7 +10,7 @@ public readonly struct NodeStructure
 	}
 
 	[JsonProperty("nodeType")]
-	public Type NodeType { get; init; } = null;
+	public Type NodeType { get; init; } = typeof(object);
 
 	[JsonProperty("properties")]
 	public ImmutableArray<PropertyStructure> Properties { get; init; } = ImmutableArray<PropertyStructure>.Empty;
@@ -22,5 +22,5 @@ public readonly struct NodeStructure
 	public ImmutableArray<ParameterStructure> Outputs { get; init; } = ImmutableArray<ParameterStructure>.Empty;
 
 	[JsonProperty("executeMethod")]
-	public string ExecuteMethod { get; init; } = null;
+	public string ExecuteMethod { get; init; } = string.Empty;
 }
