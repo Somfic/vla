@@ -97,6 +97,8 @@ async function main() {
 
     // Write the tauri.conf.json file in src-tauri/tauri.conf.json
     writeFileSync("src-tauri/tauri.conf.json", JSON.stringify(tauriConf, null, 4), "utf8");
+
+    console.log(JSON.stringify(tauriConf, null, 4));
 }
 
 main().catch((e) => {
