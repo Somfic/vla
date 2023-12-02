@@ -1,7 +1,7 @@
 {
     "name": "vla",
     "private": true,
-    "version": "0.1.0",
+    "version": "0.0.0",
     "type": "module",
     "scripts": {
         "predev": "ts-node --esm scripts/build-csharp.ts",
@@ -10,7 +10,9 @@
         "build": "vite build",
         "preview": "vite preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
-        "tauri": "tauri"
+        "tauri": "tauri",
+        "version": "ts-node --esm scripts/tag-version.ts",
+        "prepare-release": "ts-node --esm scripts/prepare-release.ts"
     },
     "dependencies": {
         "@tauri-apps/api": "^1.5.0",
