@@ -36,7 +36,10 @@ jobs:
             - name: Apply cache
               uses: Swatinem/rust-cache@v2
 
-            - name: Build
+            - name: Build C#
+              run: dotnet build -c Release
+
+            - name: Build Rust
               run: yarn tauri build
 
             - name: Prepare release
