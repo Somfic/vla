@@ -33,6 +33,9 @@ jobs:
             - name: Tag version
               run: yarn run version ${{ github.ref }}
 
+            - name: Apply cache
+              uses: Swatinem/rust-cache@v2
+
             - name: Build
               run: yarn tauri build
 
