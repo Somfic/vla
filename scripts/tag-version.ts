@@ -2,14 +2,14 @@ import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 // Get command line argument for the version
-const version = process.argv[2].trim();
+const version = process.argv[2].trim().replace("refs/tags/v", "");
 if (!version) {
     console.error("No version specified");
     process.exit(1);
 }
 
 // Make sure the version is valid (semver)
-const versionRegex = /\d+\.\d+\.\d+/;
+const versionRegex = /^\d+\.\d+\.\d+$/;
 if (!versionRegex.test(version)) {
     console.error("Invalid version format specified");
     process.exit(1);
