@@ -37,7 +37,7 @@ jobs:
               uses: Swatinem/rust-cache@v2
 
             - name: Build C#
-              run: dotnet build src-csharp -c Release
+              run: dotnet restore src-csharp
 
             - name: Build Rust
               run: yarn tauri build
