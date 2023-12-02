@@ -1,0 +1,66 @@
+name: create release
+on:
+    push:
+        tags:
+            - "*"
+
+jobs:
+    release:
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set up Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 19
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v1
+              with:
+                  dotnet-version: 8.0.x
+
+            - name: Install Yarn and Node Dependencies
+              run: yarn install
+
+            - name: Tag version
+              run: yarn run version ${{ github.ref }}
+
+            - name: Build
+              run: yarn tauri build
+
+            - name: Prepare release
+              run: yarn tauri run prepare-release
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v2
+              with:
+                  name: setup
+                  path: release-files
+
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ github.ref }}
+                  release_name: v${{ github.ref }}
+                  draft: false
+                  prerelease: false
+
+            - name: Upload binaries to release
+              uses: svenstaro/upload-release-action@v2
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  file: release-files/*
+                  tag: ${{ github.ref }}
+                  overwrite: true
+                  file_glob: true
