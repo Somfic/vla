@@ -38,6 +38,7 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 19
+                  cache: "yarn"
 
             - name: Setup Yarn
               run: npm install --global yarn
@@ -53,8 +54,10 @@ jobs:
             - name: Tag version
               run: yarn run version ${{ github.event.milestone.title }}
 
-            - name: Apply cache
-              uses: Swatinem/rust-cache@v2
+            - name: Rust cache
+              uses: swatinem/rust-cache@v2
+              with:
+                  workspaces: "./src-tauri -> target"
 
             - name: Restore C# dependencies
               run: dotnet restore src-csharp
