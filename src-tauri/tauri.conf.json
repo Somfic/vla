@@ -29,9 +29,21 @@
             "active": true,
             "targets": "msi",
             "identifier": "somfic.dev.vla",
-            "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
-            "externalBin": ["binaries/csharp"],
-            "resources": ["LdaNative.dll", "uiohook.dll", "runtimes\\win-x64\\whisper.dll"]
+            "icon": [
+                "icons/32x32.png",
+                "icons/128x128.png",
+                "icons/128x128@2x.png",
+                "icons/icon.icns",
+                "icons/icon.ico"
+            ],
+            "externalBin": [
+                "binaries/csharp"
+            ],
+            "resources": [
+                "LdaNative.dll",
+                "uiohook.dll",
+                "runtimes\\win-x64\\whisper.dll"
+            ]
         },
         "security": {
             "csp": null
@@ -40,7 +52,7 @@
             {
                 "fullscreen": false,
                 "resizable": true,
-                "title": "vla",
+                "title": "Vla",
                 "width": 800,
                 "height": 600
             }
