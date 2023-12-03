@@ -6,28 +6,29 @@ on:
 
 jobs:
     release:
-        runs-on: windows-latest
+        runs-on: ubuntu-latest
 
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
 
             - name: Set up Rust
-              uses: actions-rs/toolchain@v1
-              with:
-                  toolchain: stable
+              uses: dtolnay/rust-toolchain@stable
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: 19
 
+            - name: Setup Yarn
+              run: npm install --global yarn
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v3
               with:
                   dotnet-version: 8.0.x
 
-            - name: Install Yarn and Node Dependencies
+            - name: Install Node dependencies
               run: yarn install
 
             - name: Tag version
@@ -36,37 +37,16 @@ jobs:
             - name: Apply cache
               uses: Swatinem/rust-cache@v2
 
-            - name: Build C#
+            - name: Restore C# dependencies
               run: dotnet restore src-csharp
 
-            - name: Build Rust
-              run: yarn tauri build
-
-            - name: Prepare release
-              run: yarn tauri run prepare-release
-
-            - name: Upload artifacts
-              uses: actions/upload-artifact@v2
-              with:
-                  name: setup
-                  path: release-files
-
-            - name: Create Release
-              id: create_release
-              uses: actions/create-release@v1
+            - name: Build application
+              uses: tauri-apps/tauri-action@v0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: ${{ github.ref }}
-                  release_name: v${{ github.ref }}
-                  draft: false
+                  tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+                  releaseName: "Vla v__VERSION__"
+                  releaseBody: "See the assets to download this version and install."
+                  releaseDraft: true
                   prerelease: false
-
-            - name: Upload binaries to release
-              uses: svenstaro/upload-release-action@v2
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  file: release-files/*
-                  tag: ${{ github.ref }}
-                  overwrite: true
-                  file_glob: true
