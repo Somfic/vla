@@ -1,11 +1,11 @@
 name: create release
 on:
-    push:
-        tags:
-            - "*"
+    milestone:
+        types: [closed]
 
 jobs:
     release:
+        permissions: write-all
         runs-on: windows-latest
 
         steps:
@@ -40,6 +40,19 @@ jobs:
             - name: Restore C# dependencies
               run: dotnet restore src-csharp
 
+            - name: Generate release notes
+              uses: Decathlon/release-notes-generator-action@v3.1.6
+              with:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  USE_MILESTONE_TITLE: "true"
+                  FILENAME: "RELEASE_NOTES.md"
+
+            - name: Read release notes
+              id: notes
+              uses: jaywcjlove/github-action-read-file@main
+              with:
+                  path: RELEASE_NOTES.md
+
             - name: Build application
               uses: tauri-apps/tauri-action@v0
               env:
@@ -47,6 +60,6 @@ jobs:
               with:
                   tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
                   releaseName: "Vla v__VERSION__"
-                  releaseBody: "See the assets to download this version and install."
+                  releaseBody: ${{ steps.notes.outputs.content }}
                   releaseDraft: true
                   prerelease: false
