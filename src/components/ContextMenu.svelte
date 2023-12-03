@@ -77,11 +77,14 @@
     }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="context-wrapper" on:keydown={handleKeyPress} on:click={handleClick} class:show>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="context" on:click={(e) => e.stopPropagation()}>
         <input class="input" on:input={santiseIndex} bind:value={inputValue} bind:this={input} type="text" />
         {#if results.length > 0}
             {#each results as result, i}
+                <!-- svelte-ignore a11y-mouse-events-have-key-events -->
                 <div class="result" class:active={activeIndex == i} on:mouseover={() => handleMouseOver(i)} on:click={() => handleMouseClick(i)}>
                     <div class="name">
                         {result.name}
@@ -127,7 +130,7 @@
         > .context {
             transform: translateY(100px);
             margin: auto;
-            min-width: 300px;
+            min-width: 500px;
             width: 50vw;
             display: flex;
             height: auto;
