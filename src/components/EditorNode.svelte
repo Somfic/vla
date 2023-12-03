@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Anchor, Node } from "svelvet";
-    import { result as r, type NodeInstance, type Parameter } from "../lib/nodes";
+    import { result as r, type NodeInstance, type Parameter, instances } from "../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
@@ -20,13 +20,21 @@
 
         return array;
     }
+
+    function handleKeyUp(e: KeyboardEvent) {
+        if (e.key == "Delete") {
+            console.log("delete", instance.id)
+            instances.update((i) => i.filter((i) => i.id != instance.id));
+        }
+    }
 </script>
 
-<Node let:grabHandle let:selected id={instance.id}>
-    <div use:grabHandle class:selected class="node">
+<Node let:grabHandle let:selected id={instance.id} on:nodeClicked>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div use:grabHandle class:selected class="node" on:keyup={handleKeyUp}>
         <div class="title">{result?.value?.name ?? structure.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
         <div class="properties">
-            {#each instance.properties as property, i}
+            {#each structure.properties as property, i}
                 <EditorProperty {property} {structure} bind:value={instance.properties[i].value} />
             {/each}
         </div>
