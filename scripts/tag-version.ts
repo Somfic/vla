@@ -2,7 +2,19 @@ import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 // Get command line argument for the version
-const version = process.argv[2].trim().replace("refs/tags/v", "");
+const fullName = process.argv[2].trim();
+
+// Find the version in the full name
+const versionMatch = fullName.match(/v(\d+\.\d+\.\d+)/);
+
+// Make sure the version was found
+if (!versionMatch) {
+    console.error(`Failed to find version in full name (semver expected, was ${fullName})`);
+    process.exit(1);
+}
+
+const version = versionMatch[1];
+
 if (!version) {
     console.error("No version specified");
     process.exit(1);
@@ -11,7 +23,7 @@ if (!version) {
 // Make sure the version is valid (semver)
 const versionRegex = /^\d+\.\d+\.\d+$/;
 if (!versionRegex.test(version)) {
-    console.error("Invalid version format specified");
+    console.error(`Invalid version format specified (semver expected, was ${version})`);
     process.exit(1);
 }
 

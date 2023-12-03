@@ -45,7 +45,7 @@ jobs:
               run: yarn install
 
             - name: Tag version
-              run: yarn run version ${{ github.ref }}
+              run: yarn run version ${{ github.event.milestone.title }}
 
             - name: Apply cache
               uses: Swatinem/rust-cache@v2
