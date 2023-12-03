@@ -57,6 +57,7 @@
 
 <ContextMenu bind:menu={contextMenu} />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="editor" on:keydown={handleKeyPress}>
     <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} edgeStyle="step">
         {#each $instances as instance, i}
