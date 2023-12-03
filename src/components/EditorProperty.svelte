@@ -1,11 +1,13 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import type { NodeStructure, PropertyInstance } from "../lib/nodes";
+    import type { NodeStructure, Property, PropertyInstance } from "../lib/nodes";
+    import { types } from "../lib/nodes";
 
-    export let property: PropertyInstance;
+    export let property: Property;
     export let structure: NodeStructure;
     export let value: string;
 
+    $: type = get(types).find((x) => x.type == property.type)!;
     $: structureProperty = structure.properties.find((p) => p.name == property.name)!;
 </script>
 
@@ -15,20 +17,29 @@
         <input tabindex="-1" bind:value type="text" placeholder={structureProperty.defaultValue} />
     {:else if structureProperty.htmlType == "number"}
         <input tabindex="-1" bind:value type="number" placeholder={structureProperty.defaultValue} />
+    {:else if structureProperty.htmlType == "select"}
+        <select tabindex="-1" bind:value>
+            {#each type.values as option}
+                <option value={option.value}>{option.name}</option>
+            {/each}
+        </select>
     {/if}
 </div>
 
 <style lang="scss">
+    @import "../theme.scss";
+
     .property {
         display: flex;
         align-items: center;
+        justify-content: space-between;
 
         padding: 15px;
         gap: 6px;
 
-        input {
+        input, select {
             all: unset;
-            width: 80px;
+            max-width: 80px;
             text-align: right;
             height: 1rem;
             border: 2px solid #424242;
@@ -39,9 +50,13 @@
             transition: all ease 200ms;
 
             &:focus {
-                border-color: #696969;
+                border-color: $accent;
                 color: white;
             }
+        }
+
+        select {
+            padding-right: 1.1rem;
         }
     }
 </style>

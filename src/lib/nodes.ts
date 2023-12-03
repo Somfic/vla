@@ -45,8 +45,14 @@ export interface Property {
 export interface TypeDefinition {
     name: string;
     type: string;
+    values: TypeDefinitionValue[];
     color: string;
     shape: string;
+}
+
+export interface TypeDefinitionValue {
+    name: string;
+    value: string;
 }
 
 export interface NodeInstance {
