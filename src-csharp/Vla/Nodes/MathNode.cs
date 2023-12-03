@@ -6,7 +6,7 @@ namespace Vla.Nodes;
 [Node]
 public class MathNode : INode
 {
-	public string Name => "Math";
+	public string Name => Mode.ToString();
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Addition;
