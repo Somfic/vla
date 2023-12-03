@@ -4,26 +4,32 @@ on:
         types: [closed]
 
 jobs:
-    release:
+    changelog:
         permissions: write-all
-        runs-on: windows-latest
-
+        runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Generate release notes
               uses: Decathlon/release-notes-generator-action@v3.1.6
               with:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   USE_MILESTONE_TITLE: "true"
-                  FILENAME: "RELEASE_NOTES.md"
+                  FILENAME: "CHANGELOG.md"
 
-            - name: Read release notes
-              id: notes
-              uses: jaywcjlove/github-action-read-file@main
+            - name: Push changes
+              uses: stefanzweifel/git-auto-commit-action@v4
               with:
-                  path: RELEASE_NOTES.md
+                  commit_message: "Update CHANGELOG.md"
+
+    release:
+        needs: changelog
+        permissions: write-all
+        runs-on: windows-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
             - name: Set up Rust
               uses: dtolnay/rust-toolchain@stable
@@ -52,6 +58,12 @@ jobs:
 
             - name: Restore C# dependencies
               run: dotnet restore src-csharp
+
+            - name: Read changelog
+              id: notes
+              uses: jaywcjlove/github-action-read-file@main
+              with:
+                  path: CHANGELOG.md
 
             - name: Build application
               uses: tauri-apps/tauri-action@v0
