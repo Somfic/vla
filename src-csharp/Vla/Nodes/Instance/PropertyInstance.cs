@@ -3,27 +3,19 @@ using Newtonsoft.Json;
 
 namespace Vla.Nodes.Instance;
 
-public readonly struct PropertyInstance
+public readonly struct PropertyInstance(string name, Type type, string value)
 {
-    public PropertyInstance(string name, Type type, string value)
-    {
-        Name = name;
-        Type = type;
-        Value = value;
-        DefaultValue = GetDefaultValueForType(type);
-    }
-
     [JsonProperty("name")]
-    public string Name { get; init; }
+    public string Name { get; init; } = name;
 
     [JsonProperty("type")]
-    public Type Type { get; init; }
+    public Type Type { get; init; } = type;
 
     [JsonProperty("value")]
-    public string Value { get; init; }
+    public string Value { get; init; } = value;
 
     [JsonProperty("defaultValue")]
-    public object? DefaultValue { get; init; }
+    public object? DefaultValue { get; init; } = GetDefaultValueForType(type);
 
     private static object? GetDefaultValueForType(Type type)
     {
