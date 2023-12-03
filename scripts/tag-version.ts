@@ -5,7 +5,7 @@ import { join } from "path";
 const fullName = process.argv[2].trim();
 
 // Find the version in the full name
-const versionMatch = fullName.match(/v(\d+\.\d+\.\d+)/);
+const versionMatch = fullName.match(/v(\d+\.\d+)/);
 
 // Make sure the version was found
 if (!versionMatch) {
@@ -13,7 +13,7 @@ if (!versionMatch) {
     process.exit(1);
 }
 
-const version = versionMatch[1];
+const version = versionMatch[1] + ".0";
 
 if (!version) {
     console.error("No version specified");
