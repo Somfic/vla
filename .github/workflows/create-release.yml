@@ -13,7 +13,7 @@ jobs:
 
             - name: Generate release notes
               uses: Decathlon/release-notes-generator-action@v3.1.6
-              with:
+              env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   USE_MILESTONE_TITLE: "true"
                   FILENAME: "CHANGELOG.md"
