@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Immutable;
+using System.Drawing;
 using Newtonsoft.Json;
 
 namespace Vla.Nodes.Types;
@@ -13,6 +14,9 @@ public readonly struct NodeTypeDefinition
 
         if (Name.EndsWith('&'))
             Name = Name[..^1];
+        
+        if (type.IsEnum)
+            Values = Enum.GetValues(type).Cast<object>().Select(x => new NodeTypeDefinitionValue(x.ToString()!, x)).ToImmutableArray();
 
         Shape = type == typeof(NodeFlow) ? "diamond" : "circle";
     }
@@ -22,6 +26,9 @@ public readonly struct NodeTypeDefinition
 
     [JsonProperty("name")]
     public string Name { get; init; }
+    
+    [JsonProperty("values")]
+    public ImmutableArray<NodeTypeDefinitionValue> Values { get; init; } = ImmutableArray<NodeTypeDefinitionValue>.Empty;
 
     [JsonProperty("color")]
     public Color Color { get; init; }
@@ -42,4 +49,13 @@ public readonly struct NodeTypeDefinition
 
         return typeColors.TryGetValue(type, out var color) ? color : Color.FromArgb(217, 109, 255);
     }
+}
+
+public readonly struct NodeTypeDefinitionValue(string name, object? value)
+{
+    [JsonProperty("name")]
+    public string Name { get; init; } = name;
+
+    [JsonProperty("value")]
+    public object? Value { get; init; } = value;
 }

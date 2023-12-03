@@ -9,7 +9,11 @@ public readonly struct PropertyStructure
         Name = name;
         Type = type;
         DefaultValue = defaultValue;
-        HtmlType = type.Name switch
+        
+        if(type.IsEnum)
+            HtmlType = "select";
+        else
+            HtmlType = type.Name switch
         {
             "Int32" => "number",
             "Double" => "number",
