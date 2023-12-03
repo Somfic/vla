@@ -12,6 +12,19 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
+            - name: Generate release notes
+              uses: Decathlon/release-notes-generator-action@v3.1.6
+              with:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  USE_MILESTONE_TITLE: "true"
+                  FILENAME: "RELEASE_NOTES.md"
+
+            - name: Read release notes
+              id: notes
+              uses: jaywcjlove/github-action-read-file@main
+              with:
+                  path: RELEASE_NOTES.md
+
             - name: Set up Rust
               uses: dtolnay/rust-toolchain@stable
 
@@ -39,19 +52,6 @@ jobs:
 
             - name: Restore C# dependencies
               run: dotnet restore src-csharp
-
-            - name: Generate release notes
-              uses: Decathlon/release-notes-generator-action@v3.1.6
-              with:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  USE_MILESTONE_TITLE: "true"
-                  FILENAME: "RELEASE_NOTES.md"
-
-            - name: Read release notes
-              id: notes
-              uses: jaywcjlove/github-action-read-file@main
-              with:
-                  path: RELEASE_NOTES.md
 
             - name: Build application
               uses: tauri-apps/tauri-action@v0
