@@ -13,15 +13,4 @@ public readonly struct PropertyInstance(string name, Type type, string value)
 
     [JsonProperty("value")]
     public string Value { get; init; } = value;
-
-    [JsonProperty("defaultValue")]
-    public object? DefaultValue { get; init; } = GetDefaultValueForType(type);
-
-    private static object? GetDefaultValueForType(Type type)
-    {
-        if (type == typeof(string))
-            return string.Empty;
-
-        return type.IsValueType ? Activator.CreateInstance(type) : FormatterServices.GetUninitializedObject(type);
-    }
 }

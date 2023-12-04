@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Drawing;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace Vla.Abstractions.Types;
@@ -18,7 +19,20 @@ public readonly struct NodeTypeDefinition
         if (type.IsEnum)
             Values = Enum.GetValues(type).Cast<object>().Select(x => new NodeTypeDefinitionValue(EnumExtensions.GetValueNameFromField(x.GetType(), x.ToString()), x)).ToImmutableArray();
 
+        if(type.IsEnum)
+            HtmlType = "select";
+        else
+            HtmlType = type.Name.Replace("&", "") switch
+            {
+                "Int32" => "number",
+                "Double" => "number",
+                "String" => "text",
+                "Boolean" => "checkbox",
+                _ => "???"
+            };
+        
         Shape = type == typeof(NodeFlow) ? "diamond" : "circle";
+        DefaultValue = GetDefaultValueForType(type);
     }
 
     [JsonProperty("type")]
@@ -26,6 +40,9 @@ public readonly struct NodeTypeDefinition
 
     [JsonProperty("name")]
     public string Name { get; init; }
+    
+    [JsonProperty("htmlType")]
+    public string HtmlType { get; init; }
     
     [JsonProperty("values")]
     public ImmutableArray<NodeTypeDefinitionValue> Values { get; init; } = ImmutableArray<NodeTypeDefinitionValue>.Empty;
@@ -35,6 +52,22 @@ public readonly struct NodeTypeDefinition
 
     [JsonProperty("shape")]
     public string Shape { get; init; }
+    
+    [JsonProperty("defaultValue")]
+    public object? DefaultValue { get; init; }
+
+    private static object? GetDefaultValueForType(Type type)
+    {
+        if (type == typeof(string))
+            return string.Empty;
+
+        if (type.Name.EndsWith('&'))
+            return string.Empty;
+        
+        Console.WriteLine(type.FullName);
+
+        return type.GetDefaultValueForType();
+    }
 
     private static Color TypeToColor(Type type)
     {

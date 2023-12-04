@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
+using Vla.Abstractions.Instance;
 
 namespace Vla.Nodes.Web.Result;
 
@@ -7,7 +8,7 @@ public static class WebResultExtensions
 {
     public static WebResult WithValues(this WebResult result, Dictionary<string, object?> values)
     {
-        return result with { Values = values.Select(x => new ParameterValue(x.Key, JsonConvert.SerializeObject(x.Value))).ToImmutableArray() };
+        return result with { Values = values.Select(x => new ParameterInstance(x.Key, x.Value)).ToImmutableArray() };
     }
     
     public static WebResult WithInstances(this WebResult result, Dictionary<string, object?> instances)

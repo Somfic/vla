@@ -2,28 +2,24 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Vla.Abstractions;
 using Vla.Abstractions.Instance;
 using Vla.Abstractions.Structure;
 using Vla.Nodes.Web.Result;
 
 namespace Vla.Nodes.Web;
 
-public class WebExecutor
+public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
 {
-    private readonly ILogger<WebExecutor> _log;
-    private readonly IServiceProvider _services;
+    private readonly ILogger<WebExecutor> _log = log;
 
-    public WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
-    {
-        _log = log;
-        _services = services;
-    }
-    
     private readonly Dictionary<string, object?> _instances = new();
     private readonly Dictionary<string, object?> _values = new();
 
     public WebResult ExecuteWeb(Web web, IReadOnlyCollection<NodeStructure> structures)
     {
+        Console.WriteLine(JsonConvert.SerializeObject(web, Formatting.Indented));
+        
         foreach (var instance in web.Instances)
         {
             if (structures.All(s => s.NodeType != instance.NodeType))
@@ -31,7 +27,7 @@ public class WebExecutor
             
             var structure = structures.First(s => s.NodeType == instance.NodeType);
 
-            var nodeInstance = ActivatorUtilities.CreateInstance(_services, structure.NodeType);
+            var nodeInstance = ActivatorUtilities.CreateInstance(services, structure.NodeType);
 
             if (structure.Properties.Any())
             {
@@ -94,9 +90,8 @@ public class WebExecutor
                 else
                 {
                     // If there is no connection, set the value of the input to the default value
-                    var key = $"{instance.Id}.{input.Id}";
-                    var value = GetDefaultValueForType(input.Type);
-                    _values.TryAdd(key, value);
+                    var value = instance.Inputs.First(x => x.Id == input.Id).Value;
+                    _values.TryAdd($"{instance.Id}.{input.Id}", value);
                 }
             }
         }
@@ -144,18 +139,8 @@ public class WebExecutor
     private object? GetValue(NodeInstance instance, ParameterStructure parameter)
     {
         var id = $"{instance.Id}.{parameter.Id}";
-        var defaultValue = GetDefaultValueForType(parameter.Type);
+        var defaultValue = parameter.Type.GetDefaultValueForType();
         return _values.TryGetValue(id, out var value) ? Convert.ChangeType(value, parameter.Type) : defaultValue;
     }
-
-    private object? GetDefaultValueForType(Type type)
-    {
-        if(type == typeof(string))
-            return string.Empty;
-        
-        if(type.IsValueType)
-            return Activator.CreateInstance(type);
-        else 
-            return FormatterServices.GetUninitializedObject(type);
-    }
 }
+
