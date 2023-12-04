@@ -1,17 +1,19 @@
 <script lang="ts">
     import { Anchor, Node } from "svelvet";
-    import { result as r, type NodeInstance, type Parameter, instances } from "../lib/nodes";
+    import { result as r, type NodeInstance, type ParameterInstance, instances, typeToDefinition, type ParameterStructure } from "../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
     import { structures, connections } from "../lib/nodes";
     import ComputedValue from "./ComputedValue.svelte";
+    import EditorEdge from "./EditorEdge.svelte";
+    import EditorAnchorDefaultValue from "./EditorAnchorDefaultValue.svelte";
 
     export let instance: NodeInstance;
     $: structure = get(structures)?.find((s) => s.nodeType == instance.nodeType)!;
     $: result = get(r)?.instances?.find((i) => i.id == instance.id);
 
-    function getConnections(input: Parameter): [string, string][] {
+    function getConnections(input: ParameterInstance | ParameterStructure): [string, string][] {
         let array: [string, string][] = [];
 
         get(connections)
@@ -29,26 +31,31 @@
     }
 </script>
 
-<Node let:grabHandle let:selected id={instance.id} on:nodeClicked>
+<Node let:grabHandle let:selected id={instance.id} on:nodeClicked edge={EditorEdge}>
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div use:grabHandle class:selected class="node" on:keyup={handleKeyUp}>
         <div class="title">{result?.value?.name ?? structure.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
         <div class="properties">
             {#each structure.properties as property, i}
-                <EditorProperty {property} {structure} bind:value={instance.properties[i].value} />
+                <EditorProperty {property} bind:value={instance.properties[i].value} />
             {/each}
         </div>
         <div class="input-output">
             {#if structure.inputs.length > 0}
                 <div class="inputs">
-                    {#each structure.inputs as input}
+                    {#each instance.inputs as input}
                         <div class="input">
-                            <div class="anchor">
+                            <div class="anchor-wrapper">
                                 <Anchor let:linked let:hovering let:connecting input id={input.id} nodeConnect connections={getConnections(input)}>
-                                    <EditorAnchor parameter={input} {linked} {hovering} {connecting} input />
+                                    {#if !linked}
+                                        <div class="default">
+                                            <EditorAnchorDefaultValue {structure} bind:parameter={input} {linked} {hovering} {connecting} />
+                                        </div>
+                                    {/if}
+                                    <EditorAnchor {structure} parameter={input} {linked} {hovering} {connecting} input />
                                 </Anchor>
                             </div>
-                            <div class="name">{input.name}</div>
+                            <div class="name">{structure.inputs.concat(structure.outputs).find((i) => i.id == input.id)?.name}</div>
                             <!-- <ComputedValue id={`${instance.Id}.${input.Id}`} input /> -->
                         </div>
                     {/each}
@@ -59,12 +66,12 @@
                     {#each structure.outputs as output}
                         <div class="output">
                             <div class="value">
-                                <ComputedValue id={`${instance.id}.${output.id}`} output />
+                                <ComputedValue type={typeToDefinition(output.type)} id={`${instance.id}.${output.id}`} output />
                             </div>
                             <div class="name">{output.name}</div>
                             <div class="anchor">
                                 <Anchor let:linked let:hovering let:connecting output id={output.id} multiple={false} connections={getConnections(output)}>
-                                    <EditorAnchor parameter={output} {linked} {hovering} {connecting} output />
+                                    <EditorAnchor {structure} parameter={output} {linked} {hovering} {connecting} output />
                                 </Anchor>
                             </div>
                         </div>
@@ -127,6 +134,7 @@
             display: flex;
             flex-grow: 1;
             align-items: center;
+            justify-content: center;
             margin: 6px 0px;
             min-height: 2rem;
             width: 100%;
@@ -143,10 +151,16 @@
         }
 
         .input {
+            position: relative;
             .name {
                 text-align: left;
                 flex-grow: 1;
             }
         }
+
+        .anchor-wrapper {
+            position: relative;
+        }
     }
+
 </style>

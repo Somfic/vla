@@ -10,15 +10,17 @@ export let connections = writable<NodeInstanceConnection[]>([]);
 export let result = writable<WebResult>({ instances: [], values: [] } as WebResult);
 
 export function runWeb() {
-    let message = {
-        Web: {
-            Instances: get(instances),
-            Connections: get(connections),
-        },
-        Id: "RunWeb",
-    };
+    setTimeout(() => {
+        let message = {
+            Web: {
+                Instances: get(instances),
+                Connections: get(connections),
+            },
+            Id: "RunWeb",
+        };
 
-    sendMessage(message);
+        sendMessage(message);
+    }, 1);
 }
 
 export interface NodeStructure {
@@ -26,29 +28,31 @@ export interface NodeStructure {
     name: string;
     category: string;
     searchTerms: string[];
-    properties: Property[];
-    inputs: Parameter[];
-    outputs: Parameter[];
+    properties: PropertyStructure[];
+    inputs: ParameterStructure[];
+    outputs: ParameterStructure[];
     executeMethod: string;
 }
 
-export interface Parameter {
+export interface ParameterStructure {
     id: string;
     name: string;
     type: string;
+    defaultValue: any;
 }
 
-export interface Property {
+export interface PropertyStructure {
     name: string;
     type: string;
     htmlType: string;
-    defaultValue: string;
 }
 
 export interface TypeDefinition {
     name: string;
     type: string;
+    htmlType: string;
     values: TypeDefinitionValue[];
+    defaultValue: any;
     color: string;
     shape: string;
 }
@@ -62,6 +66,7 @@ export interface NodeInstance {
     id: string;
     nodeType: string;
     properties: PropertyInstance[];
+    inputs: ParameterInstance[];
     metadata: NodeMetadata;
 }
 
@@ -77,7 +82,6 @@ export interface PropertyInstance {
     name: string;
     type: string;
     value: string;
-    defaultValue: any;
 }
 export interface NodeInstanceConnection {
     from: ConnectedProperty;
@@ -90,11 +94,11 @@ export interface ConnectedProperty {
 }
 
 export interface WebResult {
-    values: ParameterValue[];
+    values: ParameterInstance[];
     instances: InstanceValue[];
 }
 
-export interface ParameterValue {
+export interface ParameterInstance {
     id: string;
     value: string;
 }
@@ -104,4 +108,8 @@ export interface InstanceValue {
     value: {
         name: string;
     };
+}
+
+export function typeToDefinition(type: string): TypeDefinition {
+    return get(types).find((t) => t.type == type) ?? ({} as TypeDefinition);
 }

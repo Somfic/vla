@@ -1,15 +1,17 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import { types, type Parameter } from "../lib/nodes";
+    import { types, type ParameterInstance, type NodeStructure, type ParameterStructure } from "../lib/nodes";
 
     export let input: boolean = false;
     export let output: boolean = false;
-    export let parameter: Parameter;
+    export let structure: NodeStructure;
+    export let parameter: ParameterInstance | ParameterStructure;
     export let linked: boolean;
     export let hovering: boolean;
     export let connecting: boolean;
 
-    $: typeDefinition = get(types).find((t) => t.type == parameter.type.replace("&", ""))!;
+    $: parameterType = structure.inputs.concat(structure.outputs).find((i) => i.id == parameter.id)?.type.replace("&", "");
+    $: typeDefinition = get(types).find((t) => t.type == parameterType)!;
 </script>
 
 <div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${typeDefinition.color})`}>
@@ -26,10 +28,10 @@
     @import "../theme.scss";
 
     .anchor {
-        position: relative;
         width: 12px;
         height: 12px;
-        filter: drop-shadow(0px 0px 0px var(--type-color));
+        filter: drop-shadow(0px 0px 5px transparent);
+        transition: all ease 200ms;
 
         &.input {
             margin-left: -5px;

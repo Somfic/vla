@@ -70,6 +70,14 @@
         close();
     }
 
+    function handleScroll(e: Event) {
+        let delta = (e as WheelEvent).deltaY > 0 ? 1 : -1;
+
+        activeIndex += delta;
+
+        santiseIndex();
+    }
+
     function execute(i: number) {
         menu?.(inputValue ?? "")?.[i]?.action();
     }
@@ -81,7 +89,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="context-wrapper" on:keydown={handleKeyPress} on:click={handleClick} class:show>
+<div class="context-wrapper" on:keydown={handleKeyPress} on:click={handleClick} on:scroll={handleScroll} class:show>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="context" on:click={(e) => e.stopPropagation()}>
         <input class="input" placeholder="Search for anything" on:input={santiseIndex} bind:value={inputValue} bind:this={input} type="text" />

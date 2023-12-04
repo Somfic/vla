@@ -1,6 +1,10 @@
 import { get } from "svelte/store";
-import { structures, instances } from "./nodes";
+import { structures, instances, types } from "./nodes";
 import Fuse from "fuse.js";
+
+function getDefaultValueForType(type: string): any {
+    return get(types).find((t) => t.type == type)?.defaultValue;
+}
 
 export function addNode(query: string): ContextResult[] {
     const search = new Fuse(get(structures), {
@@ -26,12 +30,18 @@ export function addNode(query: string): ContextResult[] {
                                 y: 0,
                             },
                         },
+                        inputs: r.item.inputs.map((p) => {
+                            console.log("Setting default value for input", p.name, p.defaultValue);
+                            return {
+                                id: p.id,
+                                value: p.defaultValue,
+                            };
+                        }),
                         properties: r.item.properties.map((p) => {
                             return {
                                 name: p.name,
                                 type: p.type,
-                                value: p.defaultValue,
-                                defaultValue: p.defaultValue,
+                                value: getDefaultValueForType(p.type),
                             };
                         }),
                     });

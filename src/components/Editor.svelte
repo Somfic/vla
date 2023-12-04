@@ -59,7 +59,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="editor" on:keydown={handleKeyPress}>
-    <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} edgeStyle="step">
+    <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} edgeStyle="bezier">
         {#each $instances as instance, i}
             <EditorNode bind:instance={$instances[i]} />
         {/each}

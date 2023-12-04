@@ -1,10 +1,12 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import { result } from "../lib/nodes";
+    import { result, type TypeDefinition } from "../lib/nodes";
+    import Value from "./Value.svelte";
 
     export let id: string;
     export let input: boolean = false;
     export let output: boolean = false;
+    export let type: TypeDefinition;
 
     let value: string | undefined = undefined;
 
@@ -17,45 +19,5 @@
 </script>
 
 <div class="computed" class:input class:output class:value>
-    {#if value}
-        <p>{value}</p>
-    {/if}
+    <Value {type} bind:value readonly output />
 </div>
-
-<style lang="scss">
-    @import "../theme.scss";
-
-    .computed {
-        width: 50px;
-        height: 1rem;
-        border: 2px solid $border-color;
-        border-radius: 5px;
-        background-color: $background-dark;
-        padding: 5px;
-        opacity: 0;
-        transition: opacity ease 200ms;
-        display: flex;
-
-        &.input p {
-            text-align: left;
-        }
-
-        &.output p {
-            text-align: right;
-        }
-
-        &.value {
-            opacity: 1;
-        }
-
-        p {
-            font-family: $font-mono;
-            font-weight: bold;
-            flex-grow: 1;
-            margin: 0;
-            color: #696969; // nice
-            // hide overflow with ...
-            overflow: hidden;
-        }
-    }
-</style>

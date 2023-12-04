@@ -1,29 +1,18 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import type { NodeStructure, Property, PropertyInstance } from "../lib/nodes";
+    import type { NodeStructure, PropertyStructure, PropertyInstance } from "../lib/nodes";
     import { types } from "../lib/nodes";
+    import Value from "./Value.svelte";
 
-    export let property: Property;
-    export let structure: NodeStructure;
-    export let value: string;
+    export let property: PropertyStructure;
+    export let value: any;
 
     $: type = get(types).find((x) => x.type == property.type)!;
-    $: structureProperty = structure.properties.find((p) => p.name == property.name)!;
 </script>
 
 <div class="property">
     <div class="property-name">{property.name}</div>
-    {#if structureProperty.htmlType == "text"}
-        <input tabindex="-1" bind:value type="text" placeholder={structureProperty.defaultValue} />
-    {:else if structureProperty.htmlType == "number"}
-        <input tabindex="-1" bind:value type="number" placeholder={structureProperty.defaultValue} />
-    {:else if structureProperty.htmlType == "select"}
-        <select tabindex="-1" bind:value>
-            {#each type.values as option}
-                <option value={option.value}>{option.name}</option>
-            {/each}
-        </select>
-    {/if}
+    <Value {type} bind:value={value} />
 </div>
 
 <style lang="scss">
@@ -34,7 +23,7 @@
         align-items: center;
         justify-content: space-between;
 
-        padding: 15px;
+        margin: 1rem 15px;
         gap: 6px;
 
         input, select {
@@ -53,10 +42,29 @@
                 border-color: $accent;
                 color: white;
             }
+
+            &[type="checkbox"] {
+                width: 1rem;
+                height: 1rem;
+                margin: 0;
+                padding: 0;
+                appearance: none;
+                background-color: #1f1f1f;
+                border: 2px solid #424242;
+                border-radius: 5px;
+                transition: all ease 200ms;
+                cursor: pointer;
+
+                &:checked {
+                    background-color: $accent;
+                    border-color: $accent;
+                }
+            }
         }
 
         select {
             padding-right: 1.1rem;
+            cursor: pointer;
         }
     }
 </style>
