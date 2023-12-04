@@ -11,7 +11,7 @@
     export let connecting: boolean;
 
     $: parameterType = structure.inputs.concat(structure.outputs).find((i) => i.id == parameter.id)?.type.replace("&", "");
-    $: typeDefinition = get(types).find((t) => t.type == parameterType)!;
+    $: typeDefinition = get(types).find((t) => t.type.replace("&", "") == parameterType)!;
 </script>
 
 <div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${typeDefinition.color})`}>
@@ -20,6 +20,8 @@
             <circle cx="50" cy="50" r="40" />
         {:else if typeDefinition.shape == "diamond"}
             <polygon points="49,1 99,49 49,99 1,49" />
+        {:else if typeDefinition.shape == "square"}
+            <rect x="10" y="10" width="80" height="80" />
         {/if}
     </svg>
 </div>
@@ -61,8 +63,8 @@
             height: 100%;
             fill: $background;
             stroke: var(--type-color);
-            stroke-width: 10px;
-
+            stroke-width: 12px;
+            stroke-linecap: round;
             transition: all ease 200ms;
         }
     }
