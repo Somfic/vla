@@ -26,6 +26,8 @@
             let delta = e.key == "ArrowDown" ? 1 : -1;
             delta = e.shiftKey || e.ctrlKey ? delta * 5 : delta;
 
+            activeIndex += delta;
+
             santiseIndex();
 
             e.preventDefault();
@@ -38,6 +40,7 @@
 
         setTimeout(() => {
             search();
+            santiseIndex();
         }, 1);
     }
 
