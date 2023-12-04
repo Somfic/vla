@@ -7,11 +7,13 @@
 	export let output = false;
 </script>
 
-<div class="value" class:hasValue={value} class:readonly class:input class:output>
+<div class="value" class:hasValue={value != null} class:readonly class:input class:output>
 {#if type.htmlType == "text"}
     <input {readonly} bind:value type="text" placeholder={type.defaultValue} />
-{:else if type.htmlType == "number"}
+{:else if type.htmlType == "number" && !readonly}
     <input {readonly} bind:value type="number" placeholder={type.defaultValue} />
+{:else if type.htmlType == "number" && readonly}
+	<input {readonly} bind:value type="text" placeholder={type.defaultValue} />
 {:else if type.htmlType == "select"}
 	{#if readonly}
 		<input {readonly} bind:value type="text" placeholder={type.defaultValue} />
@@ -53,6 +55,7 @@
 
         input, select {
 			all: unset;
+			cursor: pointer;
 			font-family: $font-mono;
 			font-weight: bold;
 			font-size: 0.8rem;
@@ -67,7 +70,8 @@
         }
 
 		select {
-			width: 100%;
+			width: calc(100% + 5rem);
+			text-align: right;
 		}
     }
 </style>
