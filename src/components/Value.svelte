@@ -56,7 +56,6 @@
         input, select {
 			all: unset;
 			cursor: pointer;
-			font-family: $font-mono;
 			font-weight: bold;
 			font-size: 0.8rem;
 			height: 1rem;
@@ -65,7 +64,7 @@
 			border: 2px solid $border-color;
 			border-radius: 10px;
 			background-color: $background-dark;
-			padding: 5px 5px;
+			padding: 3px 6px;
 			color: #999999;
         }
 
@@ -87,9 +86,14 @@
 			}
 		}
 
+		input {
+			font-family: $font-mono;
+		}
+
 		select {
 			width: calc(100% + 5rem);
 			text-align: right;
+			padding-right: 1rem;
 		}
     }
 </style>
