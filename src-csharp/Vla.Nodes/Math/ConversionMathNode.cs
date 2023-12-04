@@ -6,7 +6,7 @@ namespace Vla.Nodes.Math;
 [Node("Conversion math")]
 [NodeCategory("Math")]
 [NodeTags("Math", "Conversion", "Radians", "Degrees")]
-public class ConversionNode : INode
+public class ConversionMathNode : INode
 {
 	public string Name => $"Math {Mode.GetValueName()}";
 
