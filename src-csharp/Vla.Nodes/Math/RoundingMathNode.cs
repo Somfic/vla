@@ -13,14 +13,14 @@ public class RoundingMathNode : INode
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Round;
 
-	public void Execute([NodeInput("Value")] double value, [NodeOutput("Result")] out double result)
+	public void Execute([NodeInput("Value")] double value, [NodeOutput("Result")] out int result)
 	{
 		result = Mode switch
 		{
-			MathMode.Round => System.Math.Round(value),
-			MathMode.Floor => System.Math.Floor(value),
-			MathMode.Ceil => System.Math.Ceiling(value),
-			MathMode.Truncate => System.Math.Truncate(value),
+			MathMode.Round => (int)System.Math.Round(value),
+			MathMode.Floor => (int)System.Math.Floor(value),
+			MathMode.Ceil => (int)System.Math.Ceiling(value),
+			MathMode.Truncate => (int)System.Math.Truncate(value),
 			_ => throw new ArgumentOutOfRangeException()
 		};
 	}
