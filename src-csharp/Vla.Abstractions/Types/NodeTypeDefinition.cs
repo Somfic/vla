@@ -7,8 +7,8 @@ namespace Vla.Abstractions.Types;
 
 public readonly struct NodeTypeDefinition
 {
-    private static Dictionary<string, (string shape, string htmlType, Color color)>
-        _specialTypes = new()
+    private static readonly Dictionary<string, (string shape, string htmlType, Color color)>
+        SpecialTypes = new()
         {
             { "Int32", ("square", "number", Color.FromArgb(255, 223, 109)) },
             { "Double", ("circle", "number", Color.FromArgb(255, 223, 109)) },
@@ -21,9 +21,13 @@ public readonly struct NodeTypeDefinition
     {
         Type = type;
         Name = string.IsNullOrWhiteSpace(name) ? type.Name : name;
-        Color = _specialTypes.TryGetValue(type.Name.Replace("&", ""), out var specialType) ? specialType.color : Color.FromArgb(255, 255, 255);
-        HtmlType = _specialTypes.TryGetValue(type.Name.Replace("&", ""), out specialType) ? specialType.htmlType : "text";
-        Shape = _specialTypes.TryGetValue(type.Name.Replace("&", ""), out specialType) ? specialType.shape : "circle";
+        Color = SpecialTypes.TryGetValue(type.Name.Replace("&", ""), out var specialType) ? specialType.color : Color.FromArgb(255, 255, 255);
+
+        if (type.IsEnum)
+            HtmlType = "select";
+        else
+            HtmlType = SpecialTypes.TryGetValue(type.Name.Replace("&", ""), out specialType) ? specialType.htmlType : "text";
+        Shape = SpecialTypes.TryGetValue(type.Name.Replace("&", ""), out specialType) ? specialType.shape : "circle";
 
         if (Name.EndsWith('&'))
             Name = Name[..^1];
