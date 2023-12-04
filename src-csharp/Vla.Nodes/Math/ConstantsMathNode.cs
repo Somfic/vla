@@ -6,7 +6,7 @@ namespace Vla.Nodes.Math;
 [Node("Math constants")]
 [NodeCategory("Math")]
 [NodeTags("Math", "Constants", "Pi", "E", "Tau", "π", "τ")]
-public class MathConstantsNode : INode
+public class ConstantsMathNode : INode
 {
 	public string Name => $"Math {Mode.GetValueName()}";
 
