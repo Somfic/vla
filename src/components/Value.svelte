@@ -25,7 +25,7 @@
 		</select>
 	{/if}
 {:else if type.htmlType == "checkbox"}
-    <input {readonly} bind:checked={value} type="checkbox" />
+    <input disabled={readonly} {readonly} bind:checked={value} type="checkbox" />
 {/if}
 </div>
 
@@ -68,6 +68,24 @@
 			padding: 5px 5px;
 			color: #999999;
         }
+
+		input[type="checkbox"] { 
+			width: calc(1rem + 10px);
+			height: calc(1rem + 10px);
+			margin: 0;
+			padding: 0;
+			appearance: none;
+			background-color: $background-dark;
+			border: 2px solid $border-color;
+			border-radius: 10px;
+			transition: all ease 200ms;
+			cursor: pointer;
+
+			&:checked {
+				background-color: $accent;
+				border-color: $accent;
+			}
+		}
 
 		select {
 			width: calc(100% + 5rem);
