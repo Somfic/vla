@@ -4,6 +4,8 @@ using Vla.Abstractions.Attributes;
 namespace Vla.Nodes.Math;
 
 [Node]
+[NodeCategory("Math")]
+[NodeTags("Math", "Conversion", "Radians", "Degrees")]
 public class ConversionNode : INode
 {
 	public string Name => $"Math {Mode.ToString().ToLower()}";

@@ -4,6 +4,8 @@ using Vla.Abstractions.Attributes;
 namespace Vla.Nodes.Constant;
 
 [Node]
+[NodeCategory("Constant")]
+[NodeTags("Number", "Constant", "Value", "Double", "Float", "Decimal", "Integer")]
 public class NumberConstantNode : INode
 {
 	public string Name => "Number constant";

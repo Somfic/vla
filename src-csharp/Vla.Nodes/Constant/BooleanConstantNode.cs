@@ -4,6 +4,8 @@ using Vla.Abstractions.Attributes;
 namespace Vla.Nodes.Constant;
 
 [Node]
+[NodeCategory("Constant")]
+[NodeTags("Boolean", "Constant", "Value", "True", "False")]
 public class BooleanConstantNode : INode
 {
 	public string Name => "Boolean constant";

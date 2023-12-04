@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Immutable;
+using System.Reflection;
 using Newtonsoft.Json;
 
 namespace Vla.Abstractions.Structure;
@@ -6,7 +7,20 @@ namespace Vla.Abstractions.Structure;
 public static class NodeStructureBuilderExtensions {
     public static NodeStructure WithType(this NodeStructure node, Type type)
     {
+        node = node.WithSearchTerms(type.Name);
+        node = node.WithSearchTerms(type.Namespace?.Split('.') ?? Array.Empty<string>());
         return node with { NodeType = type };
+    }
+    
+    public static NodeStructure WithSearchTerms(this NodeStructure node, params string[] terms)
+    {
+        return node with { SearchTerms = node.SearchTerms.AddRange(terms) };
+    }
+    
+    public static NodeStructure WithCategory(this NodeStructure node, string? category)
+    {
+        node = node.WithSearchTerms(category ?? string.Empty);
+        return node with { Category = category };
     }
 	
     public static NodeStructure WithInput(this NodeStructure node, string id, string name, Type type)

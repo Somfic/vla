@@ -4,6 +4,8 @@ using Vla.Abstractions.Attributes;
 namespace Vla.Nodes.Math;
 
 [Node]
+[NodeCategory("Math")]
+[NodeTags("Add", "Subtract", "Multiply", "Divide", "+", "-", "*", "/", "Plus", "Minus", "Times")]
 public class BasicMathNode : INode
 {
 	public string Name => $"Math {Mode.ToString().ToLower()}";

@@ -11,6 +11,12 @@ public readonly struct NodeStructure
 
 	[JsonProperty("nodeType")]
 	public Type NodeType { get; init; } = typeof(object);
+	
+	[JsonProperty("category")]
+	public string? Category { get; init; } = string.Empty;
+	
+	[JsonProperty("searchTerms")]
+	public ImmutableArray<string> SearchTerms { get; init; } = ImmutableArray<string>.Empty;
 
 	[JsonProperty("properties")]
 	public ImmutableArray<PropertyStructure> Properties { get; init; } = ImmutableArray<PropertyStructure>.Empty;

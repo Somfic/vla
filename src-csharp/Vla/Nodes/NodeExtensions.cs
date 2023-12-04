@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Immutable;
+using System.Reflection;
 using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Abstractions;
@@ -31,6 +32,8 @@ public static class NodeExtensions
     {
         var structure = new NodeStructure()
             .WithType(type)
+            .WithCategory(GetCategory(type))
+            .WithSearchTerms(GetSearchTerms(type).ToArray())
             .WithMethod(GetMainMethod(type).Expect())
             .WithProperties(type.GetProperties()
                 .Where(y => y.GetCustomAttribute<NodePropertyAttribute>() is not null)
@@ -51,7 +54,25 @@ public static class NodeExtensions
                 .ToArray());
         return structure;
     }
-	
+
+    private static string[] GetSearchTerms(Type type)
+    {
+        return type.GetCustomAttributes()
+            .Where(x => x.GetType() == typeof(NodeTagsAttribute))
+            .Select(x => x as NodeTagsAttribute)
+            .SelectMany(x => x!.Tags)
+            .ToArray();
+    }
+
+    private static string? GetCategory(Type type)
+    {
+        return type.GetCustomAttributes()
+            .Where(x => x.GetType() == typeof(NodeCategoryAttribute))
+            .Select(x => x as NodeCategoryAttribute)
+            .Select(x => x!.Name)
+            .FirstOrDefault();
+    }
+
     private static Maybe<MethodInfo> GetMainMethod(Type type) => GetApplicableMethods(type).FirstOrDefault();
 
     private static MethodInfo[] GetApplicableMethods(Type type)

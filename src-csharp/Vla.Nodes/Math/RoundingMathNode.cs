@@ -4,6 +4,8 @@ using Vla.Abstractions.Attributes;
 namespace Vla.Nodes.Math;
 
 [Node]
+[NodeCategory("Math")]
+[NodeTags("Math", "Rounding", "Round", "Floor", "Ceil", "Truncate")]
 public class RoundingMathNode : INode
 {
 	public string Name => $"Math {Mode.ToString().ToLower()}";
