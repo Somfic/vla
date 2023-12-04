@@ -5,7 +5,7 @@ import Fuse from "fuse.js";
 export function addNode(query: string): ContextResult[] {
     const search = new Fuse(get(structures), {
         keys: ["searchTerms"],
-        threshold: 0.4,
+        threshold: 0.3,
     });
 
     const result = search.search(query);
@@ -13,7 +13,8 @@ export function addNode(query: string): ContextResult[] {
     return result.map((r) => {
         return {
             name: r.item.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", ""),
-            context: r.item.nodeType.split(".")[0],
+            sourcePlugin: r.item.nodeType.split(".")[0],
+            category: r.item.category,
             action: () => {
                 instances.update((i) => {
                     i.push({
@@ -51,6 +52,7 @@ function generateGuid(): string {
 
 export interface ContextResult {
     name: string;
-    context?: string;
+    category: string | undefined;
+    sourcePlugin: string | undefined;
     action: () => void;
 }

@@ -92,11 +92,18 @@
                     <div class="name">
                         {result.name}
                     </div>
-                    {#if result.context}
-                        <div class="context">
-                            {result.context}
+                    <div class="context">
+                    {#if result.category}
+                        <div class="category">
+                            {result.category}
                         </div>
                     {/if}
+                    {#if result.sourcePlugin}
+                        <div class="plugin">
+                            {result.sourcePlugin}
+                        </div>
+                    {/if}
+                    </div>
                 </div>
             {/each}
         {/if}
@@ -173,7 +180,17 @@
         cursor: pointer;
 
         .context {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .category {
             opacity: 0.5;
+        }
+
+        .plugin {
+            opacity: 0.25;
         }
 
         &.active {
