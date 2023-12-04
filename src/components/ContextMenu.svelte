@@ -84,7 +84,7 @@
 <div class="context-wrapper" on:keydown={handleKeyPress} on:click={handleClick} class:show>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="context" on:click={(e) => e.stopPropagation()}>
-        <input class="input" on:input={santiseIndex} bind:value={inputValue} bind:this={input} type="text" />
+        <input class="input" placeholder="Search for anything" on:input={santiseIndex} bind:value={inputValue} bind:this={input} type="text" />
         {#if results.length > 0}
             {#each results as result, i}
                 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
