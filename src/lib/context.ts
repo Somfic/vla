@@ -4,7 +4,7 @@ import Fuse from "fuse.js";
 
 export function addNode(query: string): ContextResult[] {
     const search = new Fuse(get(structures), {
-        keys: ["nodeType"],
+        keys: ["searchTerms"],
         threshold: 0.4,
     });
 

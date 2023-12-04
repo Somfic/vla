@@ -23,6 +23,8 @@ export function runWeb() {
 
 export interface NodeStructure {
     nodeType: string;
+    category: string;
+    searchTerms: string[];
     properties: Property[];
     inputs: Parameter[];
     outputs: Parameter[];
