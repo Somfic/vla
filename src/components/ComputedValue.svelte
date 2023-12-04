@@ -21,3 +21,9 @@
 <div class="computed" class:input class:output class:value>
     <Value {type} bind:value readonly output />
 </div>
+
+<style lang="scss">
+    .computed {
+        opacity: 0.5;
+    }
+</style>
