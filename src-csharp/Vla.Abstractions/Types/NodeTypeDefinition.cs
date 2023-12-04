@@ -16,7 +16,7 @@ public readonly struct NodeTypeDefinition
             Name = Name[..^1];
         
         if (type.IsEnum)
-            Values = Enum.GetValues(type).Cast<object>().Select(x => new NodeTypeDefinitionValue(x.ToString()!, x)).ToImmutableArray();
+            Values = Enum.GetValues(type).Cast<object>().Select(x => new NodeTypeDefinitionValue(EnumExtensions.GetValueNameFromField(x.GetType(), x.ToString()), x)).ToImmutableArray();
 
         Shape = type == typeof(NodeFlow) ? "diamond" : "circle";
     }
