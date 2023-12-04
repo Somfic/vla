@@ -12,7 +12,7 @@ export function addNode(query: string): ContextResult[] {
 
     return result.map((r) => {
         return {
-            name: r.item.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", ""),
+            name: r.item.name,
             sourcePlugin: r.item.nodeType.split(".")[0],
             category: r.item.category,
             action: () => {
