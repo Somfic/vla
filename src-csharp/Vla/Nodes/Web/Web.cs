@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Vla.Nodes.Connection;
-using Vla.Nodes.Instance;
+using Vla.Abstractions.Connection;
+using Vla.Abstractions.Instance;
 
 namespace Vla.Nodes.Web;
 

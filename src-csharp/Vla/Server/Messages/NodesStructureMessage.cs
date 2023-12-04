@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Vla.Nodes.Structure;
-using Vla.Nodes.Types;
+using Vla.Abstractions.Structure;
+using Vla.Abstractions.Types;
 
 namespace Vla.Server.Messages;
 

@@ -2,7 +2,7 @@ import { execa } from "execa";
 import { renameSync, mkdirSync, existsSync, copyFileSync, rmdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
-const dotnetVersion = "net7.0";
+const dotnetVersion = "net8.0";
 const targetExecutable = join("src-tauri", "binaries");
 const targetLibraries = join("src-tauri");
 
@@ -21,8 +21,13 @@ async function main() {
     mkdirSync(targetExecutable, { recursive: true });
 
     // Build the C# project
-    await execa("dotnet", ["clean", "src-csharp", "-c", "Release"]);
-    await execa("dotnet", ["publish", "src-csharp", "-c", "Release", "-f", dotnetVersion, "--self-contained", "true", "/p:PublishSingleFile=true"]);
+    console.log("Cleaning previous builds");
+    await execa("dotnet", ["clean", join("src-csharp", "vla"), "-c", "Release"]);
+
+    console.log("Building C# project");
+    await execa("dotnet", ["publish", join("src-csharp", "vla"), "-c", "Release", "-f", dotnetVersion, "--self-contained", "true", "/p:PublishSingleFile=true"]);
+
+    console.log("Copying C# executable to src-tauri/binaries");
 
     // Determine the architecture
     const dist = join("src-csharp", "Vla", "bin", "Release", dotnetVersion);

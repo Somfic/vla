@@ -5,8 +5,7 @@ using Newtonsoft.Json.Linq;
 using Somfic.Common;
 using Vla.Input;
 using Vla.Nodes;
-using Vla.Nodes.Connection;
-using Vla.Nodes.Instance;
+using Vla.Nodes.Constant;
 using Vla.Nodes.Web;
 using Vla.Server;
 using Vla.Server.Messages;
@@ -51,40 +50,9 @@ recogniser.PartlyRecognised.OnChange(e =>
     server.BroadcastAsync(new RecogniserRecognisedPartialMessage(e)).GetAwaiter().GetResult();
 });
 
-node.Register<MathNode>()
-    .Register<NumberConstantNode>()
-    .Register<PrinterNode>()
-    .Register<MathModulo>()
-    .Register<ConditionalNode>();
+node.Register(typeof(BooleanConstantNode).Assembly);
 
-var constantInstance1 = new NodeInstance()
-    .From<NumberConstantNode>()
-    .WithProperty("Value", 2m)
-    .WithPosition(0, 0);
-
-var constantInstance2 = new NodeInstance()
-    .From<NumberConstantNode>()
-    .WithProperty("Value", 2m);
-
-var moduloInstance = new NodeInstance()
-    .From<MathModulo>()
-    .WithPosition(10, 0);
-
-var conditionalInstance = new NodeInstance()
-    .From<ConditionalNode>();
-
-var printInstance = new NodeInstance()
-    .From<PrinterNode>();
-
-var constant1ToMathA = new NodeConnection()
-    .From(constantInstance1, "value")
-    .To(moduloInstance, "modulo");
-
-var instances = new[] { constantInstance1, moduloInstance };
-var connections = new[] { constant1ToMathA };
 var web = new Web()
-    .WithInstances(instances)
-    .WithConnections(connections)
     .Validate(node.Structures)
     .OnError(Console.WriteLine);
 

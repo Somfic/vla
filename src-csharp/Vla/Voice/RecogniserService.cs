@@ -4,7 +4,6 @@ using Somfic.Common;
 using Vla.Server;
 using Vla.Server.Messages;
 using Whisper.net;
-using Whisper.net.Ggml;
 
 namespace Vla.Voice;
 

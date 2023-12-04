@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Vla.Nodes.Instance;
-using Vla.Nodes.Structure;
+using Vla.Abstractions.Instance;
+using Vla.Abstractions.Structure;
 using Vla.Nodes.Web.Result;
 
 namespace Vla.Nodes.Web;

@@ -1,9 +1,11 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Somfic.Common;
-using Vla.Nodes.Structure;
-using Vla.Nodes.Types;
+using Vla.Abstractions;
+using Vla.Abstractions.Structure;
+using Vla.Abstractions.Types;
 using Vla.Nodes.Web;
 using Vla.Nodes.Web.Result;
 
@@ -28,6 +30,20 @@ public class NodeService
         NodeExtensions.ToStructure<TNode>()
             .On(_structures.Add)
             .OnError(x => _log.LogWarning(x, "Could not register node {Node}", typeof(TNode).Name));
+
+        return this;
+    }
+    
+    public NodeService Register(Assembly assembly)
+    {
+        var types = assembly.GetTypes().Where(x => x.IsAssignableTo(typeof(INode))).ToArray();
+        
+        foreach (var type in types)
+        {
+            NodeExtensions.ToStructure(type)
+                .On(_structures.Add)
+                .OnError(x => _log.LogWarning(x, "Could not register node {Node}", type.Name));
+        }
 
         return this;
     }
