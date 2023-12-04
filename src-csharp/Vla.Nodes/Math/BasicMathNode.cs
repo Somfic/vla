@@ -3,12 +3,12 @@ using Vla.Abstractions.Attributes;
 
 namespace Vla.Nodes.Math;
 
-[Node]
+[Node("Basic math")]
 [NodeCategory("Math")]
 [NodeTags("Add", "Subtract", "Multiply", "Divide", "+", "-", "*", "/", "Plus", "Minus", "Times")]
 public class BasicMathNode : INode
 {
-	public string Name => $"Math {Mode.ToString().ToLower()}";
+	public string Name => $"Math {Mode.GetValueName()}";
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Add;

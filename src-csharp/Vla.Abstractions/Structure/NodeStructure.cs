@@ -11,6 +11,9 @@ public readonly struct NodeStructure
 
 	[JsonProperty("nodeType")]
 	public Type NodeType { get; init; } = typeof(object);
+
+	[JsonProperty("name")]
+	public string Name { get; init; } = string.Empty;
 	
 	[JsonProperty("category")]
 	public string? Category { get; init; } = string.Empty;

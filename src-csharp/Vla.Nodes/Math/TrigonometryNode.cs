@@ -3,12 +3,12 @@ using Vla.Abstractions.Attributes;
 
 namespace Vla.Nodes.Math;
 
-[Node]
+[Node("Trigonometry math")]
 [NodeCategory("Math")]
 [NodeTags("Math", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sine", "Cosine", "Tangent", "Arcsine", "Arccosine", "Arctangent", "Trigonometry")]
 public class TrigonometryNode : INode
 {
-	public string Name => $"Math {Mode.ToString().ToLower()}";
+	public string Name => $"Math {Mode.GetValueName()}";
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Sin;

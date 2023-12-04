@@ -3,12 +3,12 @@ using Vla.Abstractions.Attributes;
 
 namespace Vla.Nodes.Math;
 
-[Node]
+[Node("Conversion math")]
 [NodeCategory("Math")]
 [NodeTags("Math", "Conversion", "Radians", "Degrees")]
 public class ConversionNode : INode
 {
-	public string Name => $"Math {Mode.ToString().ToLower()}";
+	public string Name => $"Math {Mode.GetValueName()}";
 
 	[NodeProperty]
 	public ConversionMode Mode { get; set; } = ConversionMode.ToRadians;
@@ -25,7 +25,10 @@ public class ConversionNode : INode
 
 	public enum ConversionMode
 	{
+		[NodeEnumValue("To radians")]
 		ToRadians,
+		
+		[NodeEnumValue("To degrees")]
 		ToDegrees
 	}
 }

@@ -32,6 +32,7 @@ public static class NodeExtensions
     {
         var structure = new NodeStructure()
             .WithType(type)
+            .WithName(GetName(type))
             .WithCategory(GetCategory(type))
             .WithSearchTerms(GetSearchTerms(type).ToArray())
             .WithMethod(GetMainMethod(type).Expect())
@@ -53,6 +54,15 @@ public static class NodeExtensions
                         y.ParameterType))
                 .ToArray());
         return structure;
+    }
+
+    private static string GetName(Type type)
+    {
+        return type.GetCustomAttributes()
+            .Where(x => x.GetType() == typeof(NodeAttribute))
+            .Select(x => x as NodeAttribute)
+            .Select(x => x!.Name)
+            .First();
     }
 
     private static string[] GetSearchTerms(Type type)

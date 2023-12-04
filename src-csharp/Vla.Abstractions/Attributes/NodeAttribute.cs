@@ -1,29 +1,25 @@
 ﻿namespace Vla.Abstractions.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class NodeAttribute : Attribute
+public class NodeAttribute(string name) : Attribute
 {
-    
+    public string Name { get; } = name;
 }
 
 [AttributeUsage(AttributeTargets.Class)]
-public class NodeCategoryAttribute : Attribute
+public class NodeCategoryAttribute(string name) : Attribute
 {
-    public NodeCategoryAttribute(string name)
-    {
-        Name = name;
-    }
-
-    public string Name { get; set; }
+    public string Name { get; } = name;
 }
 
 [AttributeUsage(AttributeTargets.Class)]
-public class NodeTagsAttribute : Attribute
+public class NodeTagsAttribute(params string[] tags) : Attribute
 {
-    public NodeTagsAttribute(params string[] tags)
-    {
-        Tags = tags;
-    }
+    public string[] Tags { get;  } = tags;
+}
 
-    public string[] Tags { get; set; }
+[AttributeUsage(AttributeTargets.Field)]
+public class NodeEnumValueAttribute(string name) : Attribute
+{
+    public string Name { get;  } = name;
 }

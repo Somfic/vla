@@ -5,6 +5,12 @@ using Newtonsoft.Json;
 namespace Vla.Abstractions.Structure;
 
 public static class NodeStructureBuilderExtensions {
+    public static NodeStructure WithName(this NodeStructure node, string name)
+    {
+        node = node.WithSearchTerms(name);
+        return node with { Name = name };
+    }
+    
     public static NodeStructure WithType(this NodeStructure node, Type type)
     {
         node = node.WithSearchTerms(type.Name);
@@ -14,7 +20,7 @@ public static class NodeStructureBuilderExtensions {
     
     public static NodeStructure WithSearchTerms(this NodeStructure node, params string[] terms)
     {
-        return node with { SearchTerms = node.SearchTerms.AddRange(terms) };
+        return node with { SearchTerms = node.SearchTerms.AddRange(terms).Distinct().ToImmutableArray() };
     }
     
     public static NodeStructure WithCategory(this NodeStructure node, string? category)

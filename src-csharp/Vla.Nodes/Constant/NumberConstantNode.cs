@@ -3,7 +3,7 @@ using Vla.Abstractions.Attributes;
 
 namespace Vla.Nodes.Constant;
 
-[Node]
+[Node("Number constant")]
 [NodeCategory("Constant")]
 [NodeTags("Number", "Constant", "Value", "Double", "Float", "Decimal", "Integer")]
 public class NumberConstantNode : INode

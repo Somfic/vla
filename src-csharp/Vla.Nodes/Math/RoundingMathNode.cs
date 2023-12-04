@@ -3,12 +3,12 @@ using Vla.Abstractions.Attributes;
 
 namespace Vla.Nodes.Math;
 
-[Node]
+[Node("Rounding math")]
 [NodeCategory("Math")]
 [NodeTags("Math", "Rounding", "Round", "Floor", "Ceil", "Truncate")]
 public class RoundingMathNode : INode
 {
-	public string Name => $"Math {Mode.ToString().ToLower()}";
+	public string Name => $"Math {Mode.GetValueName()}";
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Round;
