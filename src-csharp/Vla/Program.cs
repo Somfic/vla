@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Somfic.Common;
+using Vla.Abstractions;
 using Vla.Input;
 using Vla.Nodes;
 using Vla.Nodes.Constant;
@@ -20,6 +21,7 @@ var host = Host.CreateDefaultBuilder()
         s.AddSingleton<WebsocketService>();
         s.AddSingleton<NodeService>();
         s.AddSingleton<InputService>();
+        s.AddSingleton<VariableManager>();
     })
     .Build();
 
