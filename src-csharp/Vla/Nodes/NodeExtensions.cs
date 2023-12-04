@@ -23,7 +23,6 @@ public static class NodeExtensions
                 "Node must have no parameters with both NodeInputAttribute and NodeOutputAttribute")
             .Guard(x => GetMainMethod(x).Expect().ReturnType == typeof(void), "Node must have void as return type")
             .Guard(x => GetMainMethod(x).Expect().IsPublic, "Node must have a public execution path")
-            .Guard(x => x.GetConstructor(Type.EmptyTypes) is not null,"Node must have a public constructor with no parameters")
             .Pipe(BuildStructure);
     
     public static Result<NodeStructure> ToStructure<TNode>() where TNode : INode => ToStructure(typeof(TNode));
