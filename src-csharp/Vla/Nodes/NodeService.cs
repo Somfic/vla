@@ -70,6 +70,6 @@ public class NodeService
         
         var allTypes = inputTypes.Concat(outputTypes).Concat(propertyTypes).Distinct();
 
-        return allTypes.Select(type => new NodeTypeDefinition(type)).ToList();
+        return allTypes.Select(type => new NodeTypeDefinition(type)).Distinct().ToList();
     }
 }
