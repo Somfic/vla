@@ -14,6 +14,8 @@
     $: midwayColor = blendColors(startColor, stopColor, 0.5);
     $: stopColor = typeToDefinition(target?.type ?? "")?.color?.hex ?? "#ffffff";
 
+    $: gradientName = `gradient-${edge?.target.id ?? "default"}`;
+
     function findParameter(id: string | null, isInput: boolean): ParameterStructure | undefined {
         if (id == null) return undefined;
 
@@ -34,20 +36,20 @@
 <Edge bind:edge let:path let:destroy edgeClick={() => alert("Edge clicked")}>
     <!-- Define a gradient that goes from the source color to the target color -->
     <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={gradientName} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stop-color={startColor} />
             <stop offset="50%" stop-color={midwayColor} />
             <stop offset="100%" stop-color={stopColor} />
         </linearGradient>
     </defs>
 
-    <path bind:this={ref} d={path} />
+    <path bind:this={ref} d={path} style:--gradient-name={`url(#${gradientName})`} />
 </Edge>
 
 <style lang="scss">
     path {
         // Gradient fill based on the source and target colors
-        stroke: url(#gradient);
+        stroke: var(--gradient-name);
         stroke-width: 4px;
         z-index: 1;
     }
