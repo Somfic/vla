@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Square root", "Inverse square root", "Sqrt", "InvSqrt", "√", "1/√")]
 public class SquareRootMathNode : INode
 {
-	public string Name => $"Math {Mode.GetValueName()}";
+	public string Name => Mode.GetValueName();
 	
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.SquareRoot;

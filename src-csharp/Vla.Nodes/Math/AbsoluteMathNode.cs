@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Absolute", "Abs", "Magnitude")]
 public class AbsoluteMathNode : INode
 {
-	public string Name => "Math Absolute";
+	public string Name => "Absolute";
 
 	public void Execute([NodeInput("Value")] double value, [NodeOutput("Result")] out double result)
 	{

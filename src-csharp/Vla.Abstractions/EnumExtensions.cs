@@ -1,19 +1,19 @@
-﻿using Vla.Abstractions.Attributes;
+﻿using System.Reflection;
+using Vla.Abstractions.Attributes;
 
 namespace Vla.Abstractions;
 
 public static class EnumExtensions {
 	public static string GetValueName<T>(this T value) where T : Enum
 	{
-		var enumType = typeof(T);
-		var name = Enum.GetName(enumType, value);
-		var field = enumType.GetField(name);
-		return GetValueNameFromField(field.GetType(), name);
+		return GetValueNameFromEnum(typeof(T), value.ToString());
 	}
 
-	public static string GetValueNameFromField(Type field, string name)
+	public static string GetValueNameFromEnum(Type enumType, string name)
 	{
-		var attribute = field.GetCustomAttributes(typeof(NodeEnumValueAttribute), false).FirstOrDefault() as NodeEnumValueAttribute;
-		return attribute?.Name ?? name;
+		var memberInfos = enumType.GetMember(name);
+		var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == enumType);
+		var valueAttributes = enumValueMemberInfo?.GetCustomAttribute(typeof(NodeEnumValueAttribute), false);
+		return valueAttributes is NodeEnumValueAttribute nodeEnumValueAttribute ? nodeEnumValueAttribute.Name : name;
 	}
 }

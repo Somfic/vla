@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Exponent", "Exp", "e^", "e", "Exponential")]
 public class ExponentMathNode : INode
 {
-	public string Name => "Math Exponent";
+	public string Name => "Exponent";
 
 	public void Execute([NodeInput("Value")] double value, [NodeOutput("Result")] out double result)
 	{

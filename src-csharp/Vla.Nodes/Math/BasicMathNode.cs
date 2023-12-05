@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Add", "Subtract", "Multiply", "Divide", "+", "-", "*", "/", "Plus", "Minus", "Times")]
 public class BasicMathNode : INode
 {
-	public string Name => $"Math {Mode.GetValueName()}";
+	public string Name => Mode.GetValueName();
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Add;

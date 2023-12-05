@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Math", "Conversion", "Radians", "Degrees")]
 public class ConversionMathNode : INode
 {
-	public string Name => $"Math {Mode.GetValueName()}";
+	public string Name => Mode.GetValueName();
 
 	[NodeProperty]
 	public ConversionMode Mode { get; set; } = ConversionMode.ToRadians;

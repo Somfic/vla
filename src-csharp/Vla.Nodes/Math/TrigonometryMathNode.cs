@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Math", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sine", "Cosine", "Tangent", "Arcsine", "Arccosine", "Arctangent", "Trigonometry", "Hyperbolic", "Hyperbolic sine", "Hyperbolic cosine", "Hyperbolic tangent", "Hyperbolic arcsine", "Hyperbolic arccosine", "Hyperbolic arctangent", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh")]
 public class TrigonometryMathNode : INode
 {
-	public string Name => $"Math {Mode.GetValueName()}{(Hyperbolic ? " (hyperbolic)" : "")}";
+	public string Name => $"{Mode.GetValueName()}{(Hyperbolic ? " (hyperbolic)" : "")}";
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Sin;

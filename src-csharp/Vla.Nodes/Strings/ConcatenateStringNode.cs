@@ -8,7 +8,7 @@ namespace Vla.Nodes.Strings;
 [NodeTags("Strings", "Concatenate", "Concat", "Join", "Append", "Prepend")]
 public class ConcatenateStringNode : INode
 {
-    public string Name => "Concatenate string";
+    public string Name => "Concatenate strings";
     
     [NodeProperty]
     public bool AddSpace { get; set; } = true;

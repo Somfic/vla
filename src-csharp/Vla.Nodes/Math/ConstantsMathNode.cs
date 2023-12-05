@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Math", "Constants", "Pi", "E", "Tau", "π", "τ")]
 public class ConstantsMathNode : INode
 {
-	public string Name => $"Math {Mode.GetValueName()}";
+	public string Name => Mode.GetValueName();
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Pi;
@@ -26,8 +26,11 @@ public class ConstantsMathNode : INode
 
 	public enum MathMode
 	{
+		[NodeEnumValue("π")]
 		Pi,
+		[NodeEnumValue("e")]
 		E,
+		[NodeEnumValue("τ")]
 		Tau
 	}
 }

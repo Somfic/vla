@@ -8,7 +8,7 @@ namespace Vla.Nodes.Math;
 [NodeTags("Math", "Rounding", "Round", "Floor", "Ceil", "Truncate")]
 public class RoundingMathNode : INode
 {
-	public string Name => $"Math {Mode.GetValueName()}";
+	public string Name => Mode.GetValueName();
 
 	[NodeProperty]
 	public MathMode Mode { get; set; } = MathMode.Round;

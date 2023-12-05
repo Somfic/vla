@@ -31,9 +31,12 @@ public readonly struct NodeTypeDefinition
 
         if (Name.EndsWith('&'))
             Name = Name[..^1];
-        
+
         if (type.IsEnum)
-            Values = Enum.GetValues(type).Cast<object>().Select(x => new NodeTypeDefinitionValue(EnumExtensions.GetValueNameFromField(x.GetType(), x.ToString()), x)).ToImmutableArray();
+            Values = Enum.GetNames(type)
+                .Select(x => (value: x, label: EnumExtensions.GetValueNameFromEnum(type, x)))
+                .Select(x => new NodeTypeDefinitionValue(x.label, Enum.Parse(type, x.value)))
+                .ToImmutableArray();
         
         DefaultValue = type.GetDefaultValueForType();
     }
