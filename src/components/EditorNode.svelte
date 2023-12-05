@@ -25,7 +25,7 @@
 
     function handleKeyUp(e: KeyboardEvent) {
         if (e.key == "Delete") {
-            console.log("delete", instance.id)
+            console.log("delete", instance.id);
             instances.update((i) => i.filter((i) => i.id != instance.id));
         }
     }
@@ -35,11 +35,14 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div use:grabHandle class:selected class="node" on:keyup={handleKeyUp}>
         <div class="title">{result?.value?.name ?? structure.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
-        <div class="properties">
-            {#each structure.properties as property, i}
-                <EditorProperty {property} bind:value={instance.properties[i].value} />
-            {/each}
-        </div>
+
+        {#if structure.properties.length > 0}
+            <div class="properties">
+                {#each structure.properties as property, i}
+                    <EditorProperty {property} bind:value={instance.properties[i].value} />
+                {/each}
+            </div>
+        {/if}
         <div class="input-output">
             {#if structure.inputs.length > 0}
                 <div class="inputs">
@@ -85,6 +88,8 @@
 <style lang="scss">
     @import "../theme.scss";
 
+    $border: 2px solid $border-color;
+
     .node {
         display: flex;
         flex-direction: column;
@@ -93,9 +98,10 @@
         border-radius: 11px;
         transition: 200ms ease all;
         outline: 2px solid transparent;
+        border: $border;
 
         &.selected {
-            outline: 2px solid transparentize($accent, 0.5);
+            outline: 10px solid transparentize($accent, 0.8);
         }
     }
 
@@ -103,6 +109,11 @@
         background-color: #ad50a3;
         padding: 12px;
         border-radius: 10px 10px 0 0;
+        border-bottom: $border;
+    }
+
+    .properties {
+        border-bottom: $border;
     }
 
     .input-output {
@@ -120,6 +131,7 @@
             flex-grow: 1;
             align-items: left;
             padding-right: 12px;
+            border-right: $border;
         }
 
         .outputs {
@@ -162,5 +174,4 @@
             position: relative;
         }
     }
-
 </style>
