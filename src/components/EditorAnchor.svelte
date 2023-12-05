@@ -10,11 +10,14 @@
     export let hovering: boolean;
     export let connecting: boolean;
 
-    $: parameterType = structure.inputs.concat(structure.outputs).find((i) => i.id == parameter.id)?.type.replace("&", "");
+    $: parameterType = structure.inputs
+        .concat(structure.outputs)
+        .find((i) => i.id == parameter.id)
+        ?.type.replace("&", "");
     $: typeDefinition = get(types).find((t) => t.type.replace("&", "") == parameterType)!;
 </script>
 
-<div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: rgba(${typeDefinition.color})`}>
+<div class="anchor" class:input class:output class:linked class:hovering class:connecting style={`--type-color: ${typeDefinition.color.hex}`}>
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         {#if typeDefinition.shape == "circle"}
             <circle cx="50" cy="50" r="40" />
