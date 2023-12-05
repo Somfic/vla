@@ -12,7 +12,7 @@
 
     $: startColor = typeToDefinition(source?.type ?? "")?.color?.hex ?? "#ffffff";
     $: midwayColor = blendColors(startColor, stopColor, 0.5);
-    $: stopColor = typeToDefinition(target?.type ?? "")?.color?.hex ?? "#000000";
+    $: stopColor = typeToDefinition(target?.type ?? "")?.color?.hex ?? "#ffffff";
 
     function findParameter(id: string | null, isInput: boolean): ParameterStructure | undefined {
         if (id == null) return undefined;
