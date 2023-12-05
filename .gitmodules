@@ -1,0 +1,3 @@
+[submodule "src/svelvet"]
+	path = src/svelvet
+	url = https://github.com/open-source-labs/Svelvet
