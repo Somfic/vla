@@ -48,7 +48,7 @@
     path {
         // Gradient fill based on the source and target colors
         stroke: url(#gradient);
-        stroke-width: 20px;
+        stroke-width: 4px;
         z-index: 1;
     }
 </style>
