@@ -10,18 +10,18 @@ public readonly struct NodeTypeDefinition
     private static readonly Dictionary<string, (string shape, string htmlType, Color color)>
         SpecialTypes = new()
         {
-            { "Int32", ("square", "number", Color.FromArgb(255, 223, 109)) },
-            { "Double", ("circle", "number", Color.FromArgb(255, 223, 109)) },
-            { "String", ("circle", "text", Color.FromArgb(109, 159, 255)) },
-            { "Boolean", ("circle", "checkbox", Color.FromArgb(255, 109, 109)) },
-            { "NodeFlow", ("diamond", "text", Color.FromArgb(255, 255, 255)) },
+            { "Int32", ("square", "number", System.Drawing.Color.FromArgb(255, 223, 109)) },
+            { "Double", ("circle", "number", System.Drawing.Color.FromArgb(255, 223, 109)) },
+            { "String", ("circle", "text", System.Drawing.Color.FromArgb(109, 159, 255)) },
+            { "Boolean", ("circle", "checkbox", System.Drawing.Color.FromArgb(255, 109, 109)) },
+            { "NodeFlow", ("diamond", "text", System.Drawing.Color.FromArgb(255, 255, 255)) },
         };
     
     public NodeTypeDefinition(Type type, string? name = "")
     {
         Type = type;
         Name = string.IsNullOrWhiteSpace(name) ? type.Name : name;
-        Color = SpecialTypes.TryGetValue(type.Name.Replace("&", ""), out var specialType) ? specialType.color : Color.FromArgb(255, 255, 255);
+        Color = SpecialTypes.TryGetValue(type.Name.Replace("&", ""), out var specialType) ? specialType.color : System.Drawing.Color.FromArgb(255, 255, 255);
 
         if (type.IsEnum)
             HtmlType = "select";
@@ -51,13 +51,39 @@ public readonly struct NodeTypeDefinition
     public ImmutableArray<NodeTypeDefinitionValue> Values { get; init; } = ImmutableArray<NodeTypeDefinitionValue>.Empty;
 
     [JsonProperty("color")]
-    public Color Color { get; init; }
+    public ColorDefinition Color { get; init; }
 
     [JsonProperty("shape")]
     public string Shape { get; init; }
     
     [JsonProperty("defaultValue")]
     public object? DefaultValue { get; init; }
+    
+    public readonly struct ColorDefinition(Color color)
+    {
+        [JsonProperty("r")]
+        public int R { get; init; } = color.R;
+        
+        [JsonProperty("g")]
+        public int G { get; init; } = color.G;
+        
+        [JsonProperty("b")]
+        public int B { get; init; } = color.B;
+        
+        [JsonProperty("h")]
+        public float H { get; init; } = color.GetHue();
+        
+        [JsonProperty("s")]
+        public float S { get; init; } = color.GetSaturation();
+        
+        [JsonProperty("l")]
+        public float L { get; init; } = color.GetBrightness();
+        
+        [JsonProperty("hex")]
+        public string Hex => $"#{R:X2}{G:X2}{B:X2}";
+        
+        public static implicit operator ColorDefinition(Color color) => new(color);
+    }
 }
 
 public readonly struct NodeTypeDefinitionValue(string name, object? value)
