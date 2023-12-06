@@ -8,7 +8,6 @@
         "predev-server": "ts-node --esm scripts/terminate-previous.ts",
         "dev-server": "dotnet run --project src-csharp/Vla",
         "dev": "concurrently --kill-others \"yarn run dev-client\" \"yarn run dev-server\"",
-        "prebuild-client": "yarn --cwd src/svelvet install && yarn --cwd src/svelvet run build",
         "build-client": "vite build",
         "build-server": "ts-node --esm scripts/build-csharp.ts",
         "build": "yarn run build-client && yarn run build-server",
@@ -22,10 +21,10 @@
         "@tauri-apps/api": "^1.5.0",
         "execa": "^8.0.1",
         "fs-extra": "^11.1.1",
-        "fuse.js": "^7.0.0",
-        "svelvet": "file:src/svelvet"
+        "fuse.js": "^7.0.0"
     },
     "devDependencies": {
+        "svelvet": "^8.1.0",
         "@playwright/test": "^1.40.1",
         "@sveltejs/vite-plugin-svelte": "^2.4.2",
         "@tauri-apps/cli": "^1.5.0",
