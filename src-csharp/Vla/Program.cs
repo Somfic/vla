@@ -10,14 +10,11 @@ using Vla.Nodes.Constant;
 using Vla.Nodes.Web;
 using Vla.Server;
 using Vla.Server.Messages;
-using Vla.Voice;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureServices(s =>
     {
         s.AddHttpClient();
-        s.AddSingleton<RecogniserService>();
-        s.AddSingleton<SpeechProcessorService>();
         s.AddSingleton<WebsocketService>();
         s.AddSingleton<NodeService>();
         s.AddSingleton<InputService>();
@@ -28,29 +25,7 @@ var host = Host.CreateDefaultBuilder()
 var server = host.Services.GetRequiredService<WebsocketService>();
 await server.StartAsync();
 
-var recogniser = host.Services.GetRequiredService<RecogniserService>();
-var processor = host.Services.GetRequiredService<SpeechProcessorService>();
 var node = host.Services.GetRequiredService<NodeService>();
-
-await recogniser.InitialiseAsync();
-await processor.InitialiseAsync();
-
-recogniser.Progress.OnChange(e =>
-{
-    Console.WriteLine($"{e.Percentage}%: {e.Label}");
-    server.BroadcastAsync(new ProgressMessage(e.Percentage, e.Label)).GetAwaiter().GetResult();
-});
-
-recogniser.Recognised.OnChange(e =>
-{
-    var processedText = processor.Process(e.Text);
-    server.BroadcastAsync(new RecogniserRecognisedMessage(processedText)).GetAwaiter().GetResult();
-});
-
-recogniser.PartlyRecognised.OnChange(e =>
-{
-    server.BroadcastAsync(new RecogniserRecognisedPartialMessage(e)).GetAwaiter().GetResult();
-});
 
 node.Register(typeof(BooleanConstantNode).Assembly);
 
@@ -89,6 +64,4 @@ server.MessageReceived.OnChange(async args =>
 });
 
 await server.MarkReady();
-await recogniser.StartAsync();
-
 Thread.Sleep(-1);

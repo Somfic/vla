@@ -20,9 +20,9 @@ public class WebsocketService
     public WebsocketService(ILogger<WebsocketService> log)
     {
         _log = log;
-         _server = new WatsonWsServer(IPAddress.Loopback.ToString(), 55155);
-         _server.ClientConnected += async (_, e) => await OnClientConnected(e);
-         _server.MessageReceived += async (_, e) => await OnMessageReceived(e);
+        _server = new WatsonWsServer(IPAddress.Loopback.ToString(), 55155);
+        _server.ClientConnected += async (_, e) => await OnClientConnected(e);
+        _server.MessageReceived += async (_, e) => await OnMessageReceived(e);
     }
 
     public async Task StartAsync()
