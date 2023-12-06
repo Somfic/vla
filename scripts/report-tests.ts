@@ -1,14 +1,35 @@
+import { fail } from "assert";
 import { readFileSync } from "fs";
 
 const token = process.argv[2].trim();
 const pullNumber = process.argv[3].trim();
 
+// Add a comment to the pull request
+import { Octokit, App } from "octokit";
+const gh = new Octokit({ auth: token });
+
 console.log(`Reporting test results for pull request ${pullNumber}`);
 console.log(`Using token ${token}`);
 
-const json = JSON.parse(readFileSync("test-results.json", "utf8")) as TestResults;
+const results = JSON.parse(readFileSync("test-results.json", "utf8")) as TestResults;
 
+// Get all the failed tests
+const failedSpecs = results.suites.map((suite: Suite) => suite.specs.filter((spec: Spec) => !spec.ok)).flat();
 
+gh.rest.pulls.createReview({
+    owner: "somfic",
+    repo: "vla",
+    pull_number: parseInt(pullNumber),
+    body: "e2e test results",
+    //comments: failedSpecs.map((spec) => ({ path: spec.file, position: 0, body: specToBody(spec) })),
+    event: failedSpecs.length > 0 ? "REQUEST_CHANGES" : "APPROVE",
+});
+
+function specToBody(spec: Spec) {
+    const test = spec.tests[0];
+    const result = test.results[0];
+    return `Test **${spec.title} failed**\n\n${result.error?.message}`;
+}
 
 export interface TestResults {
     config: Config;

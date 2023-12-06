@@ -7,15 +7,15 @@
         "dev-client": "vite",
         "predev-server": "ts-node --esm scripts/terminate-previous.ts",
         "dev-server": "dotnet run --project src-csharp/Vla",
-        "dev": "concurrently --kill-others \"yarn run dev-client\" \"yarn run dev-server\"",
+        "dev": "concurrently -r -k -s all \"yarn run dev-client\" \"yarn run dev-server\"",
         "build-client": "vite build",
         "build-server": "ts-node --esm scripts/build-csharp.ts",
         "build": "yarn run build-client && yarn run build-server",
         "tauri": "tauri",
         "version": "ts-node --esm scripts/tag-version.ts",
         "prepare-release": "ts-node --esm scripts/prepare-release.ts",
-        "test": "dotnet test src-csharp && ts-node --esm scripts/terminate-previous.ts && concurrently --kill-others \"yarn run dev\" \"wait-on tcp:127.0.0.1:55155 && playwright test\"",
-        "posttest": "ts-node --esm scripts/report-tests.ts"
+        "test": "dotnet test src-csharp && ts-node --esm scripts/terminate-previous.ts && concurrently -r -k -s first \"wait-on tcp:127.0.0.1:55155 && playwright test\" \"yarn run dev\"",
+        "report": "ts-node --esm scripts/report-tests.ts"
     },
     "dependencies": {
         "@tauri-apps/api": "^1.5.0",
