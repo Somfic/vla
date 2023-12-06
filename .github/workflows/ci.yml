@@ -18,6 +18,14 @@ jobs:
                   node-version: 19
                   cache: "yarn"
 
+            - name: Setup Yarn
+              run: npm install --global yarn
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: 8.0.x
+
             - name: Install dependencies
               run: npm install -g yarn && yarn
 
