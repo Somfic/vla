@@ -29,11 +29,17 @@
             instances.update((i) => i.filter((i) => i.id != instance.id));
         }
     }
+
+    function handleClick(e: MouseEvent) {
+        instances.update((i) => i.filter((i) => i.id != instance.id));
+        connections.update((c) => c.filter((c) => c.from.instanceId != instance.id && c.to.instanceId != instance.id));
+        e.preventDefault();
+    }
 </script>
 
 <Node let:grabHandle let:selected id={instance.id} on:nodeClicked edge={EditorEdge}>
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div use:grabHandle class:selected class="node" on:keyup={handleKeyUp}>
+    <div use:grabHandle class:selected class="node" on:keyup={handleKeyUp} on:contextmenu={handleClick}>
         <div class="title">{result?.value?.name ?? structure.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
 
         {#if structure.properties.length > 0}
