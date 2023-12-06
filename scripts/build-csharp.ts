@@ -73,26 +73,26 @@ async function main() {
         copyFileSync(sourceFile, targetFile);
     }
 
-    // Copy the libraries from 'runtimes/{arch}' to the libraries/runtimes/{arch} folder
-    const sourceRuntime = join(source, "runtimes", arch);
-    const targetRuntime = join(targetLibraries, "runtimes", arch);
+    // // Copy the libraries from 'runtimes/{arch}' to the libraries/runtimes/{arch} folder
+    // const sourceRuntime = join(source, "runtimes", arch);
+    // const targetRuntime = join(targetLibraries, "runtimes", arch);
 
-    if (!existsSync(targetRuntime)) {
-        mkdirSync(targetRuntime, { recursive: true });
-    }
+    // if (!existsSync(targetRuntime)) {
+    //     mkdirSync(targetRuntime, { recursive: true });
+    // }
 
-    const runtimeFiles = readdirSync(sourceRuntime, { withFileTypes: true })
-        .filter((dirent) => dirent.isFile())
-        .filter((file) => file.name.endsWith(".dll") || file.name.endsWith(".dylib") || file.name.endsWith(".so"))
-        .map((file) => file.name);
+    // const runtimeFiles = readdirSync(sourceRuntime, { withFileTypes: true })
+    //     .filter((dirent) => dirent.isFile())
+    //     .filter((file) => file.name.endsWith(".dll") || file.name.endsWith(".dylib") || file.name.endsWith(".so"))
+    //     .map((file) => file.name);
 
-    for (const runtimeFile of runtimeFiles) {
-        const sourceFile = join(sourceRuntime, runtimeFile);
-        const targetFile = join(targetRuntime, runtimeFile);
-        console.log(`Copying ${sourceFile} to ${targetFile}`);
-        copyFileSync(sourceFile, targetFile);
-        libraryFiles.push(join("runtimes", arch, runtimeFile));
-    }
+    // for (const runtimeFile of runtimeFiles) {
+    //     const sourceFile = join(sourceRuntime, runtimeFile);
+    //     const targetFile = join(targetRuntime, runtimeFile);
+    //     console.log(`Copying ${sourceFile} to ${targetFile}`);
+    //     copyFileSync(sourceFile, targetFile);
+    //     libraryFiles.push(join("runtimes", arch, runtimeFile));
+    // }
 
     console.log(`Modifying tauri.conf.json to include: ${libraryFiles}`);
     // Read the tauri.conf.json file in src-tauri/tauri.conf.json
