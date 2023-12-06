@@ -3,6 +3,9 @@ using Vla.Abstractions.Attributes;
 
 namespace Vla.Nodes.Number;
 
+[Node("Compare numbers")]
+[NodeCategory("Number")]
+[NodeTags("Compare", "Number", "Double", "Float", "Decimal", "Integer", "Equal", "Not equal", "Greater than", "Greater than or equal to", "Less than", "Less than or equal to", "Bigger", "Smaller", "==", "!=", ">", ">=", "<", "<=")]
 public class ComparisonNumberNode : INode
 {
 	public string Name => Mode.GetValueName();
@@ -10,7 +13,7 @@ public class ComparisonNumberNode : INode
 	[NodeProperty]
 	public ComparisonMode Mode { get; set; }
 	
-	public void Execute([NodeInput("A")] double a, [NodeInput("B")] double b, [NodeOutput("Result")] out bool result)
+	public void Execute([NodeInput("Value")] double a, [NodeInput("Compare to")] double b, [NodeOutput("Result")] out bool result)
 	{
 		result = Mode switch
 		{
