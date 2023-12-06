@@ -22,10 +22,10 @@ async function main() {
 
     // Build the C# project
     console.log("Cleaning previous builds");
-    await execa("dotnet", ["clean", join("src-csharp", "vla"), "-c", "Release"]);
+    await execa("dotnet", ["clean", join("src-csharp", "Vla"), "-c", "Release"]);
 
     console.log("Building C# project");
-    await execa("dotnet", ["publish", join("src-csharp", "vla"), "-c", "Release", "-f", dotnetVersion, "--self-contained", "true", "/p:PublishSingleFile=true"]);
+    await execa("dotnet", ["publish", join("src-csharp", "Vla"), "-c", "Release", "-f", dotnetVersion, "--self-contained", "true", "/p:PublishSingleFile=true"]);
 
     console.log("Copying C# executable to src-tauri/binaries");
 
