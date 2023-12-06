@@ -15,16 +15,17 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 18
+                  node-version: 19
+                  cache: "yarn"
 
             - name: Install dependencies
               run: npm install -g yarn && yarn
 
-            - name: Install browsers
-              run: yarn playwright install --with-deps
-
             - name: Build
               run: yarn run build
+
+            - name: Install browsers
+              run: yarn playwright install --with-deps
 
             - name: Run tests
               run: yarn run test
