@@ -1,0 +1,46 @@
+name: test
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+jobs:
+    test:
+        timeout-minutes: 60
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+
+            - name: Install dependencies
+              run: npm install -g yarn && yarn
+
+            - name: Install browsers
+              run: yarn playwright install --with-deps
+
+            - name: Run tests
+              run: yarn run test
+
+            - uses: actions/upload-artifact@v3
+              if: always()
+              with:
+                  name: playwright-report
+                  path: playwright-report/
+                  retention-days: 30
+
+            - name: Comment results
+              if: always() && github.event_name == 'pull_request'
+              run: yarn run report ${{ secrets.GITHUB_TOKEN }} ${{ github.event.pull_request.number }}
+
+            - name: Upload results
+              uses: actions/upload-artifact@v3
+              if: always()
+              with:
+                  name: playwright-report
+                  path: playwright-report/
+                  retention-days: 30
