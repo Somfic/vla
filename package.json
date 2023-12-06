@@ -8,7 +8,7 @@
         "predev-server": "ts-node --esm scripts/terminate-previous.ts",
         "dev-server": "dotnet run --project src-csharp/Vla",
         "dev": "concurrently --kill-others \"yarn run dev-client\" \"yarn run dev-server\"",
-        "prebuild-client": "yarn install && yarn --cwd src/svelvet install && yarn --cwd src/svelvet run build",
+        "prebuild-client": "yarn --cwd src/svelvet install && yarn --cwd src/svelvet run build",
         "build-client": "vite build",
         "build-server": "ts-node --esm scripts/build-csharp.ts",
         "build": "yarn run build-client && yarn run build-server",
