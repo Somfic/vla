@@ -5,7 +5,7 @@ namespace Vla.Nodes.Strings;
 
 [Node("Compare strings")]
 [NodeCategory("Strings")]
-[NodeTags("Compare", "Strings", "Equal", "Not equal", "Includes", "Starts with", "Ends with", "Contains", "Comparison")]
+[NodeTags("Compare", "Strings", "Equal", "Not equal", "Includes", "Starts with", "Ends with", "Contains", "Comparison", "==", "!=")]
 
 public class ComparisonStringNode : INode
 {
