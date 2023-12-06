@@ -40,9 +40,7 @@
                 "binaries/csharp"
             ],
             "resources": [
-                "LdaNative.dll",
-                "uiohook.dll",
-                "runtimes\\win-x64\\whisper.dll"
+                "uiohook.dll"
             ]
         },
         "security": {
