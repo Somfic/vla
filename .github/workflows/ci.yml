@@ -49,7 +49,8 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 30
-    release:
+
+    release-patch:
         needs: test
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         permissions: write-all
@@ -89,13 +90,41 @@ jobs:
             - name: Restore C# dependencies
               run: dotnet restore src-csharp
 
+            - name: Read changelog
+              id: notes
+              uses: jaywcjlove/github-action-read-file@main
+              with:
+                  path: CHANGELOG.md
+
+            - name: Get patch message
+              id: commit
+              run: echo ::set-output name=commit::$(git log --format=%B -n 1 ${{ github.sha }})
+
+            - name: Overwrite file
+              uses: "DamianReeves/write-file-action@master"
+              with:
+                  path: CHANGELOG.md
+                  write-mode: overwrite
+                  contents: |
+                      ## 🩹 Patch
+
+                      - ${{ steps.commit.outputs.commit }}
+
+                      ${{ steps.notes.outputs.content }}
+
+            - name: Read updated changelog
+              id: notes-updated
+              uses: jaywcjlove/github-action-read-file@main
+              with:
+                  path: CHANGELOG.md
+
             - name: Build application
               uses: tauri-apps/tauri-action@v0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-                  releaseName: v__VERSION__
-                  releaseBody: Vla version __VERSION__
-                  prerelease: true
+                  releaseName: Vla v__VERSION__ patch
+                  releaseBody: ${{ steps.notes-updated.outputs.content }}
+                  prerelease: false
                   includeUpdaterJson: true

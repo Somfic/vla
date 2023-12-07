@@ -74,7 +74,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-                  releaseName: ${{ github.event.milestone.title }}
+                  releaseName: Vla ${{ github.event.milestone.title }}
                   releaseBody: ${{ steps.notes.outputs.content }}
                   prerelease: false
                   includeUpdaterJson: true
