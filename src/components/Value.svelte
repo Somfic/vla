@@ -66,7 +66,7 @@
             border-radius: 10px;
             background-color: $background-dark;
             padding: 3px 6px;
-            color: #999999;
+            color: $foreground-muted;
         }
 
         input[type="checkbox"] {

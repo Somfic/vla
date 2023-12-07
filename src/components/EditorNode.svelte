@@ -99,7 +99,7 @@
     .node {
         display: flex;
         flex-direction: column;
-        background-color: #343434;
+        background-color: $background-light;
         box-shadow: 0px 0px 50px 0px rgba(0, 0, 0, 0.75);
         border-radius: 11px;
         transition: 200ms ease all;
@@ -112,7 +112,7 @@
     }
 
     .title {
-        background-color: #ad50a3;
+        background-color: $accent;
         padding: 12px;
         border-radius: 10px 10px 0 0;
         border-bottom: $border;
@@ -143,7 +143,7 @@
         .outputs {
             flex-grow: 1;
             align-items: end;
-            background-color: #1f1f1f;
+            background-color: $background-dark;
             padding-left: 12px;
         }
 

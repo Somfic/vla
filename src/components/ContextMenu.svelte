@@ -101,16 +101,16 @@
                         {result.name}
                     </div>
                     <div class="context">
-                    {#if result.category}
-                        <div class="category">
-                            {result.category}
-                        </div>
-                    {/if}
-                    {#if result.sourcePlugin}
-                        <div class="plugin">
-                            {result.sourcePlugin}
-                        </div>
-                    {/if}
+                        {#if result.category}
+                            <div class="category">
+                                {result.category}
+                            </div>
+                        {/if}
+                        {#if result.sourcePlugin}
+                            <div class="plugin">
+                                {result.sourcePlugin}
+                            </div>
+                        {/if}
                     </div>
                 </div>
             {/each}
@@ -128,7 +128,8 @@
         width: 100%;
         height: 100%;
         z-index: 30000;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: $background-frosted;
+        backdrop-filter: brightness(0.5) blur(10px);
         padding-top: 30vh;
 
         transition: 200ms ease all;
@@ -154,10 +155,10 @@
             height: auto;
             flex-shrink: 1;
             flex-direction: column;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: $background-frosted;
+            backdrop-filter: $filter-frosted;
             border: 2px solid $border-color;
             border-radius: 10px;
-            backdrop-filter: blur(5px);
             overflow: hidden;
             transition: 200ms ease all;
             box-shadow: 0px 0px 100px 0px rgba(0, 0, 0, 1);

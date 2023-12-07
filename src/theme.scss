@@ -3,12 +3,16 @@
 $background: #131313;
 $background-dark: #1F1F1F;
 $background-light: #343434;
+$background-frosted: rgba(255, 255, 255, 0.025);
 
 $foreground: #FFFFFF;
+$foreground-muted: #999999;
 
 $accent: #AD50A3;
 
 $border-color: rgba(66, 66, 66);
+
+$filter-frosted: blur(20px) brightness(0.7) saturate(1.2);
 
 $font: 'Rubik', sans-serif;
 $font-mono: 'PT Mono', monospace;
