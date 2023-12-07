@@ -49,3 +49,53 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 30
+    release:
+        needs: test
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        permissions: write-all
+        runs-on: windows-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Rust
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 19
+                  cache: "yarn"
+
+            - name: Setup Yarn
+              run: npm install --global yarn
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: 8.0.x
+
+            - name: Install Node dependencies
+              run: yarn install
+
+            - name: Tag version
+              run: yarn run version patch
+
+            - name: Rust cache
+              uses: swatinem/rust-cache@v2
+              with:
+                  workspaces: "./src-tauri -> target"
+
+            - name: Restore C# dependencies
+              run: dotnet restore src-csharp
+
+            - name: Build application
+              uses: tauri-apps/tauri-action@v0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+                  releaseName: v__VERSION__
+                  releaseBody: Vla version __VERSION__
+                  prerelease: true
+                  includeUpdaterJson: true
