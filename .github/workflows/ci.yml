@@ -38,9 +38,9 @@ jobs:
             - name: Run tests
               run: yarn run test
 
-            - name: Comment results
-              if: always() && github.event_name == 'pull_request'
-              run: yarn run report ${{ secrets.GITHUB_TOKEN }} ${{ github.event.pull_request.number }}
+            # - name: Comment results
+            #   if: always() && github.event_name == 'pull_request'
+            #   run: yarn run report ${{ secrets.GITHUB_TOKEN }} ${{ github.event.pull_request.number }}
 
             - name: Upload results
               uses: actions/upload-artifact@v3
