@@ -2,22 +2,56 @@ import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 // Get command line argument for the version
-const fullName = process.argv[2].trim();
+var version = process.argv[2].trim();
 
-// Find the version in the full name
-const versionMatch = fullName.match(/v(\d+\.\d+)/);
-
-// Make sure the version was found
-if (!versionMatch) {
-    console.error(`Failed to find version in full name (semver expected, was ${fullName})`);
+if (version === "") {
+    console.error("No version specified");
     process.exit(1);
 }
 
-const version = versionMatch[1] + ".0";
+if (version === "major" || version === "minor" || version === "patch") {
+    // Get the current version
+    var currentVersion = (await (await fetch("https://api.github.com/repos/somfic/vla/releases/latest")).json()).tag_name.replace("v", "");
 
-if (!version) {
-    console.error("No version specified");
-    process.exit(1);
+    console.log("Current version is " + currentVersion + " " + version);
+
+    var major = parseInt(currentVersion.split(".")[0]);
+    var minor = parseInt(currentVersion.split(".")[1]);
+    var patch = parseInt(currentVersion.split(".")[2]);
+
+    switch (version) {
+        case "major":
+            major++;
+            minor = 0;
+            patch = 0;
+            break;
+        case "minor":
+            minor++;
+            patch = 0;
+            break;
+        case "patch":
+            patch++;
+            break;
+    }
+
+    console.log(`Incrementing version to ${major}.${minor}.${patch}`);
+
+    version = `${major}.${minor}.${patch}`;
+} else {
+    var match = version.match(/v(\d+\.\d+)(.\d+)?/);
+
+    if (!match) {
+        console.error(`Invalid version format specified (semver expected, was ${version})`);
+        process.exit(1);
+    }
+
+    version = match[1];
+
+    if (match[2]) {
+        version += match[2];
+    } else {
+        version += ".0";
+    }
 }
 
 // Make sure the version is valid (semver)
