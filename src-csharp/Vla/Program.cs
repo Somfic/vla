@@ -6,10 +6,10 @@ using Somfic.Common;
 using Vla.Abstractions;
 using Vla.Input;
 using Vla.Nodes;
-using Vla.Nodes.Constant;
 using Vla.Nodes.Web;
 using Vla.Server;
 using Vla.Server.Messages;
+using Vla.Workspace;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureServices(s =>
@@ -19,24 +19,21 @@ var host = Host.CreateDefaultBuilder()
         s.AddSingleton<NodeService>();
         s.AddSingleton<InputService>();
         s.AddSingleton<VariableManager>();
+        s.AddSingleton<WorkspaceService>();
     })
     .Build();
 
+var nodes = host.Services.GetRequiredService<NodeService>();
+var workspaces = host.Services.GetRequiredService<WorkspaceService>();
 var server = host.Services.GetRequiredService<WebsocketService>();
+
+// Start the websocket server
 await server.StartAsync();
-
-var node = host.Services.GetRequiredService<NodeService>();
-
-node.Register(typeof(BooleanConstantNode).Assembly);
-
-var web = new Web()
-    .Validate(node.Structures)
-    .OnError(Console.WriteLine);
 
 server.ClientConnected.OnChange(async c =>
 {
-    await server.SendAsync(c, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
-    web.On(async x => await server.SendAsync(c, new WebMessage(x)));
+    await server.SendAsync(c, new NodesStructureMessage(nodes.Structures, nodes.GenerateTypeDefinitions()));
+    await server.SendAsync(c, new WorkspacesMessage(await workspaces.ListAsync()));
 });
 
 server.MessageReceived.OnChange(async args =>
@@ -51,14 +48,10 @@ server.MessageReceived.OnChange(async args =>
             var runWeb = JsonConvert.DeserializeObject<RunWebMessage>(json);
             runWeb
                 .Web
-                .Validate(node.Structures)
-                .Pipe(x => node.Execute(x))
+                .Validate(nodes.Structures)
+                .Pipe(x => nodes.Execute(x))
                 .On(async x => await server.SendAsync(client, new WebResultMessage(x)))
                 .OnError(Console.WriteLine);
-            break;
-        
-        case "getweb":
-            await server.SendAsync(args.Item1, new NodesStructureMessage(node.Structures, node.GenerateTypeDefinitions()));
             break;
     }
 });

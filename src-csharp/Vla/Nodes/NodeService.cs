@@ -25,7 +25,7 @@ public class NodeService
 
     public IReadOnlyCollection<NodeStructure> Structures => _structures.ToImmutableArray();
 
-    public NodeService Register<TNode>() where TNode : INode
+    public NodeService RegisterStructure<TNode>() where TNode : INode
     {
         NodeExtensions.ToStructure<TNode>()
             .On(_structures.Add)
@@ -34,7 +34,7 @@ public class NodeService
         return this;
     }
     
-    public NodeService Register(Assembly assembly)
+    public NodeService RegisterStructures(Assembly assembly)
     {
         var types = assembly.GetTypes().Where(x => x.IsAssignableTo(typeof(INode))).ToArray();
         
@@ -48,7 +48,7 @@ public class NodeService
         return this;
     }
 
-    public Result<WebResult> Execute(Web.Web web)
+    public Result<WebResult> Execute(Abstractions.Web.Web web)
     {
         return web
             .Validate(_structures)
@@ -56,7 +56,7 @@ public class NodeService
             .OnError(x => _log.LogWarning(x, "Could not execute web"));
     }
 
-    private Result<WebResult> ExecuteWeb(Web.Web web) =>
+    private Result<WebResult> ExecuteWeb(Abstractions.Web.Web web) =>
         Result.Try(() => {
             var executor = ActivatorUtilities.CreateInstance<WebExecutor>(_services);
             return executor.ExecuteWeb(web, _structures);
