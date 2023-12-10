@@ -1,6 +1,6 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import { types, type ParameterInstance, type NodeStructure, type ParameterStructure } from "../lib/nodes";
+    import { types, type ParameterInstance, type NodeStructure, type ParameterStructure } from "../../lib/nodes";
 
     export let input: boolean = false;
     export let output: boolean = false;
@@ -30,7 +30,7 @@
 </div>
 
 <style lang="scss">
-    @import "../theme.scss";
+    @import "../../theme.scss";
 
     .anchor {
         width: 12px;

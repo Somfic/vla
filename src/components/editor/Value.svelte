@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { TypeDefinition } from "../lib/nodes";
+    import type { TypeDefinition } from "../../lib/nodes";
     export let type: TypeDefinition;
     export let value: any;
     export let readonly = false;
@@ -30,7 +30,7 @@
 </div>
 
 <style lang="scss">
-    @import "../theme.scss";
+    @import "../../theme.scss";
 
     .value {
         display: flex;

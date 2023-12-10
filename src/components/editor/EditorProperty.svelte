@@ -1,7 +1,7 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import type { NodeStructure, PropertyStructure, PropertyInstance } from "../lib/nodes";
-    import { types } from "../lib/nodes";
+    import type { NodeStructure, PropertyStructure, PropertyInstance } from "../../lib/nodes";
+    import { types } from "../../lib/nodes";
     import Value from "./Value.svelte";
 
     export let property: PropertyStructure;
@@ -16,7 +16,7 @@
 </div>
 
 <style lang="scss">
-    @import "../theme.scss";
+    @import "../../theme.scss";
 
     .property {
         display: flex;

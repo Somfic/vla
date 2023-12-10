@@ -1,5 +1,5 @@
 import { get, writable, type Writable } from "svelte/store";
-import { types, structures, instances, connections, result, type WebResult, runWeb } from "./nodes";
+import { types, structures, result, type WebResult, runWeb, workspaces, webId } from "./nodes";
 
 let ws: WebSocket = null as any;
 
@@ -10,16 +10,11 @@ export let recognition: Writable<string> = writable("");
 export let progress: Writable<Progress> = writable({ percentage: 0, label: "Initialising" });
 export let isReady: Writable<boolean> = writable(false);
 
-isReady.subscribe((r) => {
-    if (r) {
-        runWeb();
-    }
-});
-
 export function startListening() {
     hasConnected.set(false);
-    instances.set([]);
-    connections.set([]);
+    workspaces.set([]);
+    webId.set("");
+    types.set([]);
     result.set({} as WebResult);
     progress.set({ percentage: 0, label: "Initialising" });
     isReady.set(false);
@@ -30,7 +25,6 @@ export function startListening() {
     ws.onopen = () => {
         console.log("Connected");
         hasConnected.set(true);
-        sendMessage({ Id: "getweb" });
     };
 
     ws.onmessage = (e) => {
@@ -45,11 +39,6 @@ export function startListening() {
                 structures.set(message.data["nodes"]);
                 break;
 
-            case "Web":
-                instances.set(message.data["web"]["instances"]);
-                connections.set(message.data["web"]["connections"]);
-                break;
-
             case "WebResult":
                 result.set(message.data["result"]);
                 break;
@@ -60,6 +49,10 @@ export function startListening() {
 
             case "ReadyState":
                 isReady.set(message.data["ready"]);
+                break;
+
+            case "Workspaces":
+                workspaces.set(message.data["workspaces"]);
                 break;
         }
     };

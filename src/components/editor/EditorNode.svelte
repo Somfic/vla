@@ -1,24 +1,24 @@
 <script lang="ts">
     import { Anchor, Node } from "svelvet";
-    import { result as r, type NodeInstance, type ParameterInstance, instances, typeToDefinition, type ParameterStructure } from "../lib/nodes";
+    import { result as r, type NodeInstance, type ParameterInstance, typeToDefinition, type ParameterStructure, type Web } from "../../lib/nodes";
     import EditorProperty from "./EditorProperty.svelte";
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
-    import { structures, connections } from "../lib/nodes";
-    import ComputedValue from "./ComputedValue.svelte";
+    import { structures } from "../../lib/nodes";
+    import ComputedValue from "../ComputedValue.svelte";
     import EditorEdge from "./EditorEdge.svelte";
     import EditorAnchorDefaultValue from "./EditorAnchorDefaultValue.svelte";
 
     export let instance: NodeInstance;
+    export let web: Web;
+
     $: structure = get(structures)?.find((s) => s.nodeType == instance.nodeType)!;
     $: result = get(r)?.instances?.find((i) => i.id == instance.id);
 
     function getConnections(input: ParameterInstance | ParameterStructure): [string, string][] {
         let array: [string, string][] = [];
 
-        get(connections)
-            .filter((c) => c.from.instanceId == instance.id && c.from.propertyId == input.id)
-            .forEach((c) => array.push([`${c.to.instanceId}`, `${c.to.propertyId}`]));
+        web.connections.filter((c) => c.from.instanceId == instance.id && c.from.propertyId == input.id).forEach((c) => array.push([`${c.to.instanceId}`, `${c.to.propertyId}`]));
 
         return array;
     }
@@ -26,13 +26,13 @@
     function handleKeyUp(e: KeyboardEvent) {
         if (e.key == "Delete") {
             console.log("delete", instance.id);
-            instances.update((i) => i.filter((i) => i.id != instance.id));
+            web.instances = web.instances.filter((i) => i.id != instance.id);
         }
     }
 
     function handleClick(e: MouseEvent) {
-        instances.update((i) => i.filter((i) => i.id != instance.id));
-        connections.update((c) => c.filter((c) => c.from.instanceId != instance.id && c.to.instanceId != instance.id));
+        web.instances = web.instances.filter((i) => i.id != instance.id);
+        web.connections = web.connections.filter((c) => c.from.instanceId != instance.id && c.to.instanceId != instance.id);
         e.preventDefault();
     }
 </script>
@@ -92,7 +92,7 @@
 </Node>
 
 <style lang="scss">
-    @import "../theme.scss";
+    @import "../../theme.scss";
 
     $border: 2px solid $border-color;
 

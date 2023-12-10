@@ -1,6 +1,6 @@
 <script lang="ts">
     import { get } from "svelte/store";
-    import { types, type ParameterStructure, typeToDefinition, type ParameterInstance, type NodeStructure } from "../lib/nodes";
+    import { types, type ParameterStructure, typeToDefinition, type ParameterInstance, type NodeStructure } from "../../lib/nodes";
     import Value from "./Value.svelte";
 
     export let structure: NodeStructure;
@@ -27,7 +27,7 @@
 </div>
 
 <style lang="scss">
-    @import "../theme.scss";
+    @import "../../theme.scss";
 
     .default-wrapper {
         position: absolute;

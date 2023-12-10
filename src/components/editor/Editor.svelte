@@ -1,30 +1,25 @@
 <script lang="ts">
     import { Svelvet } from "svelvet";
     import EditorNode from "./EditorNode.svelte";
-    import { result, structures, type NodeInstance, type NodeInstanceConnection, connections, instances, runWeb } from "../lib/nodes";
+    import { result, structures, type NodeInstance, type NodeInstanceConnection, runWeb } from "../../lib/nodes";
     import { get } from "svelte/store";
-    import ContextMenu from "./ContextMenu.svelte";
-    import { addNode, type ContextResult } from "../lib/context";
+    import ContextMenu from "../ContextMenu.svelte";
+    import { addNode, type ContextResult } from "../../lib/context";
+    import type { Web } from "../../lib/nodes";
+    import Topbar from "../topbar/Topbar.svelte";
 
     let contextMenu: ((query: string) => ContextResult[]) | undefined = undefined;
 
-    connections.subscribe((c) => runWeb());
-    instances.subscribe((i) => runWeb());
+    export let web: Web;
 
     function connection(e: any) {
         // FIXME: Make sure this is distinct
-        if (get(connections).find((c) => JSON.stringify(c) == JSON.stringify(detailToInstance(e.detail)))) return;
-        connections.update((c) => [...c, detailToInstance(e.detail)]);
+        if (web.connections.find((c) => JSON.stringify(c) == JSON.stringify(detailToInstance(e.detail)))) return;
+        web.connections = [...web.connections, detailToInstance(e.detail)];
     }
 
     function disconnection(e: any) {
-        let connection = detailToInstance(e.detail);
-
-        connections.update((c) =>
-            c.filter((c) => {
-                return JSON.stringify(c) != JSON.stringify(connection);
-            })
-        );
+        web.connections = web.connections.filter((c) => JSON.stringify(c) != JSON.stringify(detailToInstance(e.detail)));
     }
 
     function detailToInstance(detail: any): NodeInstanceConnection {
@@ -44,7 +39,7 @@
         console.log(e);
 
         if (e.key == "Enter") {
-            runWeb();
+            runWeb(web);
             return;
         }
 
@@ -57,11 +52,15 @@
 
 <ContextMenu bind:menu={contextMenu} />
 
+<div class="topbar">
+    <Topbar />
+</div>
+
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="editor" on:keydown={handleKeyPress}>
     <Svelvet minimap theme="dark" on:connection={connection} on:disconnection={disconnection} edgeStyle="bezier">
-        {#each $instances as instance, i}
-            <EditorNode bind:instance={$instances[i]} />
+        {#each web.instances as instance}
+            <EditorNode bind:web bind:instance />
         {/each}
     </Svelvet>
 </div>
@@ -70,6 +69,14 @@
     .editor {
         flex-grow: 1;
         outline: none;
+    }
+
+    .topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        z-index: 100;
     }
 
     :root[svelvet-theme="dark"] {
