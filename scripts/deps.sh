@@ -20,7 +20,6 @@ case "$os" in
     ;;
   *)
     echo "Unsupported platform: $os"
-    exit 1
     ;;
 esac
 
