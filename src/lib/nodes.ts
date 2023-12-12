@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
 import { sendMessage } from "./ws";
+import exp from "constants";
 
 export let structures = writable<NodeStructure[]>([]);
 export let types = writable<TypeDefinition[]>([]);
@@ -32,8 +33,20 @@ export function instanceFromId(id: string): NodeInstance {
     );
 }
 
+export function saveWorkspace(workspace: Workspace) {
+    let message = {
+        workspace: workspace,
+        id: "WorkspaceChanged",
+    };
+
+    sendMessage(message);
+}
+
 export interface Workspace {
     name: string;
+    path: string;
+    created: Date;
+    lastModified: Date;
     color: ColorDefinition;
     webs: Web[];
 }

@@ -6,7 +6,7 @@
     "scripts": {
         "dev-client": "vite",
         "predev-server": "yarn run terminate",
-        "dev-server": "dotnet run --project src-csharp/Vla",
+        "dev-server": "dotnet watch --project src-csharp/Vla",
         "dev": "concurrently -r -k -s all \"yarn run dev-client\" \"yarn run dev-server\"",
         "build-client": "vite build",
         "build-server": "ts-node --esm scripts/build-csharp.ts",

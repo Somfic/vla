@@ -63,6 +63,7 @@ export function startListening() {
 
     ws.onclose = (e) => {
         console.log("Closed", e);
+        hasConnected.set(false);
 
         setTimeout(() => {
             startListening();

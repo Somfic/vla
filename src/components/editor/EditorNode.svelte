@@ -5,12 +5,15 @@
     import EditorAnchor from "./EditorAnchor.svelte";
     import { get } from "svelte/store";
     import { structures } from "../../lib/nodes";
-    import ComputedValue from "../ComputedValue.svelte";
+    import ComputedValue from "./ComputedValue.svelte";
     import EditorEdge from "./EditorEdge.svelte";
     import EditorAnchorDefaultValue from "./EditorAnchorDefaultValue.svelte";
+    import { createEventDispatcher } from "svelte";
 
     export let instance: NodeInstance;
     export let web: Web;
+
+    const dispatch = createEventDispatcher();
 
     $: structure = get(structures)?.find((s) => s.nodeType == instance.nodeType)!;
     $: result = get(r)?.instances?.find((i) => i.id == instance.id);
@@ -23,10 +26,11 @@
         return array;
     }
 
-    function handleKeyUp(e: KeyboardEvent) {
+    function handleKeyPress(e: KeyboardEvent) {
         if (e.key == "Delete") {
             console.log("delete", instance.id);
             web.instances = web.instances.filter((i) => i.id != instance.id);
+            dispatch("change");
         }
     }
 
@@ -34,18 +38,19 @@
         web.instances = web.instances.filter((i) => i.id != instance.id);
         web.connections = web.connections.filter((c) => c.from.instanceId != instance.id && c.to.instanceId != instance.id);
         e.preventDefault();
+        dispatch("change");
     }
 </script>
 
 <Node let:grabHandle let:selected id={instance.id} on:nodeClicked edge={EditorEdge}>
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div use:grabHandle class:selected class="node" on:keyup={handleKeyUp} on:contextmenu={handleClick}>
+    <div use:grabHandle class:selected class="node" on:keydown={handleKeyPress} on:contextmenu={handleClick}>
         <div class="title">{result?.value?.name ?? structure.nodeType.split(",")[0].split(".").slice(-1)[0].replace("Node", "")}</div>
 
         {#if structure.properties.length > 0}
             <div class="properties">
                 {#each structure.properties as property, i}
-                    <EditorProperty {property} bind:value={instance.properties[i].value} />
+                    <EditorProperty on:change={() => dispatch("change")} {property} bind:value={instance.properties[i].value} />
                 {/each}
             </div>
         {/if}
@@ -56,11 +61,7 @@
                         <div class="input">
                             <div class="anchor-wrapper">
                                 <Anchor let:linked let:hovering let:connecting input id={input.id} nodeConnect connections={getConnections(input)}>
-                                    {#if !linked}
-                                        <div class="default">
-                                            <EditorAnchorDefaultValue {structure} bind:parameter={input} {linked} {hovering} {connecting} />
-                                        </div>
-                                    {/if}
+                                    <EditorAnchorDefaultValue on:change={() => dispatch("change")} {structure} bind:parameter={input} {linked} {connecting} />
                                     <EditorAnchor {structure} parameter={input} {linked} {hovering} {connecting} input />
                                 </Anchor>
                             </div>

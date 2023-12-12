@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { isReady } from "../lib/ws";
+    import { isReady, hasConnected } from "../lib/ws";
     import { progress } from "../lib/ws";
 
     let show = true;
@@ -18,10 +18,14 @@
 {#if show}
     <div class="splashscreen-background" class:ready={$isReady}>
         <div class="splashscreen">
-            <p class="label">{$progress.label}</p>
-            <div class="progress">
-                <div class="progress-bar" style={`width: ${$progress.percentage * 100}%`}></div>
-            </div>
+            {#if $hasConnected}
+                <p class="label">{$progress.label}</p>
+                <div class="progress">
+                    <div class="progress-bar" style={`width: ${$progress.percentage * 100}%`}></div>
+                </div>
+            {:else}
+                <p class="label">Connecting ...</p>
+            {/if}
         </div>
     </div>
 {/if}
