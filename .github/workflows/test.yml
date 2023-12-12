@@ -141,6 +141,10 @@ jobs:
             - uses: actions/checkout@v4
               with:
                   submodules: true
+            - name: Install system dependencies
+              run: |
+                  chmod +x ./scripts/deps.sh
+                  ./scripts/deps.sh
             - name: Install stable
               uses: dtolnay/rust-toolchain@stable
               with:
