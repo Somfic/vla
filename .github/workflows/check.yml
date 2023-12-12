@@ -63,6 +63,7 @@ jobs:
               uses: actions-rs/clippy-check@v1
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
+                  args: --manifest-path=src-tauri/Cargo.toml
 
     doc:
         # run docs generation on nightly rather than stable. This enables features like
