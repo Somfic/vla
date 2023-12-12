@@ -50,81 +50,81 @@ jobs:
                   path: playwright-report/
                   retention-days: 30
 
-    release-patch:
-        needs: test
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        permissions: write-all
-        runs-on: windows-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+    # release-patch:
+    #     needs: test
+    #     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    #     permissions: write-all
+    #     runs-on: windows-latest
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v4
 
-            - name: Set up Rust
-              uses: dtolnay/rust-toolchain@stable
+    #         - name: Set up Rust
+    #           uses: dtolnay/rust-toolchain@stable
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 19
-                  cache: "yarn"
+    #         - name: Setup Node.js
+    #           uses: actions/setup-node@v4
+    #           with:
+    #               node-version: 19
+    #               cache: "yarn"
 
-            - name: Setup Yarn
-              run: npm install --global yarn
+    #         - name: Setup Yarn
+    #           run: npm install --global yarn
 
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v3
-              with:
-                  dotnet-version: 8.0.x
+    #         - name: Setup .NET
+    #           uses: actions/setup-dotnet@v3
+    #           with:
+    #               dotnet-version: 8.0.x
 
-            - name: Install Node dependencies
-              run: yarn install
+    #         - name: Install Node dependencies
+    #           run: yarn install
 
-            - name: Tag version
-              run: yarn run version patch
+    #         - name: Tag version
+    #           run: yarn run version patch
 
-            - name: Rust cache
-              uses: swatinem/rust-cache@v2
-              with:
-                  workspaces: "./src-tauri -> target"
+    #         - name: Rust cache
+    #           uses: swatinem/rust-cache@v2
+    #           with:
+    #               workspaces: "./src-tauri -> target"
 
-            - name: Restore C# dependencies
-              run: dotnet restore src-csharp
+    #         - name: Restore C# dependencies
+    #           run: dotnet restore src-csharp
 
-            - name: Read changelog
-              id: notes
-              uses: jaywcjlove/github-action-read-file@main
-              with:
-                  path: CHANGELOG.md
+    #         - name: Read changelog
+    #           id: notes
+    #           uses: jaywcjlove/github-action-read-file@main
+    #           with:
+    #               path: CHANGELOG.md
 
-            - name: Get patch message
-              id: commit
-              run: echo ::set-output name=commit::$(git log --format=%B -n 1 ${{ github.sha }})
+    #         - name: Get patch message
+    #           id: commit
+    #           run: echo ::set-output name=commit::$(git log --format=%B -n 1 ${{ github.sha }})
 
-            - name: Overwrite file
-              uses: "DamianReeves/write-file-action@master"
-              with:
-                  path: CHANGELOG.md
-                  write-mode: overwrite
-                  contents: |
-                      ## 🩹 Patch
+    #         - name: Overwrite file
+    #           uses: "DamianReeves/write-file-action@master"
+    #           with:
+    #               path: CHANGELOG.md
+    #               write-mode: overwrite
+    #               contents: |
+    #                   ## 🩹 Patch
 
-                      - ${{ steps.commit.outputs.commit }}
+    #                   - ${{ steps.commit.outputs.commit }}
 
-                      ${{ steps.notes.outputs.content }}
+    #                   ${{ steps.notes.outputs.content }}
 
-            - name: Read updated changelog
-              id: notes-updated
-              uses: jaywcjlove/github-action-read-file@main
-              with:
-                  path: CHANGELOG.md
+    #         - name: Read updated changelog
+    #           id: notes-updated
+    #           uses: jaywcjlove/github-action-read-file@main
+    #           with:
+    #               path: CHANGELOG.md
 
-            - name: Build application
-              uses: tauri-apps/tauri-action@v0
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-                  releaseName: Vla v__VERSION__ patch
-                  releaseBody: ${{ steps.notes-updated.outputs.content }}
-                  prerelease: false
-                  includeUpdaterJson: true
+    #         - name: Build application
+    #           uses: tauri-apps/tauri-action@v0
+    #           env:
+    #               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #           with:
+    #               tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+    #               releaseName: Vla v__VERSION__ patch
+    #               releaseBody: ${{ steps.notes-updated.outputs.content }}
+    #               prerelease: false
+    #               includeUpdaterJson: true
