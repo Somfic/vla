@@ -21,11 +21,6 @@ jobs:
             - name: Setup Yarn
               run: npm install --global yarn
 
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v3
-              with:
-                  dotnet-version: 8.0.x
-
             - name: Install dependencies
               run: npm install -g yarn && yarn
 
@@ -71,11 +66,6 @@ jobs:
     #         - name: Setup Yarn
     #           run: npm install --global yarn
 
-    #         - name: Setup .NET
-    #           uses: actions/setup-dotnet@v3
-    #           with:
-    #               dotnet-version: 8.0.x
-
     #         - name: Install Node dependencies
     #           run: yarn install
 
@@ -86,9 +76,6 @@ jobs:
     #           uses: swatinem/rust-cache@v2
     #           with:
     #               workspaces: "./src-tauri -> target"
-
-    #         - name: Restore C# dependencies
-    #           run: dotnet restore src-csharp
 
     #         - name: Read changelog
     #           id: notes
