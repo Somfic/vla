@@ -49,12 +49,14 @@ jobs:
               env:
                   ASAN_OPTIONS: "detect_odr_violation=0:detect_leaks=0"
                   RUSTFLAGS: "-Z sanitizer=address"
+              working-directory: ./src-tauri
             - name: cargo test -Zsanitizer=leak
               if: always()
               run: cargo test --all-features --target x86_64-unknown-linux-gnu
               env:
                   LSAN_OPTIONS: "suppressions=lsan-suppressions.txt"
                   RUSTFLAGS: "-Z sanitizer=leak"
+                  working-directory: ./src-tauri
 
     miri:
         runs-on: ubuntu-latest
@@ -73,6 +75,7 @@ jobs:
               run: cargo miri test
               env:
                   MIRIFLAGS: ""
+              working-directory: ./src-tauri
 
     loom:
         runs-on: ubuntu-latest
@@ -87,3 +90,4 @@ jobs:
               env:
                   LOOM_MAX_PREEMPTIONS: 2
                   RUSTFLAGS: "--cfg loom"
+              working-directory: ./src-tauri
