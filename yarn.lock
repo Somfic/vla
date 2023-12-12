@@ -1301,10 +1301,10 @@ svelte@^4.0.5:
     magic-string "^0.30.4"
     periscopic "^3.1.0"
 
-svelvet@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/svelvet/-/svelvet-8.1.0.tgz#f783d1ad631d32f36c1f0379dc88a7896db42b7c"
-  integrity sha512-rH67tgb7e2aTBQZBCW+V5hSvulLwvzBiOml9Dzdz2ATkgQr58mHi2WtlQFOOb+eZt6zH/J10a2MataC29Qdpuw==
+svelvet@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/svelvet/-/svelvet-9.0.0.tgz#f4bd0b71791ed9c00f1a7e8932061ac32ee054eb"
+  integrity sha512-M7EwbLNXlhh45zfqcRP2bUP3gTGyurIPgibjrqyhmMdrE8YMIGqbGJW1SsnJ1BVRd4JPd8rNAuz5PWV6mf3ftg==
 
 to-regex-range@^5.0.1:
   version "5.0.1"
