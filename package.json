@@ -4,19 +4,9 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev-client": "vite",
-        "predev-server": "yarn run terminate",
-        "dev-server": "dotnet watch --project src-csharp/Vla",
-        "dev": "concurrently -r -k -s all \"yarn run dev-client\" \"yarn run dev-server\"",
-        "build-client": "vite build",
-        "build-server": "ts-node --esm scripts/build-csharp.ts",
-        "build": "yarn run build-client && yarn run build-server",
-        "tauri": "tauri",
-        "version": "ts-node --esm scripts/tag-version.ts",
-        "prepare-release": "ts-node --esm scripts/prepare-release.ts",
-        "test": "dotnet test src-csharp && yarn run terminate && concurrently -r -k -s first \"wait-on tcp:127.0.0.1:55155 && playwright test\" \"yarn run dev\"",
-        "report": "ts-node --esm scripts/report-tests.ts",
-        "terminate": "ts-node --esm scripts/terminate-previous.ts"
+        "dev": "vite",
+        "build": "vite build",
+        "tauri": "tauri"
     },
     "dependencies": {
         "@tauri-apps/api": "^1.5.0",
