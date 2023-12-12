@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "vite build",
         "tauri": "tauri",
-        "test": "cargo test --manifest-path=src-tauri/Cargo.toml"
+        "test": "cargo test --manifest-path=src-tauri/Cargo.toml",
+        "deps": "ts-node --esm scripts/deps.ts"
     },
     "dependencies": {
         "@tauri-apps/api": "^1.5.0",
