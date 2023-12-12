@@ -64,7 +64,6 @@ if (!versionRegex.test(version)) {
 const packageJson = "package.json";
 const cargoToml = join("src-tauri", "Cargo.toml");
 const tauriConf = join("src-tauri", "tauri.conf.json");
-const csharp = join("src-csharp", "Vla", "Vla.csproj");
 
 // Update the package.json file
 console.log(`Updating ${packageJson} to version ${version}`);
@@ -83,11 +82,3 @@ console.log(`Updating ${tauriConf} to version ${version}`);
 let tauriConfContent = JSON.parse(readFileSync(tauriConf, "utf8"));
 tauriConfContent["package"]["version"] = version;
 writeFileSync(tauriConf, JSON.stringify(tauriConfContent, null, 4), "utf8");
-
-// Update the Vla.csproj file
-console.log(`Updating ${csharp} to version ${version}`);
-let csharpContent = readFileSync(csharp, "utf8");
-csharpContent = csharpContent.replace(/<Version>.*<\/Version>/, `<Version>${version}</Version>`);
-csharpContent = csharpContent.replace(/<AssemblyVersion>.*<\/AssemblyVersion>/, `<AssemblyVersion>${version}</AssemblyVersion>`);
-csharpContent = csharpContent.replace(/<FileVersion>.*<\/FileVersion>/, `<FileVersion>${version}</FileVersion>`);
-writeFileSync(csharp, csharpContent, "utf8");
