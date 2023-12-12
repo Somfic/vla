@@ -23,3 +23,6 @@ case "$os" in
     exit 1
     ;;
 esac
+
+# Create dist folder
+mkdir -p dist
