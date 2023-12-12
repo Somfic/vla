@@ -17,6 +17,9 @@ tauri = { version = "1.5", features = [ "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
+# for -Zminimal-versions
+debug_unreachable = "0.0.6"
+
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
