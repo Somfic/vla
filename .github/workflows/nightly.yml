@@ -25,6 +25,13 @@ jobs:
             - uses: actions/checkout@v4
               with:
                   submodules: true
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 19
+                  cache: "yarn"
+            - name: Install system dependencies
+              run: yarn run deps
             - name: Install nightly
               uses: dtolnay/rust-toolchain@nightly
             - name: cargo generate-lockfile
@@ -51,6 +58,13 @@ jobs:
             - uses: actions/checkout@v4
               with:
                   submodules: true
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 19
+                  cache: "yarn"
+            - name: Install system dependencies
+              run: yarn run deps
             - name: Install beta
               if: hashFiles('Cargo.lock') != ''
               uses: dtolnay/rust-toolchain@beta
