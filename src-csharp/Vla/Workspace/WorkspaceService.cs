@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
+using Vla.Abstractions.Web;
 
 namespace Vla.Workspace;
 
@@ -11,6 +12,8 @@ public class WorkspaceService
 
 	private readonly string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 		"Vla", "Workspaces");
+	
+	private readonly Web _defaultWeb = new("Untitled web");
 
 	public WorkspaceService(ILogger<WorkspaceService> log)
 	{
@@ -38,11 +41,17 @@ public class WorkspaceService
 
 		return workspaces.ToImmutableArray();
 	}
-	
+
 	public async Task SaveAsync(Abstractions.Web.Workspace workspace)
 	{
-		await File.WriteAllTextAsync(GetWorkspacePath(workspace.Name), EncodeWorkspace(workspace));
-		_log.LogInformation("Saved workspace {Name} at {Path}", workspace.Name, GetWorkspacePath(workspace.Name));
+		(await Result.TryAsync(async () =>
+		{
+			workspace = workspace with { LastModified = DateTime.Now };
+			await File.WriteAllTextAsync(GetWorkspacePath(workspace.Name), EncodeWorkspace(workspace));
+			return true;
+		})).On(x => _log.LogInformation("Saved workspace {Name} at {Path}", workspace.Name, workspace.Path))
+			.OnError(x => _log.LogWarning(x, "Could not save workspace {Name} at {Path}", workspace.Name, workspace.Path));
+
 	}
 	
 	public void Delete(Abstractions.Web.Workspace workspace)
@@ -64,8 +73,8 @@ public class WorkspaceService
 		var path = GetWorkspacePath(name);
 		
 		return (await Result.TryAsync(async () =>
-		{
-			var workspace = new Abstractions.Web.Workspace(name);
+			{
+				var workspace = new Abstractions.Web.Workspace(name) { Path = path, Created = DateTime.Now, LastModified = DateTime.Now};
 			await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
 			return workspace;
 		}))
@@ -84,7 +93,11 @@ public class WorkspaceService
 		{
 			var json = await File.ReadAllTextAsync(path);
 			var workspace = DecodeWorkspace(json);
-			return workspace;
+
+			if (workspace.Webs.Length == 0)
+				workspace = workspace with { Webs = ImmutableArray.Create(_defaultWeb) };
+			
+			return workspace with { Path = path };
 		}))
 			.On(x => _log.LogInformation("Loaded workspace {Name} with {Webs} webs at {Path}", x.Name, x.Webs.Length, path))
 			.OnError(x => _log.LogWarning(x, "Could not load workspace {Name} at {Path}", name, path));

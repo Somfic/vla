@@ -4,8 +4,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Somfic.Common;
 using Vla.Abstractions;
+using Vla.Abstractions.Web;
 using Vla.Input;
 using Vla.Nodes;
+using Vla.Nodes.Math;
 using Vla.Nodes.Web;
 using Vla.Server;
 using Vla.Server.Messages;
@@ -27,6 +29,11 @@ var nodes = host.Services.GetRequiredService<NodeService>();
 var workspaces = host.Services.GetRequiredService<WorkspaceService>();
 var server = host.Services.GetRequiredService<WebsocketService>();
 
+if (!workspaces.Exists("Workspace"))
+    await workspaces.CreateOrLoadAsync("Workspace");
+
+nodes.RegisterStructures(typeof(BasicMathNode).Assembly);
+
 // Start the websocket server
 await server.StartAsync();
 
@@ -39,10 +46,10 @@ server.ClientConnected.OnChange(async c =>
 server.MessageReceived.OnChange(async args =>
 {
     var (client, json) = args;
-    
+
     var message = JObject.Parse(json);
-    
-    switch (message["Id"].Value<string>().ToLower())
+
+    switch (message["id"]?.Value<string>()?.ToLower())
     {
         case "runweb":
             var runWeb = JsonConvert.DeserializeObject<RunWebMessage>(json);
@@ -52,6 +59,11 @@ server.MessageReceived.OnChange(async args =>
                 .Pipe(x => nodes.Execute(x))
                 .On(async x => await server.SendAsync(client, new WebResultMessage(x)))
                 .OnError(Console.WriteLine);
+            break;
+
+        case "workspacechanged":
+            var workspaceChanged = JsonConvert.DeserializeObject<WorkspaceChangedMessage>(json);
+            await workspaces.SaveAsync(workspaceChanged.Workspace);
             break;
     }
 });
