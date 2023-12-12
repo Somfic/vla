@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Edge, type WritableEdge } from "svelvet";
-    import { instances, structures, type ParameterStructure, typeToDefinition } from "../lib/nodes";
+    import { structures, type ParameterStructure, typeToDefinition, instanceFromId } from "../../lib/nodes";
     import { get } from "svelte/store";
-    import { blendColors } from "../lib/color";
+    import { blendColors } from "../../lib/color";
 
     let ref: SVGPathElement | undefined = undefined;
     let edge: WritableEdge;
@@ -22,7 +22,7 @@
         let parameterId = id.split("/")[0].substring(2); // remove "A-"
         let instanceId = id.split("/")[1].substring(2); // remove "N-"
 
-        let instance = get(instances).find((i) => i.id == instanceId);
+        let instance = instanceFromId(instanceId);
         let structure = get(structures).find((s) => s.nodeType == instance?.nodeType);
 
         if (isInput) {

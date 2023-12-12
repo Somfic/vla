@@ -16,7 +16,7 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
     private readonly Dictionary<string, object?> _instances = new();
     private readonly Dictionary<string, object?> _values = new();
 
-    public WebResult ExecuteWeb(Web web, IReadOnlyCollection<NodeStructure> structures)
+    public WebResult ExecuteWeb(Abstractions.Web.Web web, IReadOnlyCollection<NodeStructure> structures)
     {
         Console.WriteLine(JsonConvert.SerializeObject(web, Formatting.Indented));
         
@@ -61,7 +61,7 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
             .WithInstances(_instances);
     }
 
-    private void SetNodeOutput(Web web, IReadOnlyCollection<NodeStructure> structures, string instanceId)
+    private void SetNodeOutput(Abstractions.Web.Web web, IReadOnlyCollection<NodeStructure> structures, string instanceId)
     {
         if (string.IsNullOrWhiteSpace(instanceId))
             return;

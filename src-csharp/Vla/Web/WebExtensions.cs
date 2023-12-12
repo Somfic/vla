@@ -7,17 +7,17 @@ namespace Vla.Nodes.Web;
 
 public static class WebExtensions
 {
-    public static Web WithInstances(this Web web, params NodeInstance[] instances)
+    public static Abstractions.Web.Web WithInstances(this Abstractions.Web.Web web, params NodeInstance[] instances)
     {
-        return web with { Instances = instances };
+        return web with { Instances = web.Instances.AddRange(instances) };
     }
 
-    public static Web WithConnections(this Web web, params NodeConnection[] connections)
+    public static Abstractions.Web.Web WithConnections(this Abstractions.Web.Web web, params NodeConnection[] connections)
     {
-        return web with { Connections = connections };
+        return web with { Connections = web.Connections.AddRange(connections) };
     }
 
-    public static Result<Web> Validate(this Web web, IReadOnlyCollection<NodeStructure> structures)
+    public static Result<Abstractions.Web.Web> Validate(this Abstractions.Web.Web web, IReadOnlyCollection<NodeStructure> structures)
     {
         return Somfic.Common.Result.Value(web)
             .Guard(StructureEnsureUniqueNodeTypes, "All structures must only be registered once")
@@ -31,43 +31,43 @@ public static class WebExtensions
 
         // FIXME: This check does not work. When using the .WithProperty extension method, the type is not promised to be the same as the structure property type.
         //  This check *should* fail if that is the case, but it does not.
-        bool InstancesEnsureStructurePropertyTypeMatches(Web w) =>
+        bool InstancesEnsureStructurePropertyTypeMatches(Abstractions.Web.Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
                 structures.Any(structure => structure.Properties.All(x => x.Name == property.Name && x.Type == property.Type)));
         
         // TODO: Add check that all connection properties exist on the structure
         
-        bool ConnectionsEnsureStructureInputOutputExists(Web w) =>
+        bool ConnectionsEnsureStructureInputOutputExists(Abstractions.Web.Web w) =>
             w.Connections.All(connection =>
                 structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&
                 structures.Any(structure => structure.Inputs.Any(x => x.Id == connection.To.PropertyId)));
 
-        bool ConnectionsEnsureInstanceExists(Web w) =>
+        bool ConnectionsEnsureInstanceExists(Abstractions.Web.Web w) =>
             w.Connections.All(connection =>
                 w.Instances.Any(instance => instance.Id == connection.From.InstanceId) &&
                 w.Instances.Any(instance => instance.Id == connection.To.InstanceId));
 
-        bool InstancesEnsureStructureExists(Web w) =>
+        bool InstancesEnsureStructureExists(Abstractions.Web.Web w) =>
             w.Instances.All(instance => structures.Any(structure => structure.NodeType == instance.NodeType));
 
-        bool InstancesEnsureStructurePropertyExists(Web w) =>
+        bool InstancesEnsureStructurePropertyExists(Abstractions.Web.Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
                 structures.Any(structure => structure.Properties.Any(x => x.Name == property.Name)));
 
-        bool StructureEnsureUniqueNodeTypes(Web w) =>
+        bool StructureEnsureUniqueNodeTypes(Abstractions.Web.Web w) =>
             structures
                 .Select(x => x.NodeType)
                 .Distinct()
                 .Count() == structures.Count;
 
-        bool StructureEnsureUniqueInputIds(Web w) =>
+        bool StructureEnsureUniqueInputIds(Abstractions.Web.Web w) =>
             structures.All(structure =>
                 structure.Inputs
                     .Select(x => x.Id)
                     .Distinct()
                     .Count() == structure.Inputs.Length);
 
-        bool StructureEnsureUniqueOutputIds(Web w) =>
+        bool StructureEnsureUniqueOutputIds(Abstractions.Web.Web w) =>
             structures.All(structure =>
                 structure.Outputs
                     .Select(x => x.Id)

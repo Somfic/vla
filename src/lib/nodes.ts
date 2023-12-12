@@ -1,26 +1,61 @@
 import { get, writable } from "svelte/store";
 import { sendMessage } from "./ws";
+import exp from "constants";
 
 export let structures = writable<NodeStructure[]>([]);
 export let types = writable<TypeDefinition[]>([]);
 
-export let instances = writable<NodeInstance[]>([]);
-export let connections = writable<NodeInstanceConnection[]>([]);
-
 export let result = writable<WebResult>({ instances: [], values: [] } as WebResult);
+export let workspaces = writable<Workspace[]>([]);
 
-export function runWeb() {
+export let workspaceId = writable<string>("");
+export let webId = writable<string>("");
+
+export function runWeb(web: Web) {
     setTimeout(() => {
         let message = {
-            Web: {
-                Instances: get(instances),
-                Connections: get(connections),
-            },
+            Web: web,
             Id: "RunWeb",
         };
 
         sendMessage(message);
     }, 1);
+}
+
+export function instanceFromId(id: string): NodeInstance {
+    return (
+        get(workspaces)
+            .map((w) => w.webs)
+            .flat()
+            .map((w) => w.instances)
+            .flat()
+            .find((i) => i.id == id) ?? ({} as NodeInstance)
+    );
+}
+
+export function saveWorkspace(workspace: Workspace) {
+    let message = {
+        workspace: workspace,
+        id: "WorkspaceChanged",
+    };
+
+    sendMessage(message);
+}
+
+export interface Workspace {
+    name: string;
+    path: string;
+    created: Date;
+    lastModified: Date;
+    color: ColorDefinition;
+    webs: Web[];
+}
+
+export interface Web {
+    id: string;
+    name: string;
+    instances: NodeInstance[];
+    connections: NodeInstanceConnection[];
 }
 
 export interface NodeStructure {
