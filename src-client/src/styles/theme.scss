@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=PT+Mono&family=Rubik&display=swap');
 
-$background: #131313;
+$background: rgba(0, 0, 0, 0.264);
 $background-ui: #0F0F0F;
 $background-dark: #1F1F1F;
 $background-light: #343434;
@@ -11,7 +11,11 @@ $foreground-muted: #999999;
 
 $accent: #AD50A3;
 
-$border-color: rgba(66, 66, 66);
+$border-width: 2px;
+$border-color: rgba(255, 255, 255, 0.2);
+$border-radius: 0.5rem;
+
+$gap: 1rem;
 
 $filter-frosted: blur(20px) brightness(0.7) saturate(1.2);
 

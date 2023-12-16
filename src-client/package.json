@@ -1,0 +1,37 @@
+{
+	"name": "vla",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.28.1",
+		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
+		"eslint": "^8.28.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-svelte": "^2.30.0",
+		"execa": "^8.0.1",
+		"prettier": "^3.1.1",
+		"prettier-plugin-svelte": "^3.1.2",
+		"sass": "^1.69.5",
+		"svelte": "^5.0.0-next.1",
+		"svelte-check": "^3.6.0",
+		"tslib": "^2.4.1",
+		"tsx": "^4.6.2",
+		"typescript": "^5.3.3",
+		"vite": "^5.0.3",
+		"vitest": "^0.32.2",
+		"wait-on": "^7.2.0",
+		"@sveltejs/adapter-static": "^3.0.0",
+		"fuse.js": "^7.0.0",
+		"svelvet": "^9.0.0"
+	},
+	"type": "module"
+}

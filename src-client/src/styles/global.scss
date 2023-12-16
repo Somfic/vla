@@ -1,0 +1,37 @@
+@import 'theme';
+
+:global(html,
+  body,
+  main) {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  font-family: $font;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: $foreground;
+  height: 100vh;
+  overflow: hidden;
+}
+
+:global(*) {
+  font-family: $font;
+  margin: 0;
+  padding: 0;
+}
+
+:global(::-webkit-scrollbar) {
+  width: 3px;
+  height: 3px;
+}
+
+:global(::-webkit-scrollbar-track) {
+  margin: 5px;
+  background: transparent;
+}
+
+:global(::-webkit-scrollbar-thumb) {
+  background: $foreground-muted;
+  border-radius: 100px;
+
+}
