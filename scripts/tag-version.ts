@@ -62,8 +62,8 @@ if (!versionRegex.test(version)) {
 }
 
 const packageJson = "package.json";
-const cargoToml = join("src-tauri", "Cargo.toml");
-const tauriConf = join("src-tauri", "tauri.conf.json");
+const cargoToml = join("..", "src-tauri", "Cargo.toml");
+const tauriConf = join("..", "src-tauri", "tauri.conf.json");
 
 // Update the package.json file
 console.log(`Updating ${packageJson} to version ${version}`);

@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import { renameSync, mkdirSync, existsSync, copyFileSync, rmdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, rmdirSync, mkdirSync, readdirSync, renameSync, copyFileSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 const dotnetVersion = "net8.0";
@@ -96,12 +96,12 @@ async function main() {
 
     console.log(`Modifying tauri.conf.json to include: ${libraryFiles}`);
     // Read the tauri.conf.json file in src-tauri/tauri.conf.json
-    const tauriConf = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8"));
+    const tauriConf = JSON.parse(readFileSync(join("src-tauri", "tauri.conf.json"), "utf8"));
 
     tauriConf["tauri"]["bundle"]["resources"] = libraryFiles;
 
     // Write the tauri.conf.json file in src-tauri/tauri.conf.json
-    writeFileSync("src-tauri/tauri.conf.json", JSON.stringify(tauriConf, null, 4), "utf8");
+    writeFileSync(join("src-tauri", "tauri.conf.json"), JSON.stringify(tauriConf, null, 4), "utf8");
 
     console.log(JSON.stringify(tauriConf, null, 4));
 }

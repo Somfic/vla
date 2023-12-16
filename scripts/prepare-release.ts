@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from "fs";
 import { join } from "path";
 
-const path = join("src-tauri", "target", "release", "bundle", "msi");
+const path = join("..", "src-tauri", "target", "release", "bundle", "msi");
 
 // Check the files in the directory
 const files = readdirSync(path, { withFileTypes: true })
@@ -19,7 +19,7 @@ if (!existsSync("release-files")) {
 }
 
 const oldFile = join(path, files[0]);
-const newFile = join("release-files", files[0]);
+const newFile = join("..", "release-files", files[0]);
 
 console.log(`Copying ${oldFile} to ${newFile}`);
 copyFileSync(oldFile, newFile);
