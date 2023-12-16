@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import { onMount } from 'svelte';
 	import { hasConnected, startListening } from '$lib/ws';
 	import Splashscreen from '../components/Splashscreen.svelte';
@@ -43,4 +43,4 @@
 		// Blurred vibrant colors background
 		background: radial-gradient(rgb(0, 0, 0), rgb(19, 19, 19));
 	}
-</style>
+</style> -->
