@@ -1,8 +1,8 @@
 @import 'theme';
 
-html,
-body,
-main {
+:global(html,
+  body,
+  main) {
   all: unset;
   display: flex;
   flex-direction: column;
@@ -14,6 +14,6 @@ main {
   overflow: hidden;
 }
 
-* {
+:global(*) {
   font-family: $font;
 }
