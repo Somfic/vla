@@ -1,91 +1,79 @@
-import { get, writable, type Writable } from "svelte/store";
-import { types, structures, result, type WebResult, runWeb, workspaces, webId } from "./nodes";
+import { get, writable, type Writable } from 'svelte/store';
+import { state } from './state.svelte';
+import type { Workspace } from './nodes';
 
 let ws: WebSocket = null as any;
 
 export let hasConnected = writable(false);
 export let messages: Writable<string[]> = writable([]);
-export let partialRecognition: Writable<string> = writable("");
-export let recognition: Writable<string> = writable("");
-export let progress: Writable<Progress> = writable({ percentage: 0, label: "Initialising" });
+export let partialRecognition: Writable<string> = writable('');
+export let recognition: Writable<string> = writable('');
+export let progress: Writable<Progress> = writable({ percentage: 0, label: 'Initialising' });
 export let isReady: Writable<boolean> = writable(false);
 
 export function startListening() {
-    hasConnected.set(false);
-    workspaces.set([]);
-    webId.set("");
-    types.set([]);
-    result.set({} as WebResult);
-    progress.set({ percentage: 0, label: "Initialising" });
-    isReady.set(false);
+	state.reset();
+	progress.set({ percentage: 0, label: 'Initialising' });
+	isReady.set(false);
 
-    console.log("Connecting to websocket...");
-    ws = new WebSocket("ws://127.0.0.1:55155");
+	console.log('Connecting to websocket...');
+	ws = new WebSocket('ws://127.0.0.1:55155');
 
-    ws.onopen = () => {
-        console.log("Connected");
-        hasConnected.set(true);
-    };
+	ws.onopen = () => {
+		console.log('Connected');
+		hasConnected.set(true);
+	};
 
-    ws.onmessage = (e) => {
-        messages.update((old) => [...old, e.data]);
+	ws.onmessage = (e) => {
+		messages.update((old) => [...old, e.data]);
 
-        const message = JSON.parse(e.data) as SocketMessage;
-        console.log("<", message);
+		const message = JSON.parse(e.data) as SocketMessage;
+		console.log('<', message);
 
-        switch (message.type) {
-            case "NodesStructure":
-                types.set(message.data["types"]);
-                structures.set(message.data["nodes"]);
-                break;
+		switch (message.type) {
+			case 'Progress':
+				progress.set(message.data);
+				break;
 
-            case "WebResult":
-                result.set(message.data["result"]);
-                break;
+			case 'ReadyState':
+				isReady.set(message.data['ready']);
+				break;
 
-            case "Progress":
-                progress.set(message.data);
-                break;
+			case 'Workspaces':
+				state.workspaces = message.data['workspaces'] as Workspace[];
+				break;
+		}
+	};
 
-            case "ReadyState":
-                isReady.set(message.data["ready"]);
-                break;
+	ws.onerror = (e) => {
+		console.log('Error', e);
+	};
 
-            case "Workspaces":
-                workspaces.set(message.data["workspaces"]);
-                break;
-        }
-    };
+	ws.onclose = (e) => {
+		console.log('Closed', e);
+		hasConnected.set(false);
 
-    ws.onerror = (e) => {
-        console.log("Error", e);
-    };
-
-    ws.onclose = (e) => {
-        console.log("Closed", e);
-        hasConnected.set(false);
-
-        setTimeout(() => {
-            startListening();
-        }, 5000);
-    };
+		setTimeout(() => {
+			startListening();
+		}, 5000);
+	};
 }
 
 export function sendMessage(message: any) {
-    if (!ws) return;
-    if (ws.readyState !== ws.OPEN) return console.log("Not open");
+	if (!ws) return;
+	if (ws.readyState !== ws.OPEN) return console.log('Not open');
 
-    console.log(">", message);
+	console.log('>', message);
 
-    ws.send(JSON.stringify(message));
+	ws.send(JSON.stringify(message));
 }
 
 export interface SocketMessage {
-    type: string;
-    data: any;
+	type: string;
+	data: any;
 }
 
 export interface Progress {
-    percentage: number;
-    label: string;
+	percentage: number;
+	label: string;
 }

@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import {
-		types,
-		type ParameterStructure,
-		typeToDefinition,
-		type ParameterInstance,
-		type NodeStructure
-	} from '$lib/nodes';
+	import { type ParameterStructure, type ParameterInstance, type NodeStructure } from '$lib/nodes';
 	import Value from './Value.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { state } from '$lib/state.svelte';
 
-	export let structure: NodeStructure;
-	export let parameter: ParameterInstance;
-	export let linked: boolean;
-	export let connecting: boolean;
+	let { structure, parameter, linked, connecting } = $props<{
+		structure: NodeStructure;
+		parameter: ParameterInstance;
+		linked: boolean;
+		connecting: boolean;
+	}>();
 
 	const dispatch = createEventDispatcher();
 
@@ -23,7 +20,17 @@
 		//e.preventDefault();
 	}
 
-	$: parameterType = structure.inputs.find((i) => i.id == parameter.id)?.type.replace('&', '')!;
+	let parameterType = $derived(
+		structure.inputs
+			.concat(structure.outputs)
+			.find((i) => i.id == parameter.id)
+			?.type.replace('&', '')
+	);
+
+	// FIXME: The type *could* not exist, but it shouldn't. We should probably handle this better
+	let typeDefinition = $derived(
+		state.workspace?.types.find((t) => t.type.replace('&', '') == parameterType)
+	)!;
 </script>
 
 <div class="default-wrapper" class:linked class:connecting>
@@ -32,7 +39,7 @@
 	<div class="default" on:mousedown={handleClick}>
 		<Value
 			on:change={() => dispatch('change')}
-			type={typeToDefinition(parameterType)}
+			type={typeDefinition}
 			bind:value={parameter.value}
 			input
 		/>

@@ -1,6 +1,5 @@
 <script lang="ts">
-	export let active = false;
-	export let padding = false;
+	let { active, padding } = $props<{ active?: boolean; padding?: boolean }>();
 </script>
 
 <button class:active class:padding>

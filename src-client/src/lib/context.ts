@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { types } from "./nodes";
+import { types } from "./nodes.svelte";
 
 export function getDefaultValueForType(type: string): any {
     return get(types).find((t) => t.type == type)?.defaultValue;
