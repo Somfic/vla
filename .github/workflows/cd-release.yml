@@ -44,10 +44,7 @@ jobs:
                   cache: "yarn"
 
             - name: Setup Yarn
-              run: npm install --global yarn
-
-            - name: Install scripts
-              run: yarn
+              run: npm install --global yarn && yarn
 
             - name: Install dependencies
               run: yarn
