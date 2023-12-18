@@ -8,13 +8,13 @@ namespace Vla.Nodes.Constant;
 [NodeTags("Number", "Constant", "Value", "Double", "Float", "Decimal", "Integer")]
 public class NumberConstantNode : INode
 {
-	public string Name => "Number constant";
-    
-	[NodeProperty]
-	public double Value { get; set; }
+    public string Name => "Number constant";
 
-	public void Execute([NodeOutput("Value")] out double value)
-	{
-		value = Value;
-	}
+    [NodeProperty]
+    public double Value { get; set; }
+
+    public void Execute([NodeOutput("Value")] out double value)
+    {
+        value = Value;
+    }
 }

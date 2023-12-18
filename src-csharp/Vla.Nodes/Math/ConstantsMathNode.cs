@@ -8,29 +8,29 @@ namespace Vla.Nodes.Math;
 [NodeTags("Math", "Constants", "Pi", "E", "Tau", "π", "τ")]
 public class ConstantsMathNode : INode
 {
-	public string Name => Mode.GetValueName();
+    public string Name => Mode.GetValueName();
 
-	[NodeProperty]
-	public MathMode Mode { get; set; } = MathMode.Pi;
+    [NodeProperty]
+    public MathMode Mode { get; set; } = MathMode.Pi;
 
-	public void Execute([NodeOutput("Constant")] out double value)
-	{
-		value = Mode switch
-		{
-			MathMode.Pi => System.Math.PI,
-			MathMode.E => System.Math.E,
-			MathMode.Tau => System.Math.Tau,
-			_ => throw new ArgumentOutOfRangeException()
-		};
-	}
+    public void Execute([NodeOutput("Constant")] out double value)
+    {
+        value = Mode switch
+        {
+            MathMode.Pi => System.Math.PI,
+            MathMode.E => System.Math.E,
+            MathMode.Tau => System.Math.Tau,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
 
-	public enum MathMode
-	{
-		[NodeEnumValue("π")]
-		Pi,
-		[NodeEnumValue("e")]
-		E,
-		[NodeEnumValue("τ")]
-		Tau
-	}
+    public enum MathMode
+    {
+        [NodeEnumValue("π")]
+        Pi,
+        [NodeEnumValue("e")]
+        E,
+        [NodeEnumValue("τ")]
+        Tau
+    }
 }

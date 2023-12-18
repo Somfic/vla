@@ -3,7 +3,7 @@ using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
 using Vla.Abstractions.Structure;
 
-namespace Vla.Nodes.Web;
+namespace Vla.Web;
 
 public static class WebExtensions
 {
@@ -24,7 +24,7 @@ public static class WebExtensions
             .Guard(StructureEnsureUniqueInputIds, "All inputs must have a unique id")
             .Guard(StructureEnsureUniqueOutputIds, "All outputs must have a unique id")
             .Guard(InstancesEnsureStructureExists, "All instances must have a registered structure")
-            .Guard(InstancesEnsureStructurePropertyExists,"All instance properties must have a registered structure property")
+            .Guard(InstancesEnsureStructurePropertyExists, "All instance properties must have a registered structure property")
             .Guard(InstancesEnsureStructurePropertyTypeMatches, "All instance properties must have a matching structure property type")
             .Guard(ConnectionsEnsureInstanceExists, "All connections must have a registered instance")
             .Guard(ConnectionsEnsureStructureInputOutputExists, "All connections must have a registered structure input/output");
@@ -34,9 +34,9 @@ public static class WebExtensions
         bool InstancesEnsureStructurePropertyTypeMatches(Abstractions.Web.Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
                 structures.Any(structure => structure.Properties.All(x => x.Name == property.Name && x.Type == property.Type)));
-        
+
         // TODO: Add check that all connection properties exist on the structure
-        
+
         bool ConnectionsEnsureStructureInputOutputExists(Abstractions.Web.Web w) =>
             w.Connections.All(connection =>
                 structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&

@@ -8,10 +8,10 @@ namespace Vla.Nodes.Variables;
 [NodeTags("Set", "Boolean", "Bool", "Save")]
 public class SetBooleanVariable(VariableManager variableManager) : INode
 {
-	public string Name => "Set boolean variable";
-	
-	public void Execute([NodeInput("Variable")] string variable, [NodeInput("Value")] bool value)
-	{
-		variableManager.SetVariable(variable, value);
-	}
+    public string Name => "Set boolean variable";
+
+    public void Execute([NodeInput("Variable")] string variable, [NodeInput("Value")] bool value)
+    {
+        variableManager.SetVariable(variable, value);
+    }
 }

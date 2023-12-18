@@ -3,5 +3,5 @@
 [AttributeUsage(AttributeTargets.Property)]
 public class NodePropertyAttribute : Attribute
 {
-    
+
 }

@@ -16,7 +16,7 @@ public readonly struct NodeTypeDefinition
             { "Boolean", ("circle", "checkbox", System.Drawing.Color.FromArgb(255, 109, 109)) },
             { "NodeFlow", ("diamond", "text", System.Drawing.Color.FromArgb(255, 255, 255)) },
         };
-    
+
     public NodeTypeDefinition(Type type, string? name = "")
     {
         Type = type;
@@ -37,7 +37,7 @@ public readonly struct NodeTypeDefinition
                 .Select(x => (value: x, label: EnumExtensions.GetValueNameFromEnum(type, x)))
                 .Select(x => new NodeTypeDefinitionValue(x.label, Enum.Parse(type, x.value)))
                 .ToImmutableArray();
-        
+
         DefaultValue = type.GetDefaultValueForType();
     }
 
@@ -46,10 +46,10 @@ public readonly struct NodeTypeDefinition
 
     [JsonProperty("name")]
     public string Name { get; init; }
-    
+
     [JsonProperty("htmlType")]
     public string HtmlType { get; init; }
-    
+
     [JsonProperty("values")]
     public ImmutableArray<NodeTypeDefinitionValue> Values { get; init; } = ImmutableArray<NodeTypeDefinitionValue>.Empty;
 
@@ -58,33 +58,33 @@ public readonly struct NodeTypeDefinition
 
     [JsonProperty("shape")]
     public string Shape { get; init; }
-    
+
     [JsonProperty("defaultValue")]
     public object? DefaultValue { get; init; }
-    
+
     public readonly struct ColorDefinition(Color color)
     {
         [JsonProperty("r")]
         public int R { get; init; } = color.R;
-        
+
         [JsonProperty("g")]
         public int G { get; init; } = color.G;
-        
+
         [JsonProperty("b")]
         public int B { get; init; } = color.B;
-        
+
         [JsonProperty("h")]
         public float H { get; init; } = color.GetHue();
-        
+
         [JsonProperty("s")]
         public float S { get; init; } = color.GetSaturation();
-        
+
         [JsonProperty("l")]
         public float L { get; init; } = color.GetBrightness();
-        
+
         [JsonProperty("hex")]
         public string Hex => $"#{R:X2}{G:X2}{B:X2}";
-        
+
         public static implicit operator ColorDefinition(Color color) => new(color);
     }
 }

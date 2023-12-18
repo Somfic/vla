@@ -1,13 +1,12 @@
-﻿using System.Runtime.Serialization;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vla.Abstractions;
 using Vla.Abstractions.Instance;
 using Vla.Abstractions.Structure;
-using Vla.Nodes.Web.Result;
+using Vla.Web.Result;
 
-namespace Vla.Nodes.Web;
+namespace Vla.Web;
 
 public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
 {
@@ -19,12 +18,12 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
     public WebResult ExecuteWeb(Abstractions.Web.Web web, IReadOnlyCollection<NodeStructure> structures)
     {
         Console.WriteLine(JsonConvert.SerializeObject(web, Formatting.Indented));
-        
+
         foreach (var instance in web.Instances)
         {
             if (structures.All(s => s.NodeType != instance.NodeType))
                 throw new Exception($"Could not find structure for node {instance.NodeType.Name}");
-            
+
             var structure = structures.First(s => s.NodeType == instance.NodeType);
 
             var nodeInstance = ActivatorUtilities.CreateInstance(services, structure.NodeType);
@@ -47,7 +46,7 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
                     propInfo?.SetValue(nodeInstance, castedValue);
                 }
             }
-            
+
             _instances.Add(instance.Id, nodeInstance);
         }
 
@@ -83,9 +82,9 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
             {
                 var hasConnection =
                     web.Connections.Any(c => c.To.InstanceId == instanceId && c.To.PropertyId == input.Id);
-                
+
                 // If there is a connection, set the value of the input to the value of the output
-                if(hasConnection)
+                if (hasConnection)
                     SetNodeOutput(web, structures, web.Connections.First(c => c.To.InstanceId == instanceId && c.To.PropertyId == input.Id).From.InstanceId);
                 else
                 {

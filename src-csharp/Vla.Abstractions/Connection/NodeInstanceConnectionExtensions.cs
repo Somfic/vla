@@ -8,7 +8,7 @@ public static class NodeConnectionExtensions
     {
         return connection with { From = new ConnectedProperty(node.Id, outputId) };
     }
-	
+
     public static NodeConnection To(this NodeConnection connection, NodeInstance node, string inputId)
     {
         return connection with { To = new ConnectedProperty(node.Id, inputId) };

@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Vla.Abstractions.Instance;
 
-namespace Vla.Nodes.Web.Result;
+namespace Vla.Web.Result;
 
 public readonly struct WebResult
 {

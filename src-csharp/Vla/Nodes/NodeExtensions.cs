@@ -24,7 +24,7 @@ public static class NodeExtensions
             .Guard(x => GetMainMethod(x).Expect().ReturnType == typeof(void), "Node must have void as return type")
             .Guard(x => GetMainMethod(x).Expect().IsPublic, "Node must have a public execution path")
             .Pipe(BuildStructure);
-    
+
     public static Result<NodeStructure> ToStructure<TNode>() where TNode : INode => ToStructure(typeof(TNode));
 
     private static Result<NodeStructure> BuildStructure(Type type)

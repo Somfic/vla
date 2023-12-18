@@ -15,11 +15,11 @@ public class NodeCategoryAttribute(string name) : Attribute
 [AttributeUsage(AttributeTargets.Class)]
 public class NodeTagsAttribute(params string[] tags) : Attribute
 {
-    public string[] Tags { get;  } = tags;
+    public string[] Tags { get; } = tags;
 }
 
 [AttributeUsage(AttributeTargets.Field)]
 public class NodeEnumValueAttribute(string name) : Attribute
 {
-    public string Name { get;  } = name;
+    public string Name { get; } = name;
 }

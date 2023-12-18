@@ -4,6 +4,6 @@ namespace Vla.Abstractions;
 
 public interface INode
 {
-	[JsonProperty("name")]
-	public string Name { get; }
+    [JsonProperty("name")]
+    public string Name { get; }
 }

@@ -8,10 +8,10 @@ namespace Vla.Nodes.Variables;
 [NodeTags("Get", "Int", "Integer", "Load")]
 public class GetIntVariable(VariableManager variableManager) : INode
 {
-	public string Name => "Get int variable";
-	
-	public void Execute([NodeInput("Variable")] string variable, [NodeOutput("Value")] out int value)
-	{
-		value = variableManager.GetVariable<int>(variable);
-	}
+    public string Name => "Get int variable";
+
+    public void Execute([NodeInput("Variable")] string variable, [NodeOutput("Value")] out int value)
+    {
+        value = variableManager.GetVariable<int>(variable);
+    }
 }

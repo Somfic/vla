@@ -8,10 +8,10 @@ namespace Vla.Nodes.Variables;
 [NodeTags("Get", "Decimal", "Float", "Double", "Load")]
 public class GetDecimalVariable(VariableManager variableManager) : INode
 {
-	public string Name => "Get decimal variable";
-	
-	public void Execute([NodeInput("Variable")] string variable, [NodeOutput("Value")] out double value)
-	{
-		value = variableManager.GetVariable<double>(variable);
-	}
+    public string Name => "Get decimal variable";
+
+    public void Execute([NodeInput("Variable")] string variable, [NodeOutput("Value")] out double value)
+    {
+        value = variableManager.GetVariable<double>(variable);
+    }
 }

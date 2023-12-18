@@ -7,6 +7,6 @@ public class NodeOutputAttribute : Attribute
     {
         Name = name;
     }
-	
+
     public string Name { get; }
 }

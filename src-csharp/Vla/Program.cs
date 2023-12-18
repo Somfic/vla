@@ -8,9 +8,9 @@ using Vla.Abstractions.Web;
 using Vla.Input;
 using Vla.Nodes;
 using Vla.Nodes.Math;
-using Vla.Nodes.Web;
 using Vla.Server;
 using Vla.Server.Messages;
+using Vla.Web;
 using Vla.Workspace;
 
 var host = Host.CreateDefaultBuilder()
@@ -53,9 +53,8 @@ server.MessageReceived.OnChange(async args =>
     {
         case "runweb":
             var runWeb = JsonConvert.DeserializeObject<RunWebMessage>(json);
-            runWeb
-                .Web
-                .Validate(nodes.Structures)
+            WebExtensions.Validate(runWeb
+                    .Web, nodes.Structures)
                 .Pipe(x => nodes.Execute(x))
                 .On(async x => await server.SendAsync(client, new WebResultMessage(x)))
                 .OnError(Console.WriteLine);

@@ -8,10 +8,10 @@ namespace Vla.Nodes.Variables;
 [NodeTags("Set", "Int", "Integer", "Save")]
 public class SetIntVariable(VariableManager variableManager) : INode
 {
-	public string Name => "Set int variable";
-	
-	public void Execute([NodeInput("Variable")] string variable, [NodeInput("Value")] int value)
-	{
-		variableManager.SetVariable(variable, value);
-	}
+    public string Name => "Set int variable";
+
+    public void Execute([NodeInput("Variable")] string variable, [NodeInput("Value")] int value)
+    {
+        variableManager.SetVariable(variable, value);
+    }
 }
