@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
+using Vla.Web.Result;
 
 namespace Vla.Abstractions.Web;
 
@@ -27,4 +28,10 @@ public readonly struct Web(string name)
     /// </summary>
     [JsonProperty("connections")]
     public ImmutableArray<NodeConnection> Connections { get; init; } = ImmutableArray<NodeConnection>.Empty;
+
+    /// <summary>
+    /// The result of the web. This is automatically set when running.
+    /// </summary>
+    [JsonProperty("result")]
+    public WebResult Result { get; init; } = new();
 }
