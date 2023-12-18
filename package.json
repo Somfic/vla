@@ -11,7 +11,7 @@
         "test-server": "cd src-csharp && dotnet test",
         "test": "yarn test-client && yarn test-server",
         "dev-client": "cd src-client && yarn dev",
-        "dev-server": "cd src-csharp && dotnet watch --project Vla",
+        "dev-server": "yarn terminate && cd src-csharp && dotnet watch --project Vla",
         "dev": "concurrently -r \"yarn dev-client\" \"yarn dev-server\"",
         "build-client": "cd src-client && yarn build",
         "prebuild-server": "yarn terminate",
