@@ -3,12 +3,12 @@ using Vla.Abstractions.Web;
 
 namespace Vla.Server.Messages;
 
-public readonly struct RunWebMessage(Web web) : ISocketMessage
+public readonly struct RunWebMessage(Abstractions.Web.Web web) : ISocketMessage
 {
-    public static implicit operator RunWebMessage(Web web) => new(web);
+    public static implicit operator RunWebMessage(Abstractions.Web.Web web) => new(web);
 
     [JsonProperty("web")]
-    public Web Web { get; init; } = web;
+    public Abstractions.Web.Web Web { get; init; } = web;
 }
 
 public readonly struct WorkspaceChangedMessage(Abstractions.Web.Workspace workspace) : ISocketMessage

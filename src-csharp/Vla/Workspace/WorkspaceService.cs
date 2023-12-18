@@ -13,7 +13,7 @@ public class WorkspaceService
     private readonly string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Vla", "Workspaces");
 
-    private readonly Web _defaultWeb = new("Untitled web");
+    private readonly Abstractions.Web.Web _defaultWeb = new("Untitled web");
 
     public WorkspaceService(ILogger<WorkspaceService> log)
     {
