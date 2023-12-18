@@ -8,11 +8,11 @@ namespace Vla.Extensions.Core;
 [NodeExtension("Core", "Vla's core building blocks")]
 public class Core(ILogger<Core> log) : Extension
 {
-	public override ImmutableArray<Dependency> Dependencies => ImmutableArray<Dependency>.Empty;
+    public override ImmutableArray<Dependency> Dependencies => ImmutableArray<Dependency>.Empty;
 
-	public Task OnStart()
-	{
-		log.LogInformation("Hello from Core!");
-		return Task.CompletedTask;
-	}
+    public override Task OnStart()
+    {
+        log.LogInformation("Hello from Core!");
+        return Task.CompletedTask;
+    }
 }

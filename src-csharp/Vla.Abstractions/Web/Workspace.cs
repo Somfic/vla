@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using Newtonsoft.Json;
+using Vla.Abstractions.Extensions;
+using Vla.Abstractions.Structure;
 using Vla.Abstractions.Types;
 
 namespace Vla.Abstractions.Web;
@@ -41,4 +43,22 @@ public readonly struct Workspace(string name)
     /// </summary>
     [JsonProperty("webs")]
     public ImmutableArray<Web> Webs { get; init; } = ImmutableArray<Web>.Empty;
+
+    /// <summary>
+    /// The structures possibly contained in the workspace. This is automatically set when loading.
+    /// </summary>
+    [JsonProperty("structures")]
+    public ImmutableArray<NodeStructure> Structures { get; init; } = ImmutableArray<NodeStructure>.Empty;
+
+    /// <summary>
+    /// The types possibly contained in the workspace. This is automatically set when loading.
+    /// </summary>
+    [JsonProperty("types")]
+    public ImmutableArray<NodeTypeDefinition> Types { get; init; } = ImmutableArray<NodeTypeDefinition>.Empty;
+
+    /// <summary>
+    /// The extensions active in the workspace.
+    /// </summary>
+    [JsonProperty("extensions")]
+    public ImmutableArray<Dependency> Extensions { get; init; } = ImmutableArray<Dependency>.Empty;
 }

@@ -27,7 +27,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Vla.Abstractions\Vla.Abstractions.csproj" />
-      <ProjectReference Include="..\Vla.Nodes\Vla.Nodes.csproj" />
     </ItemGroup>
 
 

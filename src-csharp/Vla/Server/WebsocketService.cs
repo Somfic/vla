@@ -13,6 +13,8 @@ public class WebsocketService
     private readonly ILogger<WebsocketService> _log;
     private readonly WatsonWsServer _server;
     private bool _isReady;
+    
+    public bool IsRunning => _server.IsListening;
 
     public AsyncCallback<ClientMetadata> ClientConnected { get; } = new();
     public AsyncCallback<(ClientMetadata, string)> MessageReceived { get; } = new();

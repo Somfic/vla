@@ -1,23 +1,31 @@
 using System.Collections.Immutable;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions.Web;
+using Vla.Abstractions.Extensions;
+using Vla.Abstractions.Structure;
+using Vla.Abstractions.Types;
+using Vla.Nodes;
 
 namespace Vla.Workspace;
 
 public class WorkspaceService
 {
     private readonly ILogger<WorkspaceService> _log;
+    private readonly NodeService _nodes;
+    private readonly ExtensionsService _extensions;
 
     private readonly string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Vla", "Workspaces");
 
     private readonly Abstractions.Web.Web _defaultWeb = new("Untitled web");
 
-    public WorkspaceService(ILogger<WorkspaceService> log)
+    public WorkspaceService(ILogger<WorkspaceService> log, NodeService nodes, ExtensionsService extensions)
     {
         _log = log;
+        _nodes = nodes;
+        _extensions = extensions;
         Directory.CreateDirectory(_path);
     }
 
@@ -72,14 +80,25 @@ public class WorkspaceService
 
         var path = GetWorkspacePath(name);
 
-        return (await Result.TryAsync(async () =>
+        var result = (await Result.TryAsync(async () =>
             {
-                var workspace = new Abstractions.Web.Workspace(name) { Path = path, Created = DateTime.Now, LastModified = DateTime.Now };
+                var workspace = new Abstractions.Web.Workspace(name)
+                {
+                    Path = path,
+                    Created = DateTime.Now,
+                    LastModified = DateTime.Now,
+                    Extensions = [new Dependency("Core", Version.Parse("1.0.0"))]
+                };
                 await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
                 return workspace;
             }))
             .On(x => _log.LogInformation("Created workspace {Name} at {Path}", x.Name, path))
             .OnError(x => _log.LogWarning(x, "Could not create workspace {Name} at {Path}", name, path));
+
+        if (!result.IsError)
+            return await LoadAsync(name);
+
+        return result;
     }
 
     private async Task<Result<Abstractions.Web.Workspace>> LoadAsync(string name)
@@ -97,7 +116,19 @@ public class WorkspaceService
             if (workspace.Webs.Length == 0)
                 workspace = workspace with { Webs = ImmutableArray.Create(_defaultWeb) };
 
-            return workspace with { Path = path };
+            workspace = workspace with { Structures = [], Types = [], Path = path };
+
+            foreach (var dependency in workspace.Extensions)
+            {
+                var extension = _extensions.Extensions.First(x => x.Key.Name == dependency.Name && x.Key.Version >= dependency.Version).Value;
+                var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
+
+                workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
+            }
+
+            workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
+
+            return workspace;
         }))
             .On(x => _log.LogInformation("Loaded workspace {Name} with {Webs} webs at {Path}", x.Name, x.Webs.Length, path))
             .OnError(x => _log.LogWarning(x, "Could not load workspace {Name} at {Path}", name, path));
@@ -109,6 +140,11 @@ public class WorkspaceService
     }
 
     private string GetWorkspacePath(string name) => Path.Combine(_path, $"{name}.vla");
-    private static string EncodeWorkspace(Abstractions.Web.Workspace workspace) => JsonConvert.SerializeObject(workspace, Formatting.Indented);
+    private static string EncodeWorkspace(Abstractions.Web.Workspace workspace)
+    {
+        workspace = workspace with { Path = string.Empty, Structures = ImmutableArray<NodeStructure>.Empty, Types = ImmutableArray<NodeTypeDefinition>.Empty };
+        return JsonConvert.SerializeObject(workspace, Formatting.Indented);
+    }
+
     private static Abstractions.Web.Workspace DecodeWorkspace(string encoded) => JsonConvert.DeserializeObject<Abstractions.Web.Workspace>(encoded);
 }
