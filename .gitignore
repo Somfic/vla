@@ -600,3 +600,4 @@ src-tauri/binaries
 /playwright/.cache/
 speech-recognition.bin
 test-results.json
+src-client/build
