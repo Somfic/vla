@@ -1,26 +1,20 @@
 <script lang="ts">
 	import { Svelvet } from 'svelvet';
 	import EditorNode from './EditorNode.svelte';
-	import {
-		result,
-		structures,
-		type NodeInstance,
-		type NodeInstanceConnection,
-		runWeb
-	} from '$lib/nodes';
-	import { get } from 'svelte/store';
-	import Menu from '../menu/Menu.svelte';
+	import { type NodeInstanceConnection, runWeb } from '$lib/nodes';
 	import type { Web } from '$lib/nodes';
-	import Topbar from '../topbar/Topbar.svelte';
-	import { invokeMenu, menu } from '$lib/menu';
+	import { invokeMenu } from '$lib/menu';
 	import { createEventDispatcher } from 'svelte';
 
-	export let web: Web;
+	let { web } = $props<{ web: Web }>();
 
 	const dispatch = createEventDispatcher();
 
 	function connection(e: any) {
 		// FIXME: Make sure this is distinct
+		// FIXME: Make sure we don't connect to ourselves
+		// FIXME: Make sure we don't connect in a loop
+		// FIXME: Make sure we only connect types that can be casted to each other
 		if (
 			web.connections.find((c) => JSON.stringify(c) == JSON.stringify(detailToInstance(e.detail)))
 		)
@@ -74,6 +68,7 @@
 		on:connection={connection}
 		on:disconnection={disconnection}
 		edgeStyle="bezier"
+		modifier="meta"
 	>
 		{#each web.instances as instance}
 			<EditorNode bind:web bind:instance on:change={() => dispatch('change')} />

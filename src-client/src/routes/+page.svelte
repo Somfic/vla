@@ -1,31 +1,29 @@
 <script lang="ts">
+	import Editor from '$lib/components/editor/Editor.svelte';
+	import EditorEdge from '$lib/components/editor/EditorEdge.svelte';
+	import Explorer from '$lib/layout/Explorer.svelte';
+	import Shortcuts from '$lib/layout/Shortcuts.svelte';
+	import { state } from '$lib/state.svelte';
 	import { startListening } from '$lib/ws';
 	import { onMount } from 'svelte';
-	import Panel from '../components/layout/Panel.svelte';
-	import Editor from '../components/editor/Editor.svelte';
 
 	onMount(() => {
 		startListening();
 	});
 </script>
 
+{JSON.stringify(state.webId)}
 <main>
-	<div class="shortcuts panel">
-		<p>Hello</p>
-		<div>
-			<p>Hey</p>
-			<p>Hey 2</p>
-		</div>
-	</div>
-	<div class="explorer panel">
-		<p>Workspace items</p>
-		<!-- Placeholder items-->
-		{#each Array(200) as _}
-			<p>Item</p>
-		{/each}
-	</div>
+	<Shortcuts />
+	<Explorer />
 	<div class="editor">
-		<div class="canvas panel"></div>
+		<div class="canvas panel">
+			{#if !state.web}
+				<p>No web selected</p>
+			{:else}
+				<Editor web={state.web} />
+			{/if}
+		</div>
 		<div class="output">
 			<div class="console panel"></div>
 			<div class="overview panel"></div>
@@ -45,12 +43,8 @@
 		height: 100vh;
 	}
 
-	.panel {
-		padding: $gap;
-		background-color: $background;
-		border-radius: $border-radius;
-		border: $border-width solid $border-color;
-		overflow-y: auto;
+	.shortcuts {
+		padding: 0;
 	}
 
 	.editor {

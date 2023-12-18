@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { TypeDefinition } from '$lib/nodes';
-	export let type: TypeDefinition;
-	export let value: any;
-	export let readonly = false;
-	export let input = false;
-	export let output = false;
+
+	let {
+		type,
+		value,
+		readonly = false,
+		input = false,
+		output = false
+	} = $props<{
+		type: TypeDefinition;
+		value: any;
+		readonly?: boolean;
+		input?: boolean;
+		output?: boolean;
+	}>();
 
 	const dispatch = createEventDispatcher();
 </script>
