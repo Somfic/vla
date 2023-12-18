@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Fuse from 'fuse.js';
 	import { get } from 'svelte/store';
-	import { structures } from '../../lib/nodes';
+	import { structures } from '$lib/nodes';
 	import { createEventDispatcher } from 'svelte';
-	import { generateGuid, getDefaultValueForType } from '../../lib/context';
+	import { generateGuid, getDefaultValueForType } from '$lib/context';
 
 	const dispatch = createEventDispatcher();
 
@@ -156,7 +156,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.input {
 		all: unset;

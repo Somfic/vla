@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import type { NodeStructure, PropertyStructure, PropertyInstance } from '../../lib/nodes';
-	import { types } from '../../lib/nodes';
+	import type { NodeStructure, PropertyStructure, PropertyInstance } from '$lib/nodes';
+	import { types } from '$lib/nodes';
 	import Value from './Value.svelte';
 	import { createEventDispatcher } from 'svelte';
 
@@ -19,7 +19,8 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
+
 	.property {
 		display: flex;
 		align-items: center;

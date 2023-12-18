@@ -6,7 +6,7 @@
 		typeToDefinition,
 		type ParameterInstance,
 		type NodeStructure
-	} from '../../lib/nodes';
+	} from '$lib/nodes';
 	import Value from './Value.svelte';
 	import { createEventDispatcher } from 'svelte';
 
@@ -40,7 +40,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.default-wrapper {
 		position: absolute;

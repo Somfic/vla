@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { isReady, hasConnected } from '../lib/ws';
-	import { progress } from '../lib/ws';
+	import { isReady, hasConnected } from '$lib/ws';
+	import { progress } from '$lib/ws';
 
 	let show = true;
 
@@ -31,7 +31,7 @@
 {/if}
 
 <style lang="scss">
-	@import '../styles/theme.scss';
+	@import '../../styles/theme.scss';
 
 	.splashscreen-background {
 		position: absolute;

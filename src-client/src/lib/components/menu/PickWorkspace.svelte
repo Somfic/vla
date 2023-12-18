@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { workspaces } from '../../lib/nodes';
+	import { workspaces } from '$lib/nodes';
 
 	const dispatch = createEventDispatcher();
 
@@ -70,7 +70,7 @@
 </a>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.picker {
 		display: flex;

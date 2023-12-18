@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { saveWorkspace, type Web, type Workspace } from '../../lib/nodes';
+	import { saveWorkspace, type Web, type Workspace } from '$lib/nodes';
 	import Editor from '../editor/Editor.svelte';
 	import Topbar from '../topbar/Topbar.svelte';
 
@@ -32,7 +32,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.workspace {
 		display: flex;

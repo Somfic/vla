@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { TypeDefinition } from '../../lib/nodes';
+	import type { TypeDefinition } from '$lib/nodes';
 	export let type: TypeDefinition;
 	export let value: any;
 	export let readonly = false;
@@ -63,7 +63,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.value {
 		display: flex;

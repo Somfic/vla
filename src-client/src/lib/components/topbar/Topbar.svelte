@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { Web, Workspace } from '../../lib/nodes';
+	import type { Web, Workspace } from '$lib/nodes';
 
 	export let workspace: Workspace;
 	export let web: Web;
@@ -23,7 +23,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.topbar {
 		display: flex;

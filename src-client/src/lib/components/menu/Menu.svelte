@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
 	import { createEventDispatcher } from 'svelte';
-	import { menu, menuResult, show as showMenu } from '../../lib/menu';
+	import { menu, menuResult, show as showMenu } from '$lib/menu';
 	import PickInstanceMenu from './PickInstanceMenu.svelte';
 	import PickWorkspaceMenu from './PickWorkspace.svelte';
 
@@ -31,7 +31,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.menu-wrapper {
 		position: absolute;

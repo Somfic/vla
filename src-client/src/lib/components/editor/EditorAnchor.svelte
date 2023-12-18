@@ -5,7 +5,7 @@
 		type ParameterInstance,
 		type NodeStructure,
 		type ParameterStructure
-	} from '../../lib/nodes';
+	} from '$lib/nodes';
 
 	export let input: boolean = false;
 	export let output: boolean = false;
@@ -43,7 +43,7 @@
 </div>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	.anchor {
 		width: 12px;

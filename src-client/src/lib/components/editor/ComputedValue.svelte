@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import { result, type TypeDefinition } from '../../lib/nodes';
+	import { result, type TypeDefinition } from '$lib/nodes';
 	import Value from './Value.svelte';
 
 	export let id: string;

@@ -7,11 +7,11 @@
 		typeToDefinition,
 		type ParameterStructure,
 		type Web
-	} from '../../lib/nodes';
+	} from '$lib/nodes';
 	import EditorProperty from './EditorProperty.svelte';
 	import EditorAnchor from './EditorAnchor.svelte';
 	import { get } from 'svelte/store';
-	import { structures } from '../../lib/nodes';
+	import { structures } from '$lib/nodes';
 	import ComputedValue from './ComputedValue.svelte';
 	import EditorEdge from './EditorEdge.svelte';
 	import EditorAnchorDefaultValue from './EditorAnchorDefaultValue.svelte';
@@ -159,7 +159,7 @@
 </Node>
 
 <style lang="scss">
-	@import '../../styles/theme.scss';
+	@import '../../../styles/theme.scss';
 
 	$border: 2px solid $border-color;
 
