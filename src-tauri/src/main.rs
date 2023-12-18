@@ -39,7 +39,7 @@ fn main() {
             {
                 println!("Applying mica");
                 //apply_mica(&window, None)
-                apply_acrylic(&window, Some((30, 30, 30, 255)))
+                apply_acrylic(&window, None)
                     .expect("Unsupported platform! 'apply_mica' is only supported on Windows");
             }
 
