@@ -8,6 +8,9 @@ namespace Vla.Abstractions.Web;
 
 public readonly struct Web(string name)
 {
+    /// <summary>
+    /// The id of the web.
+    /// </summary>
     [JsonProperty("id")]
     public Guid Id { get; init; } = Guid.NewGuid();
 
