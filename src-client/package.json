@@ -5,7 +5,8 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
-		"test": "vitest"
+		"test": "vitest",
+		"lint": "eslint --ext .js,.ts,.svelte src"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",

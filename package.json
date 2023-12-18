@@ -16,7 +16,10 @@
         "build-client": "cd src-client && yarn build",
         "prebuild-server": "yarn terminate",
         "build-server": "tsx scripts/build-csharp.ts",
-        "build": "yarn build-client && yarn build-server"
+        "build": "yarn build-client && yarn build-server",
+        "lint-server": "cd src-csharp && dotnet format --check",
+        "lint-client": "cd src-client && yarn lint",
+        "lint": "yarn lint-server && yarn lint-client"
     },
     "author": "",
     "license": "ISC",
