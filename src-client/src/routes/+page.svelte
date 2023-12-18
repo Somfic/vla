@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Editor from '$lib/components/editor/Editor.svelte';
+	import Menu from '$lib/components/menu/Menu.svelte';
 	import Explorer from '$lib/layout/Explorer.svelte';
 	import Shortcuts from '$lib/layout/Shortcuts.svelte';
 	import { webId, web } from '$lib/state.svelte';
@@ -11,7 +12,8 @@
 	});
 </script>
 
-{JSON.stringify($webId)}
+<Menu />
+
 <main>
 	<Shortcuts />
 	<Explorer />
