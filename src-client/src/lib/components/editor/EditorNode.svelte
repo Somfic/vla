@@ -53,7 +53,7 @@
 	}
 
 	function typeToDefinition(type: string) {
-		return get(workspace)?.types.find((t) => t.name.replace('&', '') == type.replace('&', ''))!;
+		return get(workspace)?.types.find((t) => t.type == type)!;
 	}
 </script>
 

@@ -19,7 +19,7 @@
 	}
 
 	$: parameterType = structure.inputs.find((i) => i.id == parameter.id)?.type.replace('&', '')!;
-	$: typeDefinition = get(workspace)?.types.find((t) => t.name.replace('&', '') == parameterType)!;
+	$: typeDefinition = get(workspace)?.types.find((t) => t.type == parameterType)!;
 </script>
 
 <div class="default-wrapper" class:linked class:connecting>
