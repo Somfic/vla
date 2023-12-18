@@ -1,36 +1,21 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
 	import { type ParameterInstance, type NodeStructure, type ParameterStructure } from '$lib/nodes';
-	import { state } from '$lib/state.svelte';
+	import { workspace } from '$lib/state.svelte';
 
-	let {
-		input = false,
-		output = false,
-		structure,
-		parameter,
-		linked,
-		hovering,
-		connecting
-	} = $props<{
-		input?: boolean;
-		output?: boolean;
-		structure: NodeStructure;
-		parameter: ParameterInstance | ParameterStructure;
-		linked: boolean;
-		hovering: boolean;
-		connecting: boolean;
-	}>();
+	export let input: boolean = false;
+	export let output: boolean = false;
+	export let structure: NodeStructure;
+	export let parameter: ParameterInstance | ParameterStructure;
+	export let linked: boolean;
+	export let hovering: boolean;
+	export let connecting: boolean;
 
-	let parameterType = $derived(
-		structure.inputs
-			.concat(structure.outputs)
-			.find((i) => i.id == parameter.id)
-			?.type.replace('&', '')
-	);
-
-	let typeDefinition = $derived(
-		state.workspace?.types.find((t) => t.type.replace('&', '') == parameterType)
-	);
+	$: parameterType = structure.inputs
+		.concat(structure.outputs)
+		.find((i) => i.id == parameter.id)
+		?.type.replace('&', '');
+	$: typeDefinition = get(workspace)?.types.find((t) => t.type.replace('&', '') == parameterType)!;
 </script>
 
 <div
@@ -40,14 +25,14 @@
 	class:linked
 	class:hovering
 	class:connecting
-	style={`--type-color: ${typeDefinition?.color.hex}`}
+	style={`--type-color: ${typeDefinition.color.hex}`}
 >
 	<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-		{#if typeDefinition?.shape == 'circle'}
+		{#if typeDefinition.shape == 'circle'}
 			<circle cx="50" cy="50" r="40" />
-		{:else if typeDefinition?.shape == 'diamond'}
+		{:else if typeDefinition.shape == 'diamond'}
 			<polygon points="49,1 99,49 49,99 1,49" />
-		{:else if typeDefinition?.shape == 'square'}
+		{:else if typeDefinition.shape == 'square'}
 			<rect x="10" y="10" width="80" height="80" />
 		{/if}
 	</svg>

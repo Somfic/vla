@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
-import { types } from "./nodes.svelte";
+import { workspace } from "./state.svelte";
 
 export function getDefaultValueForType(type: string): any {
-    return get(types).find((t) => t.type == type)?.defaultValue;
+    return get(workspace)?.types.find((t) => t.type == type)?.defaultValue;
 }
 
 export function generateGuid(): string {

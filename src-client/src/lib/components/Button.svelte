@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { active, padding } = $props<{ active?: boolean; padding?: boolean }>();
+	let { active, padding } = $$props;
 </script>
 
 <button class:active class:padding>

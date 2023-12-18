@@ -1,16 +1,16 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
 	import type { Web } from '$lib/nodes';
-	import { state } from '$lib/state.svelte';
+	import { workspace, webId } from '$lib/state.svelte';
 
 	function handleWebClicked(web: Web) {
-		state.webId = web.id;
+		webId.set(web.id);
 	}
 </script>
 
 <div class="explorer">
-	{#each state.workspace?.webs ?? [] as web}
-		<button class="file" class:active={state.webId == web.id} on:click={() => handleWebClicked(web)}
+	{#each $workspace?.webs ?? [] as web}
+		<button class="file" class:active={$webId == web.id} on:click={() => handleWebClicked(web)}
 			>{web.name}</button
 		>
 	{/each}

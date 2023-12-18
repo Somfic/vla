@@ -13,20 +13,27 @@
 	import EditorEdge from './EditorEdge.svelte';
 	import EditorAnchorDefaultValue from './EditorAnchorDefaultValue.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { state } from '$lib/state.svelte';
-	import NodeInput from './NodeInput.svelte';
-	import NodeOutput from './NodeOutput.svelte';
+	import { workspace } from '$lib/state.svelte';
 
-	let { instance, web } = $props<{ instance: NodeInstance; web: Web }>();
+	export let instance: NodeInstance;
+	export let web: Web;
 
 	const dispatch = createEventDispatcher();
 
-	// FIXME: Structure *could* be undefined, but it shouldn't be. We should probably handle this better
-	let structure = $derived(
-		state.workspace?.structures.find((s) => s.nodeType == instance.nodeType)
-	)!;
-	// FIXME: Should we store each web result seperately? Right now we just store the "active" one
-	let result = $derived(web?.result.instances.find((i) => i.id == instance.id));
+	$: structure = get(workspace)?.structures?.find((s) => s.nodeType == instance.nodeType)!;
+	$: result = get(workspace)
+		?.webs.find((w) => w.id == web.id)
+		?.result.instances.find((i) => i.id == instance.id);
+
+	function getConnections(input: ParameterInstance | ParameterStructure): [string, string][] {
+		let array: [string, string][] = [];
+
+		web.connections
+			.filter((c) => c.from.instanceId == instance.id && c.from.propertyId == input.id)
+			.forEach((c) => array.push([`${c.to.instanceId}`, `${c.to.propertyId}`]));
+
+		return array;
+	}
 
 	function handleKeyPress(e: KeyboardEvent) {
 		if (e.key == 'Delete') {
@@ -44,6 +51,10 @@
 		e.preventDefault();
 		dispatch('change');
 	}
+
+	function typeToDefinition(type: string) {
+		return get(workspace)?.types.find((t) => t.name.replace('&', '') == type.replace('&', ''))!;
+	}
 </script>
 
 <Node let:grabHandle let:selected id={instance.id} on:nodeClicked edge={EditorEdge}>
@@ -57,12 +68,12 @@
 	>
 		<div class="title">
 			{result?.value?.name ??
-				structure?.nodeType.split(',')[0].split('.').slice(-1)[0].replace('Node', '')}
+				structure.nodeType.split(',')[0].split('.').slice(-1)[0].replace('Node', '')}
 		</div>
 
-		{#if structure?.properties.length ?? 0 > 0}
+		{#if structure.properties.length > 0}
 			<div class="properties">
-				{#each structure?.properties! as property, i}
+				{#each structure.properties as property, i}
 					<EditorProperty
 						on:change={() => dispatch('change')}
 						{property}
@@ -72,17 +83,78 @@
 			</div>
 		{/if}
 		<div class="input-output">
-			{#if structure?.inputs?.length ?? 0 > 0}
+			{#if structure.inputs.length > 0}
 				<div class="inputs">
-					{#each instance.inputs! as input}
-						<NodeInput {structure} bind:input />
+					{#each instance.inputs as input}
+						<div class="input">
+							<div class="anchor-wrapper">
+								<Anchor
+									let:linked
+									let:hovering
+									let:connecting
+									input
+									id={input.id}
+									nodeConnect
+									connections={getConnections(input)}
+								>
+									<EditorAnchorDefaultValue
+										on:change={() => dispatch('change')}
+										{structure}
+										bind:parameter={input}
+										{linked}
+										{connecting}
+									/>
+									<EditorAnchor
+										{structure}
+										parameter={input}
+										{linked}
+										{hovering}
+										{connecting}
+										input
+									/>
+								</Anchor>
+							</div>
+							<div class="name">
+								{structure.inputs.concat(structure.outputs).find((i) => i.id == input.id)?.name}
+							</div>
+							<!-- <ComputedValue id={`${instance.Id}.${input.Id}`} input /> -->
+						</div>
 					{/each}
 				</div>
 			{/if}
 			{#if structure.outputs.length > 0}
 				<div class="outputs">
 					{#each structure.outputs as output}
-						<NodeOutput {instance} {structure} bind:output />
+						<div class="output">
+							<div class="value">
+								<ComputedValue
+									type={typeToDefinition(output.type)}
+									id={`${instance.id}.${output.id}`}
+									output
+								/>
+							</div>
+							<div class="name">{output.name}</div>
+							<div class="anchor">
+								<Anchor
+									let:linked
+									let:hovering
+									let:connecting
+									output
+									id={output.id}
+									multiple={false}
+									connections={getConnections(output)}
+								>
+									<EditorAnchor
+										{structure}
+										parameter={output}
+										{linked}
+										{hovering}
+										{connecting}
+										output
+									/>
+								</Anchor>
+							</div>
+						</div>
 					{/each}
 				</div>
 			{/if}

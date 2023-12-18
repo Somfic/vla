@@ -1,6 +1,6 @@
 import { get, writable, type Writable } from 'svelte/store';
-import { state } from './state.svelte';
 import type { Workspace } from './nodes';
+import { reset, workspaces } from './state.svelte';
 
 let ws: WebSocket = null as any;
 
@@ -12,7 +12,7 @@ export let progress: Writable<Progress> = writable({ percentage: 0, label: 'Init
 export let isReady: Writable<boolean> = writable(false);
 
 export function startListening() {
-	state.reset();
+	reset();
 	progress.set({ percentage: 0, label: 'Initialising' });
 	isReady.set(false);
 
@@ -40,7 +40,7 @@ export function startListening() {
 				break;
 
 			case 'Workspaces':
-				state.workspaces = message.data['workspaces'] as Workspace[];
+				workspaces.set(message.data['workspaces']);
 				break;
 		}
 	};

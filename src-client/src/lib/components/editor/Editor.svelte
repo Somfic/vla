@@ -3,18 +3,15 @@
 	import EditorNode from './EditorNode.svelte';
 	import { type NodeInstanceConnection, runWeb } from '$lib/nodes';
 	import type { Web } from '$lib/nodes';
-	import { invokeMenu } from '$lib/menu';
+	import { invokeMenu, menu } from '$lib/menu';
 	import { createEventDispatcher } from 'svelte';
 
-	let { web } = $props<{ web: Web }>();
+	export let web: Web;
 
 	const dispatch = createEventDispatcher();
 
 	function connection(e: any) {
 		// FIXME: Make sure this is distinct
-		// FIXME: Make sure we don't connect to ourselves
-		// FIXME: Make sure we don't connect in a loop
-		// FIXME: Make sure we only connect types that can be casted to each other
 		if (
 			web.connections.find((c) => JSON.stringify(c) == JSON.stringify(detailToInstance(e.detail)))
 		)
@@ -63,12 +60,10 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="editor" on:keydown={handleKeyPress}>
 	<Svelvet
-		minimap
 		theme="dark"
 		on:connection={connection}
 		on:disconnection={disconnection}
 		edgeStyle="bezier"
-		modifier="meta"
 	>
 		{#each web.instances as instance}
 			<EditorNode bind:web bind:instance on:change={() => dispatch('change')} />
@@ -84,7 +79,6 @@
 
 	:root[svelvet-theme='dark'] {
 		outline: none;
-		height: 0px;
 
 		--background-color: $background;
 		--text-color: $foreground;

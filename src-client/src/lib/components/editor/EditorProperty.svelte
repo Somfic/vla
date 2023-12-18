@@ -3,17 +3,14 @@
 	import type { NodeStructure, PropertyStructure, PropertyInstance } from '$lib/nodes';
 	import Value from './Value.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { state } from '$lib/state.svelte';
+	import { workspace } from '$lib/state.svelte';
 
-	let { property, value } = $props<{
-		property: PropertyStructure;
-		value: any;
-	}>();
+	export let property: PropertyStructure;
+	export let value: any;
 
 	const dispatch = createEventDispatcher();
 
-	// FIXME: The type *could* not exist, but it shouldn't be. We should probably handle this better
-	let type = $derived(state.workspace?.types.find((x) => x.type == property.type))!;
+	$: type = get(workspace)?.types.find((x) => x.type == property.type)!;
 </script>
 
 <div class="property">

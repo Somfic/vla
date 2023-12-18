@@ -1,40 +1,37 @@
 <script lang="ts">
 	import { Edge, type WritableEdge } from 'svelvet';
 	import { type ParameterStructure, instanceFromId } from '$lib/nodes';
+	import { get } from 'svelte/store';
 	import { blendColors } from '$lib/color';
-	import { state as s } from '$lib/state.svelte';
+	import { workspace } from '$lib/state.svelte';
 
-	let ref: SVGPathElement | undefined = $state();
-	let edge: WritableEdge | undefined = $state();
+	let ref: SVGPathElement | undefined = undefined;
+	let edge: WritableEdge;
 
-	let source = $derived(findParameter(edge?.source.id, false));
-	let target = $derived(findParameter(edge?.target.id, true));
+	$: source = findParameter(edge?.source.id, false);
+	$: target = findParameter(edge?.target.id, true);
 
-	let sourceType = $derived(
-		s.workspace?.types.find((t) => t.type.replace('&', '') == source?.type.replace('&', ''))
-	);
+	$: sourceType = get(workspace)?.types.find(
+		(t) => t.name.replace('&', '') == source?.type.replace('&', '')
+	)!;
+	$: targetType = get(workspace)?.types.find(
+		(t) => t.name.replace('&', '') == target?.type.replace('&', '')
+	)!;
 
-	let targetType = $derived(
-		s.workspace?.types.find((t) => t.type.replace('&', '') == target?.type.replace('&', ''))
-	);
+	$: startColor = sourceType?.color?.hex ?? '#ffffff';
+	$: midwayColor = blendColors(startColor, stopColor, 0.5);
+	$: stopColor = targetType?.color?.hex ?? '#ffffff';
 
-	let startColor = $derived(sourceType?.color?.hex ?? '#ffffff');
-	let stopColor = $derived(targetType?.color?.hex ?? '#ffffff');
-	let midwayColor = $derived(blendColors(startColor, stopColor, 0.5));
+	$: gradientName = `gradient-${edge?.target.id ?? 'default'}`;
 
-	let gradientName = $derived(`gradient-${edge?.target.id ?? 'default'}`);
-
-	function findParameter(
-		id: `A-${string}` | undefined | null,
-		isInput: boolean
-	): ParameterStructure | undefined {
+	function findParameter(id: string | null, isInput: boolean): ParameterStructure | undefined {
 		if (id == null) return undefined;
 
 		let parameterId = id.split('/')[0].substring(2); // remove "A-"
 		let instanceId = id.split('/')[1].substring(2); // remove "N-"
 
 		let instance = instanceFromId(instanceId);
-		let structure = s.workspace?.structures.find((s) => s.nodeType == instance?.nodeType);
+		let structure = get(workspace)?.structures.find((s) => s.nodeType == instance?.nodeType);
 
 		if (isInput) {
 			return structure?.inputs.find((p) => p.id == parameterId);

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { workspaces } from '$lib/state.svelte';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { workspaces } from '$lib/nodes';
 
 	const dispatch = createEventDispatcher();
 

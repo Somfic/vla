@@ -1,9 +1,8 @@
 <script lang="ts">
 	import Editor from '$lib/components/editor/Editor.svelte';
-	import EditorEdge from '$lib/components/editor/EditorEdge.svelte';
 	import Explorer from '$lib/layout/Explorer.svelte';
 	import Shortcuts from '$lib/layout/Shortcuts.svelte';
-	import { state } from '$lib/state.svelte';
+	import { webId, web } from '$lib/state.svelte';
 	import { startListening } from '$lib/ws';
 	import { onMount } from 'svelte';
 
@@ -12,16 +11,16 @@
 	});
 </script>
 
-{JSON.stringify(state.webId)}
+{JSON.stringify($webId)}
 <main>
 	<Shortcuts />
 	<Explorer />
 	<div class="editor">
 		<div class="canvas panel">
-			{#if !state.web}
+			{#if $web == undefined}
 				<p>No web selected</p>
 			{:else}
-				<Editor web={state.web} />
+				<Editor web={$web} />
 			{/if}
 		</div>
 		<div class="output">
@@ -56,6 +55,10 @@
 
 	.canvas {
 		flex-grow: 1;
+		display: flex;
+		background: $background;
+		border: $border-width solid $border-color;
+		border-radius: $border-radius;
 	}
 
 	.output {

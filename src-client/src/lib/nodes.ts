@@ -1,5 +1,6 @@
-import { state } from './state.svelte';
+import { workspaces } from './state.svelte';
 import { sendMessage } from './ws';
+import { get } from 'svelte/store';
 
 export function runWeb(web: Web) {
 	setTimeout(() => {
@@ -14,7 +15,7 @@ export function runWeb(web: Web) {
 
 export function instanceFromId(id: string): NodeInstance {
 	return (
-		state.workspaces
+		get(workspaces)
 			.map((w) => w.webs)
 			.flat()
 			.map((w) => w.instances)

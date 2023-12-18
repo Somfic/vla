@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Fuse from 'fuse.js';
 	import { get } from 'svelte/store';
-	import { structures } from '$lib/nodes';
 	import { createEventDispatcher } from 'svelte';
 	import { generateGuid, getDefaultValueForType } from '$lib/context';
+	import { workspace } from '$lib/state.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -68,7 +68,9 @@
 	}
 
 	function addNode(query: string) {
-		const search = new Fuse(get(structures), {
+		let structures = get(workspace)?.structures ?? [];
+
+		const search = new Fuse(structures, {
 			keys: ['searchTerms'],
 			threshold: 0.3
 		});
