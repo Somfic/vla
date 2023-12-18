@@ -26,7 +26,10 @@ jobs:
     release:
         needs: changelog
         permissions: write-all
-        runs-on: windows-latest
+        strategy:
+            matrix:
+                platform: [macos-latest, ubuntu-20.04, windows-latest]
+        runs-on: ${{ matrix.platform }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -43,11 +46,15 @@ jobs:
             - name: Setup Yarn
               run: npm install --global yarn
 
-            - name: Install Node dependencies
-              run: yarn install
+            - name: Install scripts
+              run: yarn
+
+            - name: Install dependencies
+              run: yarn
+              working-directory: ./src-client
 
             - name: Tag version
-              run: yarn run version ${{ github.event.milestone.title }}
+              run: yarn run tag-version ${{ github.event.milestone.title }}
 
             - name: Rust cache
               uses: swatinem/rust-cache@v2
