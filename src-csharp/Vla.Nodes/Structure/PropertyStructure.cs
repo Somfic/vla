@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Vla.Abstractions.Structure;
+namespace Vla.Nodes.Structure;
 
 public readonly struct PropertyStructure(string name, Type type, string defaultValue)
 {

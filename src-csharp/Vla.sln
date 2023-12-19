@@ -8,6 +8,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Extensions\Core\Core.csproj", "{0FFBD545-7990-4740-B296-20C0CAEBBCCB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DAE3B91B-2B60-4C63-99AE-D4417A13D5F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vla.Tests", "Tests\Vla.Tests\Vla.Tests.csproj", "{97A8A857-8899-4219-8268-6AB1C5DAF577}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vla.Nodes", "Vla.Nodes\Vla.Nodes.csproj", "{9BF0C79B-42E9-4B60-A44A-28991202D3FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vla.Helpers", "Vla.Helpers\Vla.Helpers.csproj", "{0E2924B1-95AB-4B21-B154-51E0552A5856}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,8 +34,21 @@ Global
 		{0FFBD545-7990-4740-B296-20C0CAEBBCCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FFBD545-7990-4740-B296-20C0CAEBBCCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FFBD545-7990-4740-B296-20C0CAEBBCCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97A8A857-8899-4219-8268-6AB1C5DAF577}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97A8A857-8899-4219-8268-6AB1C5DAF577}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97A8A857-8899-4219-8268-6AB1C5DAF577}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97A8A857-8899-4219-8268-6AB1C5DAF577}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF0C79B-42E9-4B60-A44A-28991202D3FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF0C79B-42E9-4B60-A44A-28991202D3FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF0C79B-42E9-4B60-A44A-28991202D3FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF0C79B-42E9-4B60-A44A-28991202D3FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E2924B1-95AB-4B21-B154-51E0552A5856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E2924B1-95AB-4B21-B154-51E0552A5856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E2924B1-95AB-4B21-B154-51E0552A5856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E2924B1-95AB-4B21-B154-51E0552A5856}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0FFBD545-7990-4740-B296-20C0CAEBBCCB} = {31C9C967-A574-4132-BC57-E201CA621E62}
+		{97A8A857-8899-4219-8268-6AB1C5DAF577} = {DAE3B91B-2B60-4C63-99AE-D4417A13D5F5}
 	EndGlobalSection
 EndGlobal

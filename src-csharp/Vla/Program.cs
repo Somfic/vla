@@ -9,7 +9,6 @@ using Vla.Input;
 using Vla.Nodes;
 using Vla.Server;
 using Vla.Server.Messages;
-using Vla.Web;
 using Vla.Workspace;
 
 var host = Host.CreateDefaultBuilder()
@@ -28,7 +27,6 @@ var host = Host.CreateDefaultBuilder()
         s.SetMinimumLevel(LogLevel.Debug);
     })
     .Build();
-
 var extensions = host.Services.GetRequiredService<ExtensionsService>();
 extensions.RegisterExtensions();
 
@@ -55,9 +53,14 @@ server.MessageReceived.OnChange(async args =>
 
     switch (message["id"]?.Value<string>()?.ToLower())
     {
-        case "workspacechanged":
-            var workspaceChanged = JsonConvert.DeserializeObject<WorkspaceChangedMessage>(json);
-            await workspaces.SaveAsync(workspaceChanged.Workspace);
+        case "update-web":
+            var workspaceChanged = JsonConvert.DeserializeObject<UpdateWebMessage>(json);
+            var workspace = (await workspaces.CreateOrLoadAsync(workspaceChanged.WorkspacePath))
+                .On(x =>
+                {
+                    
+                });
+                
             break;
     }
 });

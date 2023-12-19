@@ -1,12 +1,11 @@
 using System.Collections.Immutable;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Abstractions.Extensions;
-using Vla.Abstractions.Structure;
 using Vla.Abstractions.Types;
 using Vla.Nodes;
+using Vla.Nodes.Structure;
 
 namespace Vla.Workspace;
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Vla.Helpers;
 
 namespace Vla.Abstractions;
 
@@ -13,7 +14,12 @@ public class VariableManager
 
     public T GetVariable<T>(string variable)
     {
-        if (_variables.TryGetValue(variable, out var raw)) return (T)typeof(T).GetDefaultValueForType();
+        if (_variables.TryGetValue(variable, out var raw))
+        {
+            var defaultValue = typeof(T).GetDefaultValueForType();
+            if (raw is null)
+                return (defaultValue is T value ? value : default) ?? throw new Exception($"Could not find variable {variable}");
+        }
         return (T)raw!;
     }
 }

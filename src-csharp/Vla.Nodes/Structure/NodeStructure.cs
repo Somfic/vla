@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
 
-namespace Vla.Abstractions.Structure;
+namespace Vla.Nodes.Structure;
 
 public readonly struct NodeStructure
 {
@@ -25,10 +25,10 @@ public readonly struct NodeStructure
     public ImmutableArray<PropertyStructure> Properties { get; init; } = ImmutableArray<PropertyStructure>.Empty;
 
     [JsonProperty("inputs")]
-    public ImmutableArray<ParameterStructure> Inputs { get; init; } = ImmutableArray<ParameterStructure>.Empty;
+    public ImmutableArray<InputParameterStructure> Inputs { get; init; } = ImmutableArray<InputParameterStructure>.Empty;
 
     [JsonProperty("outputs")]
-    public ImmutableArray<ParameterStructure> Outputs { get; init; } = ImmutableArray<ParameterStructure>.Empty;
+    public ImmutableArray<OutputParameterStructure> Outputs { get; init; } = ImmutableArray<OutputParameterStructure>.Empty;
 
     [JsonProperty("executeMethod")]
     public string ExecuteMethod { get; init; } = string.Empty;

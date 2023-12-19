@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Vla.Abstractions;
-using Vla.Abstractions.Instance;
-using Vla.Abstractions.Structure;
+using Vla.Abstractions.Web;
+using Vla.Helpers;
+using Vla.Nodes.Instance;
+using Vla.Nodes.Structure;
 using Vla.Web.Result;
 
 namespace Vla.Web;
@@ -34,6 +35,10 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
                 {
                     var propInfo = structure.NodeType.GetProperty(property.Name);
                     var propType = propInfo?.PropertyType;
+                    
+                    if(propType == null)
+                        continue;
+                    
                     var castedDefaultValue = JsonConvert.DeserializeObject(property.DefaultValue, propType);
                     propInfo?.SetValue(nodeInstance, castedDefaultValue);
                 }
@@ -42,6 +47,10 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
                 {
                     var propInfo = structure.NodeType.GetProperty(property.Name);
                     var propType = propInfo?.PropertyType;
+                    
+                    if(propType == null)
+                        continue;
+                    
                     var castedValue = JsonConvert.DeserializeObject(property.Value, propType);
                     propInfo?.SetValue(nodeInstance, castedValue);
                 }
@@ -99,8 +108,8 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
         var method = structure.NodeType.GetMethod(structure.ExecuteMethod);
 
         var inputParameters =
-            structure.Inputs.Select<ParameterStructure, dynamic?>(i => GetValue(instance, i)).ToArray();
-        var outputParameters = structure.Outputs.Select<ParameterStructure, dynamic?>(_ => null).ToArray();
+            structure.Inputs.Select<InputParameterStructure, dynamic?>(i => GetValue(instance, i)).ToArray();
+        var outputParameters = structure.Outputs.Select<OutputParameterStructure, dynamic?>(_ => null).ToArray();
         var methodParameters = inputParameters.Concat(outputParameters).ToArray();
 
         try
@@ -135,7 +144,7 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
         }
     }
 
-    private object? GetValue(NodeInstance instance, ParameterStructure parameter)
+    private object? GetValue(NodeInstance instance, InputParameterStructure parameter)
     {
         var id = $"{instance.Id}.{parameter.Id}";
         var defaultValue = parameter.Type.GetDefaultValueForType();

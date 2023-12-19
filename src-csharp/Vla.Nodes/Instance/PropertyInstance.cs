@@ -1,7 +1,6 @@
-﻿using System.Runtime.Serialization;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Vla.Abstractions.Instance;
+namespace Vla.Nodes.Instance;
 
 public readonly struct PropertyInstance(string name, Type type, string value)
 {

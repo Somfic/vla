@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using Newtonsoft.Json;
 using Vla.Abstractions.Extensions;
-using Vla.Abstractions.Structure;
 using Vla.Abstractions.Types;
+using Vla.Nodes.Structure;
 
 namespace Vla.Abstractions.Web;
 

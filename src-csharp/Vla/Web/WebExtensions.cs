@@ -1,7 +1,7 @@
 ﻿using Somfic.Common;
 using Vla.Abstractions.Connection;
-using Vla.Abstractions.Instance;
-using Vla.Abstractions.Structure;
+using Vla.Nodes.Instance;
+using Vla.Nodes.Structure;
 
 namespace Vla.Web;
 

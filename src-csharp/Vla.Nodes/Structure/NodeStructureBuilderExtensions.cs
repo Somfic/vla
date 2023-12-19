@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
-using Newtonsoft.Json;
 
-namespace Vla.Abstractions.Structure;
+namespace Vla.Nodes.Structure;
 
 public static class NodeStructureBuilderExtensions
 {
@@ -30,31 +29,16 @@ public static class NodeStructureBuilderExtensions
         return node with { Category = category };
     }
 
-    public static NodeStructure WithInput(this NodeStructure node, string id, string name, Type type)
-    {
-        return node with { Inputs = node.Inputs.Add(new ParameterStructure(id, name, type)) };
-    }
-
-    public static NodeStructure WithInputs(this NodeStructure node, params ParameterStructure[] inputs)
+    public static NodeStructure WithInputs(this NodeStructure node, params InputParameterStructure[] inputs)
     {
         return node with { Inputs = node.Inputs.AddRange(inputs) };
     }
 
-    public static NodeStructure WithOutput(this NodeStructure node, string id, string name, Type type)
-    {
-        return node with { Outputs = node.Outputs.Add(new ParameterStructure(id, name, type)) };
-    }
-
-    public static NodeStructure WithOutputs(this NodeStructure node, params ParameterStructure[] outputs)
+    public static NodeStructure WithOutputs(this NodeStructure node, params OutputParameterStructure[] outputs)
     {
         return node with { Outputs = node.Outputs.AddRange(outputs) };
     }
-
-    public static NodeStructure WithProperty<TValue>(this NodeStructure node, string name, Type type, TValue defaultValue)
-    {
-        return node with { Properties = node.Properties.Add(new PropertyStructure(name, type, JsonConvert.SerializeObject(defaultValue))) };
-    }
-
+    
     public static NodeStructure WithProperties(this NodeStructure node, params PropertyStructure[] properties)
     {
         return node with { Properties = node.Properties.AddRange(properties) };

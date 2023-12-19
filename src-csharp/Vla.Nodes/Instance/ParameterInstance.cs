@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Vla.Abstractions.Instance;
+namespace Vla.Nodes.Instance;
 
 public readonly struct ParameterInstance(string id, object? value)
 {

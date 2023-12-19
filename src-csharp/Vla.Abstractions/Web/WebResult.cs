@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
-using Vla.Abstractions.Instance;
+using Vla.Nodes.Instance;
 
-namespace Vla.Web.Result;
+namespace Vla.Abstractions.Web;
 
 public readonly struct WebResult
 {

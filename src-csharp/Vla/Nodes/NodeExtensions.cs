@@ -1,16 +1,15 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Reflection;
 using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Abstractions;
 using Vla.Abstractions.Attributes;
-using Vla.Abstractions.Structure;
+using Vla.Nodes.Structure;
 
 namespace Vla.Nodes;
 
 public static class NodeExtensions
 {
-    public static Result<NodeStructure> ToStructure(Type type) =>
+    public static Result<NodeStructure> ToStructure(this Type type) =>
         Result.Value(type)
             .Guard(x => !x.IsAbstract, "Node must not be abstract")
             .Guard(x => x.IsAssignableTo(typeof(INode)), "Node must implement INode")
@@ -43,13 +42,13 @@ public static class NodeExtensions
             .WithInputs(GetMainMethod(type).Expect().GetParameters()
                 .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
                 .Select(y =>
-                    new ParameterStructure(y.Name!, y.GetCustomAttribute<NodeInputAttribute>()!.Name,
+                    new InputParameterStructure(y.Name!, y.GetCustomAttribute<NodeInputAttribute>()?.Name ?? y.Name!,
                         y.ParameterType))
                 .ToArray())
             .WithOutputs(GetMainMethod(type).Expect().GetParameters()
                 .Where(y => y.GetCustomAttribute<NodeOutputAttribute>() is not null)
                 .Select(y =>
-                    new ParameterStructure(y.Name!, y.GetCustomAttribute<NodeOutputAttribute>()!.Name,
+                    new OutputParameterStructure(y.Name!, y.GetCustomAttribute<NodeOutputAttribute>()?.Name ?? y.Name!,
                         y.ParameterType))
                 .ToArray());
         return structure;

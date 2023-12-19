@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Vla.Abstractions;
+namespace Vla.Nodes;
 
 public interface INode
 {

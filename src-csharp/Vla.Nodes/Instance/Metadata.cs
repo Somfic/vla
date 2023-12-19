@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Newtonsoft.Json;
 
-namespace Vla.Abstractions.Instance;
+namespace Vla.Nodes.Instance;
 
 public readonly struct Metadata
 {

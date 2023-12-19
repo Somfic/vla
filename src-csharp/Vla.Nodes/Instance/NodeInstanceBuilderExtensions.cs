@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
-using Vla.Abstractions.Structure;
+using Vla.Nodes.Structure;
 
-namespace Vla.Abstractions.Instance;
+namespace Vla.Nodes.Instance;
 
 public static class NodeInstanceBuilderExtensions
 {

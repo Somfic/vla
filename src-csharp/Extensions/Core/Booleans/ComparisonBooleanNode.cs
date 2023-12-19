@@ -1,5 +1,6 @@
 using Vla.Abstractions;
 using Vla.Abstractions.Attributes;
+using Vla.Nodes;
 
 namespace Vla.Extensions.Core.Booleans;
 
@@ -8,7 +9,7 @@ namespace Vla.Extensions.Core.Booleans;
 [NodeTags("Compare", "Operator", "Equals", "==", "!=", "Comparison")]
 public class ComparisonBooleanNode : INode
 {
-    public string Name { get; }
+    public string Name => "Compare booleans";
 
     [NodeProperty]
     public ComparisonMode Mode { get; set; }

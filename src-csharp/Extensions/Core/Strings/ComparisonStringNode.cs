@@ -1,5 +1,6 @@
 using Vla.Abstractions;
 using Vla.Abstractions.Attributes;
+using Vla.Nodes;
 
 namespace Vla.Extensions.Core.Strings;
 
@@ -9,7 +10,7 @@ namespace Vla.Extensions.Core.Strings;
 
 public class ComparisonStringNode : INode
 {
-    public string Name { get; }
+    public string Name => "Compare strings";
 
     [NodeProperty]
     public ComparisonMode Mode { get; set; }

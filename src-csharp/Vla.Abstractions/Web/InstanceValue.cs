@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Vla.Web.Result;
+namespace Vla.Abstractions.Web;
 
 public readonly struct InstanceValue(string id, object? value)
 {

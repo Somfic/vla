@@ -1,5 +1,6 @@
 ﻿using Vla.Abstractions;
 using Vla.Abstractions.Attributes;
+using Vla.Nodes;
 
 namespace Vla.Extensions.Core.Math;
 

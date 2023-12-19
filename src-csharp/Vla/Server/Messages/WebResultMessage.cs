@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Vla.Web.Result;
+using Vla.Abstractions.Web;
 
 namespace Vla.Server.Messages;
 

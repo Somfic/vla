@@ -1,4 +1,4 @@
-﻿using Vla.Abstractions.Instance;
+﻿using Vla.Nodes.Instance;
 
 namespace Vla.Abstractions.Connection;
 
