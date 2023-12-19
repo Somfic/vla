@@ -36,7 +36,7 @@ jobs:
               run: npm install --global yarn && yarn
 
             - name: Setup .NET 8
-              if: matrix.layer == 'server'
+              if: matrix.layer == 'server' || matrix.layer == 'packager'
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0.100
@@ -57,17 +57,17 @@ jobs:
                   ./scripts/deps.sh
 
             - name: Install client dependencies
-              if: matrix.layer == 'client'
+              if: matrix.layer == 'client' || matrix.layer == 'packager'
               run: yarn
               working-directory: ./src-client
 
             - name: Install server dependencies
-              if: matrix.layer == 'server'
+              if: matrix.layer == 'server' || matrix.layer == 'packager'
               run: dotnet restore
               working-directory: ./src-csharp
 
             - name: Build client
-              if: matrix.layer == 'client'
+              if: matrix.layer == 'client' || matrix.layer == 'packager'
               run: yarn run build-client
 
             - name: Build server
@@ -83,11 +83,16 @@ jobs:
               if: matrix.layer == 'server'
               run: yarn run test-server
 
+            - name: Configure sidecar
+              if: matrix.layer == 'packager'
+              run: yarn run build-server
+
             - name: Test packager
               if: matrix.layer == 'packager'
               run: yarn run test-packager
 
-            - uses: codecov/codecov-action@v3
+            - name: Upload coverage
+              uses: codecov/codecov-action@v3
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: ${{ matrix.layer }}
+                  flags: ${{ matrix.layer }},${{ matrix.os }}
