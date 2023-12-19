@@ -1,4 +1,5 @@
-﻿using Somfic.Common;
+﻿using Newtonsoft.Json;
+using Somfic.Common;
 using Vla.Nodes;
 using Vla.Nodes.Instance;
 
@@ -33,6 +34,20 @@ public class Extensions
 		var structure = NodeExtensions.ToStructure<Structures.Extensions.ValidNode>().Expect();
 		var instance = new NodeInstance().From(structure);
 		
-		Assert.That(instance.Properties, Has.Length.EqualTo(structure.Properties.Length));
+		instance = instance.WithProperty("Property name", 12);
+		
+		Assert.That(instance.Properties, Has.Length.EqualTo(1));
+		Assert.That(instance.Properties[0].Name, Is.EqualTo("Property name"));
+		Assert.That(instance.Properties[0].Value, Is.EqualTo(JsonConvert.SerializeObject(12)));
+		Assert.That(instance.Properties[0].Type, Is.EqualTo(typeof(int)));
+	}
+	
+	[Test]
+	public void From_ValidNode_HasCorrectInputs()
+	{
+		var structure = NodeExtensions.ToStructure<Structures.Extensions.ValidNode>().Expect();
+		var instance = new NodeInstance().From(structure);
+		
+		Assert.That(instance.Inputs, Has.Length.EqualTo(1));
 	}
 }
