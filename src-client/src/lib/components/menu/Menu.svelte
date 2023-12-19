@@ -12,7 +12,6 @@
 			return;
 		}
 
-		console.log('picked', e.detail);
 		menuResult.set(e.detail);
 		showMenu.set(false);
 	}

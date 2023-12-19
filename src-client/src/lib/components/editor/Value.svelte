@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { TypeDefinition } from '$lib/nodes';
+
 	export let type: TypeDefinition;
 	export let value: any;
 	export let readonly = false;

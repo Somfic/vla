@@ -3,13 +3,22 @@
 	import Menu from '$lib/components/menu/Menu.svelte';
 	import Explorer from '$lib/layout/Explorer.svelte';
 	import Shortcuts from '$lib/layout/Shortcuts.svelte';
-	import { webId, web } from '$lib/state.svelte';
-	import { startListening } from '$lib/ws';
+	import { webId, web, workspace } from '$lib/state.svelte';
+	import { sendMessage, startListening } from '$lib/ws';
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 
 	onMount(() => {
 		startListening();
 	});
+
+	function handleWebChange(e: CustomEvent) {
+		sendMessage({
+			type: 'update-web',
+			web: e.detail.web,
+			workspace: get(workspace)?.path
+		});
+	}
 </script>
 
 <Menu />
@@ -22,7 +31,7 @@
 			{#if $web == undefined}
 				<p>No web selected</p>
 			{:else}
-				<Editor web={$web} />
+				<Editor on:change={handleWebChange} web={$web} />
 			{/if}
 		</div>
 		<div class="output">

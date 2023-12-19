@@ -17,14 +17,14 @@
 		)
 			return;
 		web.connections = [...web.connections, detailToInstance(e.detail)];
-		dispatch('change');
+		dispatchChange();
 	}
 
 	function disconnection(e: any) {
 		web.connections = web.connections.filter(
 			(c) => JSON.stringify(c) != JSON.stringify(detailToInstance(e.detail))
 		);
-		dispatch('change');
+		dispatchChange();
 	}
 
 	function detailToInstance(detail: any): NodeInstanceConnection {
@@ -50,10 +50,14 @@
 			invokeMenu('pick-instance', (i) => {
 				if (i == undefined) return;
 				web.instances = [...web.instances, i];
-				dispatch('change');
+				dispatchChange();
 			});
 			return;
 		}
+	}
+
+	function dispatchChange() {
+		dispatch('change', { web });
 	}
 </script>
 
@@ -66,7 +70,7 @@
 		edgeStyle="bezier"
 	>
 		{#each web.instances as instance}
-			<EditorNode bind:web bind:instance on:change={() => dispatch('change')} />
+			<EditorNode bind:web bind:instance on:change={dispatchChange} />
 		{/each}
 	</Svelvet>
 </div>
