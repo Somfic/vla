@@ -1,4 +1,6 @@
-﻿namespace Vla.Tests;
+﻿using Vla.Helpers;
+
+namespace Vla.Tests;
 
 public class TypeExtensionsTests
 {
