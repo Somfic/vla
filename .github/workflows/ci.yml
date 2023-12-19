@@ -1,0 +1,73 @@
+permissions:
+    contents: read
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+    cancel-in-progress: true
+
+name: test
+jobs:
+    os-check:
+        runs-on: ${{ matrix.os }}
+        name: ${{ matrix.os }} / stable
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [macos-latest, windows-latest, ubuntu-latest]
+        steps:
+            - name: Checkout codebase
+              uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 21
+                  cache: "yarn"
+
+            - name: Setup Yarn
+              run: npm install --global yarn && yarn
+
+            - name: Setup .NET 8
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: 8.0.100
+
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Generate Cargo.lock
+              if: hashFiles('Cargo.lock') == ''
+              run: cargo generate-lockfile
+              working-directory: ./src-tauri
+
+            - name: Install system dependencies
+              run: |
+                  chmod +x ./scripts/deps.sh
+                  ./scripts/deps.sh
+
+            - name: Install client dependencies
+              run: yarn
+              working-directory: ./src-client
+
+            - name: Install server dependencies
+              run: dotnet restore
+              working-directory: ./src-csharp
+
+            - name: Build
+              run: yarn run build
+
+            - name: Test client
+              run: yarn run test-client
+
+            - name: Test server
+              run: yarn run test-server
+
+            - name: Test packager
+              run: yarn run test-packager
