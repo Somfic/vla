@@ -9,7 +9,7 @@
         "tauri": "tauri",
         "test-client": "cd src-client && yarn test",
         "test-server": "cd src-csharp && dotnet test --collect:\"XPlat Code Coverage\"",
-        "test-packager": "cd src-tauri && cargo test --locked --all-features --all-targets",
+        "test-packager": "cd src-tauri && cargo test --locked --all-features --all-targets && cargo llvm-cov --locked --lcov --output-path lcov.info",
         "test": "yarn test-client && yarn test-server && yarn test-packager",
         "dev-client": "cd src-client && yarn dev",
         "dev-server": "yarn terminate && cd src-csharp && dotnet watch --project Vla",

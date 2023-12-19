@@ -44,6 +44,12 @@ jobs:
             - name: Setup Rust
               if: matrix.layer == 'packager'
               uses: dtolnay/rust-toolchain@stable
+              with:
+                  components: llvm-tools-preview
+
+            - name: Setup cargo-llvm-cov
+              if: matrix.layer == 'packager'
+              uses: taiki-e/install-action@cargo-llvm-cov
 
             - name: Generate Cargo.lock
               if: matrix.layer == 'packager' && hashFiles('Cargo.lock') == ''
