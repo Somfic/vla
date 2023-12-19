@@ -131,6 +131,9 @@ jobs:
                   cache: "yarn"
             - name: Setup Yarn
               run: npm install --global yarn && yarn
+            - name: Install dependencies
+              run: yarn
+              working-directory: ./src-client
             - name: Install stable
               uses: dtolnay/rust-toolchain@stable
             - name: cargo generate-lockfile
