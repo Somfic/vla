@@ -12,13 +12,14 @@ concurrency:
 
 name: test
 jobs:
-    os-check:
+    test:
         runs-on: ${{ matrix.os }}
-        name: ${{ matrix.os }} / stable
+        name: ${{ matrix.layer }} / ${{ matrix.os }}
         strategy:
             fail-fast: false
             matrix:
                 os: [macos-latest, windows-latest, ubuntu-latest]
+                layer: [client, server, packager]
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
@@ -35,39 +36,58 @@ jobs:
               run: npm install --global yarn && yarn
 
             - name: Setup .NET 8
+              if: matrix.layer == 'server'
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0.100
 
             - name: Setup Rust
+              if: matrix.layer == 'packager'
               uses: dtolnay/rust-toolchain@stable
 
             - name: Generate Cargo.lock
-              if: hashFiles('Cargo.lock') == ''
+              if: matrix.layer == 'packager' && hashFiles('Cargo.lock') == ''
               run: cargo generate-lockfile
               working-directory: ./src-tauri
 
             - name: Install system dependencies
+              if: matrix.layer == 'packager'
               run: |
                   chmod +x ./scripts/deps.sh
                   ./scripts/deps.sh
 
             - name: Install client dependencies
+              if: matrix.layer == 'client'
               run: yarn
               working-directory: ./src-client
 
             - name: Install server dependencies
+              if: matrix.layer == 'server'
               run: dotnet restore
               working-directory: ./src-csharp
 
-            - name: Build
-              run: yarn run build
+            - name: Build client
+              if: matrix.layer == 'client'
+              run: yarn run build-client
+
+            - name: Build server
+              if: matrix.layer == 'server'
+              run: dotnet build --configuration Release
+              working-directory: ./src-csharp
 
             - name: Test client
+              if: matrix.layer == 'client'
               run: yarn run test-client
 
             - name: Test server
+              if: matrix.layer == 'server'
               run: yarn run test-server
 
             - name: Test packager
+              if: matrix.layer == 'packager'
               run: yarn run test-packager
+
+            - uses: codecov/codecov-action@v3
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: ${{ matrix.layer }}
