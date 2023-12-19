@@ -14,7 +14,7 @@ public class Extensions
 	{
 		public string Name => "Computed node name";
 		
-		[NodeProperty]
+		[NodeProperty("Property name")]
 		public int Property { get; set; }
 		
 		public void Execute([NodeInput("Input name")] int input, [NodeOutput("Output name")] out int output, [NodeOutput] out int outputPlus1)
@@ -64,7 +64,7 @@ public class Extensions
 	}
 	
 	[Test]
-	public void ToStructure_ValidNode_HasSearchTerms()
+	public void ToStructure_ValidNode_HasCorrectSearchTerms()
 	{
 		var structureResult = NodeExtensions.ToStructure<ValidNode>();
 		
@@ -91,7 +91,7 @@ public class Extensions
 		
 		Assert.That(structure.Properties, Is.Not.Empty);
 		Assert.That(structure.Properties, Has.Length.EqualTo(1));
-		Assert.That(structure.Properties[0].Name, Is.EqualTo("Property"));
+		Assert.That(structure.Properties[0].Name, Is.EqualTo("Property name"));
 		Assert.That(structure.Properties[0].Type, Is.EqualTo(typeof(int)));
 		Assert.That(structure.Properties[0].DefaultValue, Is.EqualTo(JsonConvert.SerializeObject(0)));
 	}
