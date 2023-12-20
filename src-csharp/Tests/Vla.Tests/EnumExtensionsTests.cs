@@ -1,5 +1,5 @@
 using Vla.Abstractions;
-using Vla.Abstractions.Attributes;
+using Vla.Nodes.Attributes;
 
 namespace Vla.Tests;
 

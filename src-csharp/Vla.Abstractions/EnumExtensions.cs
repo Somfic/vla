@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Vla.Abstractions.Attributes;
+using Vla.Nodes.Attributes;
 
 namespace Vla.Abstractions;
 

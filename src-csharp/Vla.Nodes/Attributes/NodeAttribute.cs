@@ -1,4 +1,4 @@
-﻿namespace Vla.Abstractions.Attributes;
+﻿namespace Vla.Nodes.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class NodeAttribute(string name) : Attribute

@@ -2,9 +2,9 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions.Attributes;
 using Vla.Engine;
 using Vla.Nodes;
+using Vla.Nodes.Attributes;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 

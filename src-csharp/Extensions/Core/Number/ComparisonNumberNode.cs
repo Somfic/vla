@@ -1,6 +1,6 @@
 using Vla.Abstractions;
-using Vla.Abstractions.Attributes;
 using Vla.Nodes;
+using Vla.Nodes.Attributes;
 
 namespace Vla.Extensions.Core.Number;
 

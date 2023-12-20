@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions.Attributes;
 using Vla.Nodes;
+using Vla.Nodes.Attributes;
 using Vla.Nodes.Instance;
 
 namespace Vla.Tests.Instances;

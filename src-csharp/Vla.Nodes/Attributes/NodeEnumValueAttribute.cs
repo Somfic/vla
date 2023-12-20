@@ -1,4 +1,4 @@
-namespace Vla.Abstractions.Attributes;
+namespace Vla.Nodes.Attributes;
 
 [AttributeUsage(AttributeTargets.Field)]
 public class NodeEnumValueAttribute(string name) : Attribute
