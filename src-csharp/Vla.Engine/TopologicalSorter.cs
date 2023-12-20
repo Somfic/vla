@@ -72,8 +72,8 @@ public readonly struct TopologicalSorter(params (string from, string to)[] conne
 
 		foreach (var connection in connections)
 		{
-			if(connection.from == connection.to)
-				throw new ArgumentException("A node cannot be connected to itself.");
+			// if(connection.from == connection.to)
+			// 	throw new ArgumentException("A node cannot be connected to itself.");
 			
 			if (!graph.ContainsKey(connection.from))
 				graph.Add(connection.from, []);
