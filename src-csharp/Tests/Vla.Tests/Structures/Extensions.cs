@@ -17,7 +17,7 @@ public class Extensions
 		[NodeProperty("Property name")]
 		public int Property { get; set; }
 		
-		public void Execute([NodeInput("Input name")] int input, [NodeOutput("Output name")] out int output, [NodeOutput] out int outputPlus1)
+		public void Execute([NodeOutput("Output name")] out int output, [NodeOutput] out int outputPlus1, [NodeInput("Input name")] int input = 1)
 		{
 			output = input;
 			outputPlus1 = input + 1;
@@ -111,7 +111,7 @@ public class Extensions
 		Assert.That(structure.Inputs[0].Id, Is.EqualTo("input"));
 		Assert.That(structure.Inputs[0].Name, Is.EqualTo("Input name"));
 		Assert.That(structure.Inputs[0].Type, Is.EqualTo(typeof(int)));
-		Assert.That(structure.Inputs[0].DefaultValue, Is.EqualTo(JsonConvert.SerializeObject(0)));
+		Assert.That(structure.Inputs[0].DefaultValue, Is.EqualTo(JsonConvert.SerializeObject(1)));
 	}
 	
 	[Test]

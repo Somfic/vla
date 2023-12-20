@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Vla.Helpers;
@@ -37,7 +38,14 @@ public class NodeEngine
 	public ImmutableArray<NodeStructure> Structures { get; private set; } = ImmutableArray<NodeStructure>.Empty;
 	public ImmutableArray<NodeConnection> Connections { get; private set; } = ImmutableArray<NodeConnection>.Empty;
 	public ImmutableArray<NodeInstance> Instances { get; private set; } = ImmutableArray<NodeInstance>.Empty;
-	public ImmutableDictionary<string, object> Values { get; private set; } = ImmutableDictionary<string, object>.Empty;
+
+	public ImmutableDictionary<string, object> Values => ExplicitValues
+		.Concat(ImplicitValues)
+		.ToImmutableDictionary(x => x.Key, x => x.Value);
+	
+	public ImmutableDictionary<string, object> ImplicitValues { get; private set; } = ImmutableDictionary<string, object>.Empty;
+	public ImmutableDictionary<string, object> ExplicitValues { get; private set; } = ImmutableDictionary<string, object>.Empty;
+
 	
 	private ImmutableDictionary<string, object> _instances = ImmutableDictionary<string, object>.Empty;
 	
@@ -88,25 +96,25 @@ public class NodeEngine
 		
 		if(invokeMethod == null)
 			throw new ArgumentException($"Could not find execute method {structure.ExecuteMethod} on type {structure.NodeType.Name}");
-
-		var inputParameters = structure.Inputs.Select<InputParameterStructure, dynamic?>(x => GetValue(instance, x)).ToArray();
-		var outputParameters = structure.Outputs.Select<OutputParameterStructure, dynamic?>(x => null).ToArray();
 		
-		var parameters = inputParameters.Concat(outputParameters).ToArray();
-
+		var parameters = ConstructInvocationParameters(invokeMethod, instance, structure);
+		
 		try
 		{
 			invokeMethod.Invoke(nodeInstance, parameters);
-		} catch (Exception e)
+		} 
+		catch (Exception e) 
 		{
 			Console.WriteLine(e);
 			throw;
 		}
 		
-		for (var i = inputParameters.Length; i < parameters.Length; i++)
+		for (var i = 0; i < parameters.Length; i++)
 		{
-			var parameter = structure.Outputs[i - inputParameters.Length];
-			SetValue(instance, parameter, parameters[i]);
+			var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
+			
+			if (parameter is OutputParameterStructure outputParameter)
+				SetValue(instance, outputParameter, parameters[i]);
 		}
 	}
 
@@ -131,16 +139,65 @@ public class NodeEngine
 
 	private void SetValue(string id, object value)
 	{
-		if (Values.ContainsKey(id))
-			Values = Values.SetItem(id, value);
+		if (ExplicitValues.ContainsKey(id))
+			ExplicitValues = ExplicitValues.SetItem(id, value);
 		else
-			Values = Values.Add(id, value);
+			ExplicitValues = ExplicitValues.Add(id, value);
 	}
 	
 	private object? GetValue(NodeInstance instance, InputParameterStructure parameter)
 	{
 		var id = $"{instance.Id}.{parameter.Id}";
-		var defaultValue = parameter.Type.GetDefaultValueForType();
-		return Values.TryGetValue(id, out var value) ? Convert.ChangeType(value, parameter.Type) : defaultValue;
+		
+		if(ExplicitValues.TryGetValue(id, out var value))
+			return value;
+
+		return GetImplicitValue(id, parameter);
+	}
+
+	private object? GetImplicitValue(string id, InputParameterStructure parameter)
+	{
+		if (ImplicitValues.TryGetValue(id, out var value))
+			return value;
+
+		var defaultValue = JsonConvert.DeserializeObject(parameter.DefaultValue, parameter.Type)!;
+		
+		if(ImplicitValues.ContainsKey(id))
+			ImplicitValues = ImplicitValues.SetItem(id, defaultValue);
+		else
+			ImplicitValues = ImplicitValues.Add(id, defaultValue);
+
+		return defaultValue;
+	}
+
+	private dynamic[] ConstructInvocationParameters(MethodBase method, NodeInstance instance, NodeStructure structure)
+	{
+		var methodParameters = method.GetParameters();
+		var parameters = new dynamic[methodParameters.Length];
+
+		for (var i = 0; i < methodParameters.Length; i++)
+		{
+			var structureParameter = GetParameterStructureFromMethod(method, structure, i);
+
+			if (structureParameter is InputParameterStructure inputParameter)
+				parameters[i] = GetValue(instance, inputParameter)!;
+			else
+				parameters[i] = null!;
+		}
+
+		return parameters;
+	}
+
+	private IParameterStructure GetParameterStructureFromMethod(MethodBase method, NodeStructure structure, int parameterIndex)
+	{
+		var structureParameters = structure
+			.Inputs
+			.Select(x => x as IParameterStructure)
+			.Concat(structure.Outputs
+				.Select(x => x as IParameterStructure));
+		
+		var parameter = method.GetParameters()[parameterIndex];
+		
+		return structureParameters.First(x => x.Id == parameter.Name);
 	}
 }

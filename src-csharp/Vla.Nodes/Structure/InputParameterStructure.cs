@@ -3,7 +3,8 @@ using Vla.Helpers;
 
 namespace Vla.Nodes.Structure;
 
-public readonly struct InputParameterStructure(string id, string name, Type type) : IParameterStructure
+public readonly struct InputParameterStructure(string id, string name, Type type, object? defaultValue = null)
+    : IParameterStructure
 {
     [JsonProperty("id")]
     public string Id { get; init; } = id;
@@ -15,5 +16,5 @@ public readonly struct InputParameterStructure(string id, string name, Type type
     public Type Type { get; init; } = type;
 
     [JsonProperty("defaultValue")]
-    public string DefaultValue { get; init; } = JsonConvert.SerializeObject(type.GetDefaultValueForType());
+    public string DefaultValue { get; init; } = JsonConvert.SerializeObject(defaultValue ?? type.GetDefaultValueForType());
 }

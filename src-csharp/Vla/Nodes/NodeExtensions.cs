@@ -43,7 +43,7 @@ public static class NodeExtensions
                 .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
                 .Select(y =>
                     new InputParameterStructure(y.Name!, y.GetCustomAttribute<NodeInputAttribute>()?.Name ?? y.Name!,
-                        y.ParameterType))
+                        y.ParameterType, y.DefaultValue))
                 .ToArray())
             .WithOutputs(GetMainMethod(type).Expect().GetParameters()
                 .Where(y => y.GetCustomAttribute<NodeOutputAttribute>() is not null)

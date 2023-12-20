@@ -16,11 +16,10 @@ public class NodeEngine
 	public class NumberConstantNode : INode
 	{
 		public string Name => "Number constant";
+
+		[NodeProperty] public double Value { get; set; } = 100;
 		
-		[NodeProperty]
-		public int Value { get; set; }
-		
-		public void Execute([NodeOutput] out int result)
+		public void Execute([NodeOutput] out double result)
 		{
 			result = Value;
 		}
@@ -31,7 +30,7 @@ public class NodeEngine
 	{
 		public string Name => "Add";
 		
-		public void Execute([NodeInput] int a, [NodeInput] int b, [NodeOutput] out int result)
+		public void Execute([NodeOutput] out int result, [NodeInput] int a, [NodeInput] int b = 1)
 		{
 			result = a + b;
 		}
@@ -43,7 +42,7 @@ public class NodeEngine
 		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
 		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
 
-		var constantInstance1 = new NodeInstance().From(constantStructure).WithProperty("Value", 12);
+		var constantInstance1 = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
 		var constantInstance2 = new NodeInstance().From(constantStructure).WithProperty("Value", 13);
 
 		var addInstance = new NodeInstance().From(addStructure);
@@ -67,8 +66,64 @@ public class NodeEngine
 
 		engine.Tick();
 
-		Assert.That(engine.Values[$"{constantInstance1.Id}.result"], Is.EqualTo(12));
+		Assert.That(engine.Values[$"{constantInstance1.Id}.result"], Is.EqualTo(12.5));
 		Assert.That(engine.Values[$"{constantInstance2.Id}.result"], Is.EqualTo(13));
 		Assert.That(engine.Values[$"{addInstance.Id}.result"], Is.EqualTo(25));
+	}
+	
+	[Test]
+	public void NodeEngine_Tick_FillsInDefaultInputValues()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
+		
+		var addInstance = new NodeInstance().From(addStructure);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var services = new ServiceCollection().BuildServiceProvider();
+		
+		var engine = new Vla.Engine.NodeEngine(services)
+			.SetStructures(addStructure, constantStructure)
+			.SetGraph(instances, connections);
+
+		engine.Tick();
+
+		Assert.That(engine.Values[$"{addInstance.Id}.b"], Is.EqualTo(1));
+	}
+	
+	[Test]
+	public void NodeEngine_Tick_FillsInDefaultPropertyValues()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure);
+		
+		var addInstance = new NodeInstance().From(addStructure);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var services = new ServiceCollection().BuildServiceProvider();
+		
+		var engine = new Vla.Engine.NodeEngine(services)
+			.SetStructures(addStructure, constantStructure)
+			.SetGraph(instances, connections);
+
+		engine.Tick();
+
+		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(100));
 	}
 }
