@@ -1,8 +1,8 @@
 ﻿using Vla.Helpers;
 
-namespace Vla.Tests;
+namespace Vla.Tests.Types;
 
-public class TypeExtensionsTests
+public class Extensions
 {
 	[Test]
 	public void GetDefaultValueForType_String_ReturnsEmptyString()
