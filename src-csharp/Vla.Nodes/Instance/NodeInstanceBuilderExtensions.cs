@@ -26,28 +26,25 @@ public static class NodeInstanceBuilderExtensions
 
     public static NodeInstance WithProperty<T>(this NodeInstance node, string id, T value)
     {
+
         // Replace existing property if it exists
         if (node.Properties.Any(p => p.Id == id))
         {
-            return node with { Properties = node.Properties.Replace(node.Properties.First(p => p.Id == id), new PropertyInstance(id, typeof(T), JsonConvert.SerializeObject(value))) };
-        }
-
-        public static NodeInstance WithProperty<T>(this NodeInstance node, string name, T value)
-        {
-            // Replace existing property if it exists
-            if (node.Properties.Any(p => p.Name == name))
-            {
-                return node with { Properties = node.Properties.Replace(node.Properties.First(p => p.Name == name), new PropertyInstance(name, typeof(T), JsonConvert.SerializeObject(value))) };
-            }
-
             return node with
             {
-                Properties =
-                node.Properties.Add(new PropertyInstance(name, typeof(T), JsonConvert.SerializeObject(value)))
+                Properties = node.Properties.Replace(node.Properties.First(p => p.Id == id),
+                    new PropertyInstance(id, typeof(T), JsonConvert.SerializeObject(value)))
             };
         }
 
-        public static NodeInstance WithPosition(this NodeInstance node, int x, int y)
+        return node with
+        {
+            Properties =
+            node.Properties.Add(new PropertyInstance(id, typeof(T), JsonConvert.SerializeObject(value)))
+        };
+    }
+
+    public static NodeInstance WithPosition(this NodeInstance node, int x, int y)
         {
             return node with { Metadata = node.Metadata with { Position = new Position { X = x, Y = y } } };
         }
