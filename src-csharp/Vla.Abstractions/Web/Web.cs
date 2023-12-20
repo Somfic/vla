@@ -30,10 +30,4 @@ public readonly struct Web(string name)
     /// </summary>
     [JsonProperty("connections")]
     public ImmutableArray<NodeConnection> Connections { get; init; } = ImmutableArray<NodeConnection>.Empty;
-
-    /// <summary>
-    /// The result of the web. This is automatically set after running.
-    /// </summary>
-    [JsonProperty("result")]
-    public WebResult Result { get; init; } = new();
 }

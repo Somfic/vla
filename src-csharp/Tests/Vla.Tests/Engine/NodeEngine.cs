@@ -21,6 +21,9 @@ public class NodeEngine
 		
 		public void Execute([NodeOutput] out double result)
 		{
+			if (Value < 0)
+				throw new ArgumentException("Value cannot be negative");
+			
 			result = Value;
 		}
 	}
@@ -72,12 +75,12 @@ public class NodeEngine
 	}
 	
 	[Test]
-	public void NodeEngine_Tick_FillsInDefaultInputValues()
+	public void NodeEngine_Tick_FillsInDefaultStructureInputValues()
 	{
 		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
 		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
 
-		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
+		var constantInstance = new NodeInstance().From(constantStructure);
 		
 		var addInstance = new NodeInstance().From(addStructure);
 
@@ -100,7 +103,37 @@ public class NodeEngine
 	}
 	
 	[Test]
-	public void NodeEngine_Tick_FillsInDefaultPropertyValues()
+	public void NodeEngine_Tick_FillsInDefaultInstanceInputValues()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure)
+			.WithProperty("Value", 12.5);
+		
+		var addInstance = new NodeInstance().From(addStructure)
+			.WithInput("b", 9999);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var services = new ServiceCollection().BuildServiceProvider();
+		
+		var engine = new Vla.Engine.NodeEngine(services)
+			.SetStructures(addStructure, constantStructure)
+			.SetGraph(instances, connections);
+
+		engine.Tick();
+
+		Assert.That(engine.Values[$"{addInstance.Id}.b"], Is.EqualTo(9999));
+	}
+	
+	[Test]
+	public void NodeEngine_Tick_FillsInDefaultStructurePropertyValues()
 	{
 		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
 		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
@@ -125,5 +158,62 @@ public class NodeEngine
 		engine.Tick();
 
 		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(100));
+	}
+	
+	[Test]
+	public void NodeEngine_Tick_FillsInDefaultInstancePropertyValues()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12222);
+		
+		var addInstance = new NodeInstance().From(addStructure);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var services = new ServiceCollection().BuildServiceProvider();
+		
+		var engine = new Vla.Engine.NodeEngine(services)
+			.SetStructures(addStructure, constantStructure)
+			.SetGraph(instances, connections);
+
+		engine.Tick();
+
+		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(12222));
+	}
+
+	[Test]
+	public void NodeEngine_Tick_HandlesExecutionException()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure)
+			.WithProperty("Value", -1);
+		
+		var addInstance = new NodeInstance().From(addStructure);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var services = new ServiceCollection().BuildServiceProvider();
+		
+		var engine = new Vla.Engine.NodeEngine(services)
+			.SetStructures(addStructure, constantStructure)
+			.SetGraph(instances, connections);
+
+		engine.Tick();
+
+		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(0));
 	}
 }

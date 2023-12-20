@@ -49,15 +49,20 @@ public class NodeEngine
 	
 	private ImmutableDictionary<string, object> _instances = ImmutableDictionary<string, object>.Empty;
 	
-	public void Tick()
+	public ImmutableDictionary<string, NodeExecutionResult> Tick()
 	{
+		var results = new Dictionary<string, NodeExecutionResult>();
+		
 		foreach (var instance in Instances)
 		{
-			ExecuteNode(instance);
+			var result = ExecuteNode(instance);
+			results.Add(instance.Id, result);
 		}
+
+		return results.ToImmutableDictionary();
 	}
 
-	private void ExecuteNode(NodeInstance instance)
+	private NodeExecutionResult ExecuteNode(NodeInstance instance)
 	{
 		var structure = Structures.First(x => x.NodeType == instance.NodeType);
 		
@@ -102,19 +107,33 @@ public class NodeEngine
 		try
 		{
 			invokeMethod.Invoke(nodeInstance, parameters);
-		} 
-		catch (Exception e) 
-		{
-			Console.WriteLine(e);
-			throw;
-		}
 		
-		for (var i = 0; i < parameters.Length; i++)
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
+
+				if (parameter is OutputParameterStructure outputParameter)
+				{
+					SetValue(instance, outputParameter, parameters[i]);
+				}
+			}
+
+			return new NodeExecutionResult();
+		} 
+		catch (Exception e)
 		{
-			var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
+
+				if (parameter is OutputParameterStructure outputParameter)
+				{
+					var fallback = parameter.Type.GetDefaultValueForType()!;
+					SetValue(instance, outputParameter, fallback);
+				}
+			}
 			
-			if (parameter is OutputParameterStructure outputParameter)
-				SetValue(instance, outputParameter, parameters[i]);
+			return new NodeExecutionResult(e.InnerException);
 		}
 	}
 
@@ -145,24 +164,29 @@ public class NodeEngine
 			ExplicitValues = ExplicitValues.Add(id, value);
 	}
 	
-	private object? GetValue(NodeInstance instance, InputParameterStructure parameter)
+	private object GetValue(NodeInstance instance, InputParameterStructure parameter)
 	{
 		var id = $"{instance.Id}.{parameter.Id}";
 		
 		if(ExplicitValues.TryGetValue(id, out var value))
 			return value;
 
-		return GetImplicitValue(id, parameter);
+		return GetImplicitValue(id, instance, parameter);
 	}
 
-	private object? GetImplicitValue(string id, InputParameterStructure parameter)
+	private object GetImplicitValue(string id, NodeInstance instance, InputParameterStructure parameter)
 	{
-		if (ImplicitValues.TryGetValue(id, out var value))
-			return value;
+		// Default values might be changed by the user while the graph is running
+		// if (ImplicitValues.TryGetValue(id, out var value))
+		// 	return value;
+		var instanceParameter = GetParameterInstanceFromMethod(instance, parameter);
 
-		var defaultValue = JsonConvert.DeserializeObject(parameter.DefaultValue, parameter.Type)!;
-		
-		if(ImplicitValues.ContainsKey(id))
+		var defaultValue = JsonConvert.DeserializeObject(parameter.DefaultValue, parameter.Type);
+
+		if (instanceParameter?.Id == parameter.Id)
+			defaultValue = JsonConvert.DeserializeObject(instanceParameter.Value.DefaultValue, parameter.Type);
+
+		if (ImplicitValues.ContainsKey(id))
 			ImplicitValues = ImplicitValues.SetItem(id, defaultValue);
 		else
 			ImplicitValues = ImplicitValues.Add(id, defaultValue);
@@ -174,15 +198,18 @@ public class NodeEngine
 	{
 		var methodParameters = method.GetParameters();
 		var parameters = new dynamic[methodParameters.Length];
-
+		
 		for (var i = 0; i < methodParameters.Length; i++)
 		{
 			var structureParameter = GetParameterStructureFromMethod(method, structure, i);
-
+			
+			dynamic value = null;
+			
+			// If the parameter is an input, get the default value from the structure/instance
 			if (structureParameter is InputParameterStructure inputParameter)
-				parameters[i] = GetValue(instance, inputParameter)!;
-			else
-				parameters[i] = null!;
+				value = GetValue(instance, inputParameter);
+			
+			parameters[i] = value;
 		}
 
 		return parameters;
@@ -199,5 +226,10 @@ public class NodeEngine
 		var parameter = method.GetParameters()[parameterIndex];
 		
 		return structureParameters.First(x => x.Id == parameter.Name);
+	}
+	
+	private ParameterInstance? GetParameterInstanceFromMethod(NodeInstance instance, IParameterStructure parameterStructure)
+	{
+		return instance.Inputs.FirstOrDefault(x => x.Id == parameterStructure.Id);
 	}
 }

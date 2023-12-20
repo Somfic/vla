@@ -13,12 +13,6 @@ public static class NodeInstanceBuilderExtensions
             NodeType = structure.NodeType,
             Properties = structure.Properties
                 .Select(p => new PropertyInstance(p.Id, p.Type, p.DefaultValue))
-                .ToImmutableArray(),
-            Inputs = structure.Inputs
-                .Select(p => new ParameterInstance(p.Id, p.Type))
-                .ToImmutableArray(),
-            Outputs = structure.Outputs
-                .Select(p => new ParameterInstance(p.Id, p.Type))
                 .ToImmutableArray()
         };
         return node;
@@ -26,8 +20,6 @@ public static class NodeInstanceBuilderExtensions
 
     public static NodeInstance WithProperty<T>(this NodeInstance node, string id, T value)
     {
-
-        // Replace existing property if it exists
         if (node.Properties.Any(p => p.Id == id))
         {
             return node with
@@ -43,9 +35,26 @@ public static class NodeInstanceBuilderExtensions
             node.Properties.Add(new PropertyInstance(id, typeof(T), JsonConvert.SerializeObject(value)))
         };
     }
+    
+    public static NodeInstance WithInput(this NodeInstance node, string id, object value)
+    {
+        if (node.Inputs.Any(p => p.Id == id))
+        {
+            return node with
+            {
+                Inputs = node.Inputs.Replace(node.Inputs.First(p => p.Id == id),
+                    new ParameterInstance(id, value))
+            };
+        }
+
+        return node with
+        {
+            Inputs = node.Inputs.Add(new ParameterInstance(id, value))
+        };
+    }
 
     public static NodeInstance WithPosition(this NodeInstance node, int x, int y)
-        {
-            return node with { Metadata = node.Metadata with { Position = new Position { X = x, Y = y } } };
-        }
+    {
+        return node with { Metadata = node.Metadata with { Position = new Position { X = x, Y = y } } };
     }
+}

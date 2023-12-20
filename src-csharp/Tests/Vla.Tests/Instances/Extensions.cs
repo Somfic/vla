@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Somfic.Common;
+using Vla.Abstractions.Attributes;
 using Vla.Nodes;
 using Vla.Nodes.Instance;
 
@@ -7,10 +8,27 @@ namespace Vla.Tests.Instances;
 
 public class Extensions
 {
+	[Node("Initial node name")]
+	[NodeCategory("Testing")]
+	[NodeTags("Tag")]
+	public class ValidNode : INode
+	{
+		public string Name => "Computed node name";
+		
+		[NodeProperty("Property name")]
+		public int Property { get; set; }
+		
+		public void Execute([NodeOutput("Output name")] out int output, [NodeOutput] out int outputPlus1, [NodeInput("Input name")] int input = 1)
+		{
+			output = input;
+			outputPlus1 = input + 1;
+		}
+	}
+	
 	[Test]
 	public void From_ValidNode_HasUniqueId()
 	{
-		var structure = NodeExtensions.ToStructure<Structures.Extensions.ValidNode>().Expect();
+		var structure = NodeExtensions.ToStructure<ValidNode>().Expect();
 		var instance = new NodeInstance().From(structure);
 
 		Assert.That(instance.Id, Is.Not.Null);
@@ -22,34 +40,23 @@ public class Extensions
 	[Test]
 	public void From_ValidNode_HasCorrectType()
 	{
-		var structure = NodeExtensions.ToStructure<Structures.Extensions.ValidNode>().Expect();
+		var structure = NodeExtensions.ToStructure<ValidNode>().Expect();
 		var instance = new NodeInstance().From(structure);
 
-		Assert.That(instance.NodeType, Is.EqualTo(typeof(Structures.Extensions.ValidNode)));
+		Assert.That(instance.NodeType, Is.EqualTo(typeof(ValidNode)));
 	}
 
 	[Test]
 	public void From_ValidNode_HasCorrectProperties()
 	{
-		var structure = NodeExtensions.ToStructure<Structures.Extensions.ValidNode>().Expect();
+		var structure = NodeExtensions.ToStructure<ValidNode>().Expect();
 		var instance = new NodeInstance().From(structure);
 
-		instance = instance.WithProperty(nameof(Structures.Extensions.ValidNode.Property), 12);
+		instance = instance.WithProperty(nameof(ValidNode.Property), 12);
 
 		Assert.That(instance.Properties, Has.Length.EqualTo(1));
-		Assert.That(instance.Properties[0].Id, Is.EqualTo(nameof(Structures.Extensions.ValidNode.Property)));
+		Assert.That(instance.Properties[0].Id, Is.EqualTo(nameof(ValidNode.Property)));
 		Assert.That(instance.Properties[0].Value, Is.EqualTo(JsonConvert.SerializeObject(12)));
 		Assert.That(instance.Properties[0].Type, Is.EqualTo(typeof(int)));
-	}
-
-	[Test]
-	public void From_ValidNode_HasCorrectOutputs()
-	{
-		var structure = NodeExtensions.ToStructure<Structures.Extensions.ValidNode>().Expect();
-		var instance = new NodeInstance().From(structure);
-
-		Assert.That(instance.Outputs, Has.Length.EqualTo(2));
-		Assert.That(instance.Outputs[0].Id, Is.EqualTo("output"));
-		Assert.That(instance.Outputs[1].Id, Is.EqualTo("outputPlus1"));
 	}
 }
