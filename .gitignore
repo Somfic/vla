@@ -601,3 +601,4 @@ src-tauri/binaries
 speech-recognition.bin
 test-results.json
 src-client/build
+.DS_Store

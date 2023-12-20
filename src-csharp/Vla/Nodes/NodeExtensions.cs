@@ -2,8 +2,8 @@
 using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Abstractions;
-using Vla.Abstractions.Attributes;
 using Vla.Helpers;
+using Vla.Nodes.Attributes;
 using Vla.Nodes.Structure;
 
 namespace Vla.Nodes;
@@ -29,30 +29,26 @@ public static class NodeExtensions
 
     private static Result<NodeStructure> BuildStructure(Type type)
     {
-        var structure = new NodeStructure()
-            .WithType(type)
-            .WithName(GetName(type))
-            .WithCategory(GetCategory(type))
-            .WithSearchTerms(GetSearchTerms(type).ToArray())
-            .WithMethod(GetMainMethod(type).Expect())
-            .WithProperties(type.GetProperties()
-                .Where(y => y.GetCustomAttribute<NodePropertyAttribute>() is not null)
-                .Select(y =>
-                    new PropertyStructure(y.Name, y.GetCustomAttribute<NodePropertyAttribute>()?.Name ?? y.Name, y.PropertyType, JsonConvert.SerializeObject(y.GetValue(Activator.CreateInstance(type)))))
-                .ToArray())
-            .WithInputs(GetMainMethod(type).Expect().GetParameters()
-                .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
-                .Select(y =>
-                    new InputParameterStructure(y.Name!, y.GetCustomAttribute<NodeInputAttribute>()?.Name ?? y.Name!,
-                        y.ParameterType, y.DefaultValue))
-                .ToArray())
-            .WithOutputs(GetMainMethod(type).Expect().GetParameters()
-                .Where(y => y.GetCustomAttribute<NodeOutputAttribute>() is not null)
-                .Select(y =>
-                    new OutputParameterStructure(y.Name!, y.GetCustomAttribute<NodeOutputAttribute>()?.Name ?? y.Name!,
-                        y.ParameterType))
-                .ToArray());
-        return structure;
+        return Result.Try((() =>
+            new NodeStructure()
+                .WithType(type)
+                .WithName(GetName(type))
+                .WithDescription(type.GetDocumentation())
+                .WithCategory(GetCategory(type))
+                .WithSearchTerms(GetSearchTerms(type).ToArray())
+                .WithMethod(GetMainMethod(type).Expect())
+                .WithProperties(type.GetProperties()
+                    .Where(y => y.GetCustomAttribute<NodePropertyAttribute>() is not null)
+                    .Select(y => PropertyStructure.FromPropertyInfo(y, type))
+                    .ToArray())
+                .WithInputs(GetMainMethod(type).Expect().GetParameters()
+                    .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
+                    .Select(InputParameterStructure.FromParameterInfo)
+                    .ToArray())
+                .WithOutputs(GetMainMethod(type).Expect().GetParameters()
+                    .Where(y => y.GetCustomAttribute<NodeOutputAttribute>() is not null)
+                    .Select(OutputParameterStructure.FromParameterInfo)
+                    .ToArray())));
     }
 
     private static string GetName(Type type)

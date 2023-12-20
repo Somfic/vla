@@ -6,5 +6,7 @@ public interface IParameterStructure
 	
 	public string Name { get; init; }
 	
+	public string Description { get; init; }
+	
 	public Type Type { get; init; }
 }

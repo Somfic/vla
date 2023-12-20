@@ -7,6 +7,7 @@ using Vla.Nodes;
 using Vla.Nodes.Attributes;
 using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Vla.Tests.Engine;
 

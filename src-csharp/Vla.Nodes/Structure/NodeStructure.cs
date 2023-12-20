@@ -14,6 +14,9 @@ public readonly struct NodeStructure
 
     [JsonProperty("name")]
     public string Name { get; init; } = string.Empty;
+    
+    [JsonProperty("description")]
+    public string Description { get; init; } = string.Empty;
 
     [JsonProperty("category")]
     public string? Category { get; init; } = string.Empty;

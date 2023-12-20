@@ -4,6 +4,7 @@ using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 
 namespace Vla.Tests.Engine;
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 public class TopologicalSorter
 {

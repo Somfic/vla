@@ -11,6 +11,11 @@ public static class NodeStructureBuilderExtensions
         return node with { Name = name };
     }
 
+    public static NodeStructure WithDescription(this NodeStructure node, string description)
+    {
+        return node with { Description = description };
+    }
+    
     public static NodeStructure WithType(this NodeStructure node, Type type)
     {
         node = node.WithSearchTerms(type.Name);
