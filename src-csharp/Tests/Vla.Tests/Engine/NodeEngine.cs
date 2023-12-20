@@ -216,4 +216,29 @@ public class NodeEngine
 
 		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(0));
 	}
+
+	[Test]
+	public void NodeEngine_Tick_DoesNotGetStuckInLoop()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var addInstance = new NodeInstance().From(addStructure);
+		var connection = new NodeConnection()
+			.WithSource(addInstance, "result")
+			.WithTarget(addInstance, "a");
+		
+		ImmutableArray<NodeInstance> instances = [addInstance];
+		ImmutableArray<NodeConnection> connections = [connection];
+		
+		var services = new ServiceCollection().BuildServiceProvider();
+		
+		var engine = new Vla.Engine.NodeEngine(services)
+			.SetStructures(addStructure)
+			.SetGraph(instances, connections);
+
+		for (int i = 0; i < 1000; i++)
+		{
+			engine.Tick();
+			Assert.That(engine.Values[$"{addInstance.Id}.result"], Is.EqualTo(i + 1));
+		}
+	}
 }
