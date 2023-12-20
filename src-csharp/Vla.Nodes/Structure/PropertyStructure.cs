@@ -2,8 +2,11 @@
 
 namespace Vla.Nodes.Structure;
 
-public readonly struct PropertyStructure(string name, Type type, string defaultValue)
+public readonly struct PropertyStructure(string id, string name, Type type, string defaultValue)
 {
+    [JsonProperty("id")]
+    public string Id { get; init; } = id;
+    
     [JsonProperty("name")]
     public string Name { get; init; } = name;
 

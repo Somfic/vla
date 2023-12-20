@@ -16,7 +16,10 @@ public readonly struct NodeInstance()
 
     [JsonProperty("inputs")]
     public ImmutableArray<ParameterInstance> Inputs { get; init; } = ImmutableArray<ParameterInstance>.Empty;
-
+    
+    [JsonProperty("outputs")]
+    public ImmutableArray<ParameterInstance> Outputs { get; init; } = ImmutableArray<ParameterInstance>.Empty;
+    
     [JsonProperty("metadata")]
     public Metadata Metadata { get; init; } = new();
 }

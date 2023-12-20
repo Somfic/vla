@@ -20,6 +20,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Extensions\Core\Core.csproj" />
       <ProjectReference Include="..\..\Vla.Abstractions\Vla.Abstractions.csproj" />
+      <ProjectReference Include="..\..\Vla.Engine\Vla.Engine.csproj" />
       <ProjectReference Include="..\..\Vla\Vla.csproj" />
     </ItemGroup>
 

@@ -45,7 +45,7 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
 
                 foreach (var property in instance.Properties)
                 {
-                    var propInfo = structure.NodeType.GetProperty(property.Name);
+                    var propInfo = structure.NodeType.GetProperty(property.Id);
                     var propType = propInfo?.PropertyType;
                     
                     if(propType == null)
@@ -61,7 +61,7 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
 
         foreach (var connection in web.Connections)
         {
-            SetNodeOutput(web, structures, connection.To.InstanceId);
+            SetNodeOutput(web, structures, connection.Target.InstanceId);
         }
 
         return new WebResult()
@@ -90,11 +90,11 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
             foreach (var input in structure.Inputs.Where(x => !_values.ContainsKey($"{instance.Id}.{x.Id}")))
             {
                 var hasConnection =
-                    web.Connections.Any(c => c.To.InstanceId == instanceId && c.To.PropertyId == input.Id);
+                    web.Connections.Any(c => c.Target.InstanceId == instanceId && c.Target.PropertyId == input.Id);
 
                 // If there is a connection, set the value of the input to the value of the output
                 if (hasConnection)
-                    SetNodeOutput(web, structures, web.Connections.First(c => c.To.InstanceId == instanceId && c.To.PropertyId == input.Id).From.InstanceId);
+                    SetNodeOutput(web, structures, web.Connections.First(c => c.Target.InstanceId == instanceId && c.Target.PropertyId == input.Id).Source.InstanceId);
                 else
                 {
                     // If there is no connection, set the value of the input to the default value
@@ -134,10 +134,10 @@ public class WebExecutor(ILogger<WebExecutor> log, IServiceProvider services)
 
             // Find all the inputs that use this output, and set their values
             var connections = web.Connections
-                .Where(c => c.From.InstanceId == instanceId && c.From.PropertyId == o.Id).Distinct();
+                .Where(c => c.Source.InstanceId == instanceId && c.Source.PropertyId == o.Id).Distinct();
             foreach (var connection in connections)
             {
-                var key = $"{connection.To.InstanceId}.{connection.To.PropertyId}";
+                var key = $"{connection.Target.InstanceId}.{connection.Target.PropertyId}";
                 var value = methodParameters[inputParameters.Length + index];
                 _values.TryAdd(key, value);
             }

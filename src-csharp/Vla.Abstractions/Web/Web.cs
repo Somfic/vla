@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
-using Vla.Abstractions.Connection;
+using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 
 namespace Vla.Abstractions.Web;

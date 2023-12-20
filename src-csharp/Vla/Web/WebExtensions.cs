@@ -1,5 +1,5 @@
 ﻿using Somfic.Common;
-using Vla.Abstractions.Connection;
+using Vla.Nodes.Connection;
 using Vla.Nodes.Instance;
 using Vla.Nodes.Structure;
 
@@ -33,26 +33,26 @@ public static class WebExtensions
         //  This check *should* fail if that is the case, but it does not.
         bool InstancesEnsureStructurePropertyTypeMatches(Abstractions.Web.Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
-                structures.Any(structure => structure.Properties.All(x => x.Name == property.Name && x.Type == property.Type)));
+                structures.Any(structure => structure.Properties.All(x => x.Name == property.Id && x.Type == property.Type)));
 
         // TODO: Add check that all connection properties exist on the structure
 
         bool ConnectionsEnsureStructureInputOutputExists(Abstractions.Web.Web w) =>
             w.Connections.All(connection =>
-                structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.From.PropertyId)) &&
-                structures.Any(structure => structure.Inputs.Any(x => x.Id == connection.To.PropertyId)));
+                structures.Any(structure => structure.Outputs.Any(x => x.Id == connection.Source.PropertyId)) &&
+                structures.Any(structure => structure.Inputs.Any(x => x.Id == connection.Target.PropertyId)));
 
         bool ConnectionsEnsureInstanceExists(Abstractions.Web.Web w) =>
             w.Connections.All(connection =>
-                w.Instances.Any(instance => instance.Id == connection.From.InstanceId) &&
-                w.Instances.Any(instance => instance.Id == connection.To.InstanceId));
+                w.Instances.Any(instance => instance.Id == connection.Source.InstanceId) &&
+                w.Instances.Any(instance => instance.Id == connection.Target.InstanceId));
 
         bool InstancesEnsureStructureExists(Abstractions.Web.Web w) =>
             w.Instances.All(instance => structures.Any(structure => structure.NodeType == instance.NodeType));
 
         bool InstancesEnsureStructurePropertyExists(Abstractions.Web.Web w) =>
             w.Instances.SelectMany(x => x.Properties).All(property =>
-                structures.Any(structure => structure.Properties.Any(x => x.Name == property.Name)));
+                structures.Any(structure => structure.Properties.Any(x => x.Id == property.Id)));
 
         bool StructureEnsureUniqueNodeTypes(Abstractions.Web.Web w) =>
             structures

@@ -2,10 +2,13 @@
 
 namespace Vla.Nodes.Instance;
 
-public readonly struct PropertyInstance(string name, Type type, string value)
+public readonly struct PropertyInstance(string id, Type type, string value)
 {
-    [JsonProperty("name")]
-    public string Name { get; init; } = name;
+    /// <summary>
+    /// The id of the property.
+    /// </summary>
+    [JsonProperty("id")]
+    public string Id { get; init; } = id;
 
     [JsonProperty("type")]
     public Type Type { get; init; } = type;

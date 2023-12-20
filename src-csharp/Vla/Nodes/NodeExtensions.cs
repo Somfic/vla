@@ -37,7 +37,7 @@ public static class NodeExtensions
             .WithProperties(type.GetProperties()
                 .Where(y => y.GetCustomAttribute<NodePropertyAttribute>() is not null)
                 .Select(y =>
-                    new PropertyStructure(y.Name, y.PropertyType, JsonConvert.SerializeObject(y.GetValue(Activator.CreateInstance(type)))))
+                    new PropertyStructure(y.Name, y.GetCustomAttribute<NodePropertyAttribute>()?.Name ?? y.Name, y.PropertyType, JsonConvert.SerializeObject(y.GetValue(Activator.CreateInstance(type)))))
                 .ToArray())
             .WithInputs(GetMainMethod(type).Expect().GetParameters()
                 .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
