@@ -40,7 +40,7 @@ public class NodeEngine
 	public ImmutableArray<NodeInstance> Instances { get; private set; } = ImmutableArray<NodeInstance>.Empty;
 
 	public ImmutableDictionary<string, object> Values => ExplicitValues
-		.Concat(ImplicitValues)
+		.Concat(ImplicitValues.Where(x => !ExplicitValues.ContainsKey(x.Key)))
 		.ToImmutableDictionary(x => x.Key, x => x.Value);
 	
 	public ImmutableDictionary<string, object> ImplicitValues { get; private set; } = ImmutableDictionary<string, object>.Empty;
