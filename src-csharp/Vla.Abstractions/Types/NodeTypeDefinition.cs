@@ -88,12 +88,3 @@ public readonly struct NodeTypeDefinition
         public static implicit operator ColorDefinition(Color color) => new(color);
     }
 }
-
-public readonly struct NodeTypeDefinitionValue(string name, object? value)
-{
-    [JsonProperty("name")]
-    public string Name { get; init; } = name;
-
-    [JsonProperty("value")]
-    public object? Value { get; init; } = value;
-}

@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
-using Vla.Abstractions.Web;
 using Vla.Nodes.Instance;
 
-namespace Vla.Web.Result;
+namespace Vla.Abstractions.Web;
 
 public static class WebResultExtensions
 {
