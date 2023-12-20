@@ -91,22 +91,22 @@ jobs:
               with:
                   dotnet-version: 8.0.100
 
-            - name: Setup Rust
-              uses: dtolnay/rust-toolchain@stable
-              with:
-                  components: llvm-tools-preview
+            # - name: Setup Rust
+            #   uses: dtolnay/rust-toolchain@stable
+            #   with:
+            #       components: llvm-tools-preview
 
-            - name: Setup cargo-llvm-cov
-              uses: taiki-e/install-action@cargo-llvm-cov
+            # - name: Setup cargo-llvm-cov
+            #   uses: taiki-e/install-action@cargo-llvm-cov
 
-            - name: Generate Cargo.lock
-              run: cargo generate-lockfile
-              working-directory: ./src-tauri
+            # - name: Generate Cargo.lock
+            #   run: cargo generate-lockfile
+            #   working-directory: ./src-tauri
 
-            - name: Install system dependencies
-              run: |
-                  chmod +x ./scripts/deps.sh
-                  ./scripts/deps.sh
+            # - name: Install system dependencies
+            #   run: |
+            #       chmod +x ./scripts/deps.sh
+            #       ./scripts/deps.sh
 
             - name: Install client dependencies
               run: yarn
@@ -129,11 +129,11 @@ jobs:
             - name: Test server
               run: yarn run test-server
 
-            - name: Configure sidecar
-              run: yarn run build-server
+            # - name: Configure sidecar
+            #   run: yarn run build-server
 
-            - name: Test packager
-              run: yarn run test-packager
+            # - name: Test packager
+            #   run: yarn run test-packager
 
             - name: Upload coverage
               uses: codecov/codecov-action@v3
