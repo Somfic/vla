@@ -12,9 +12,8 @@ public readonly struct InputParameterStructure(string id, string name, Type type
     [JsonProperty("name")]
     public string Name { get; init; } = name;
 
-    [JsonProperty("type")]
-    public Type Type { get; init; } = type;
+    [JsonProperty("type")] public Type Type { get; init; } = type;
 
     [JsonProperty("defaultValue")]
-    public string DefaultValue { get; init; } = JsonConvert.SerializeObject(defaultValue ?? type.GetDefaultValueForType());
+    public string DefaultValue { get; init; } = JsonConvert.SerializeObject(defaultValue is DBNull ? type.GetDefaultValueForType() : defaultValue);
 }
