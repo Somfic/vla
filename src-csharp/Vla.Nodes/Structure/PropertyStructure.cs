@@ -13,6 +13,9 @@ public readonly struct PropertyStructure(string id, string name, Type type, stri
     [JsonProperty("type")]
     public Type Type { get; init; } = type;
 
+    /// <summary>
+    /// The JSON encoded default value of the property.
+    /// </summary>
     [JsonProperty("defaultValue")]
     public string DefaultValue { get; init; } = defaultValue;
 }

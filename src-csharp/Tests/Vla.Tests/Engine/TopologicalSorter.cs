@@ -9,7 +9,7 @@ public class TopologicalSorter
 {
 	private const int RandomIterations = 100;
 	
-	private readonly ImmutableArray<(string from, string to)> _nominalData =
+	private readonly (string from, string to)[] _nominalData =
 	[
 		("1", "2"),
 		("1", "3"),
@@ -19,7 +19,7 @@ public class TopologicalSorter
 		("4", "5")
 	];
 	
-	private readonly ImmutableArray<(string from, string to)> _loopingData =
+	private readonly (string from, string to)[] _loopingData =
 	[
 		("A", "B"),
 		("B", "C"),
@@ -28,7 +28,7 @@ public class TopologicalSorter
 		("E", "A")
 	];
 
-	private readonly ImmutableArray<(string from, string to)> _invalidLoopingData = [("A", "A")];
+	private readonly (string from, string to)[] _invalidLoopingData = [("A", "A")];
 	
 	[Test]
 	public void TopologicalSorter_Constructor_ThrowsOnLoopingNode()
@@ -43,7 +43,7 @@ public class TopologicalSorter
 		
 		for (var i = 0; i < RandomIterations; i++)
 		{
-			var randomOrder = _nominalData.OrderBy(_ => random.Next()).ToImmutableArray();
+			var randomOrder = _nominalData.OrderBy(_ => random.Next()).ToArray();
 			
 			var sorter = new Vla.Engine.TopologicalSorter(randomOrder);
 			
@@ -62,7 +62,7 @@ public class TopologicalSorter
 		
 		for (var i = 0; i < RandomIterations; i++)
 		{
-			var randomOrder = _loopingData.OrderBy(_ => random.Next()).ToImmutableArray();
+			var randomOrder = _loopingData.OrderBy(_ => random.Next()).ToArray();
 			
 			var sorter = new Vla.Engine.TopologicalSorter(randomOrder);
 			
@@ -89,11 +89,12 @@ public class TopologicalSorter
 		
 		for (var i = 0; i < RandomIterations; i++)
 		{
-			var randomOrder = _nominalData.OrderBy(_ => random.Next()).ToImmutableArray();
+			var randomOrder = _nominalData.OrderBy(_ => random.Next()).ToArray();
 			
 			var sorter = new Vla.Engine.TopologicalSorter(randomOrder);
 			
-			Assert.That(sorter.Sort(), Is.EquivalentTo(new[] { "1", "2", "3", "4", "5" }));
+			Assert.That(sorter.Sort().Select(x => x.value), Is.EquivalentTo(new[] { "1", "2", "3", "4", "5" }));
+			Assert.That(sorter.Sort().Select(x => x.dependencies), Is.EquivalentTo(new[] { 2, 2, 1, 1, 0 }));
 		}
 	}
 	
@@ -104,11 +105,12 @@ public class TopologicalSorter
 		
 		for (var i = 0; i < RandomIterations; i++)
 		{
-			var randomOrder = _loopingData.OrderBy(_ => random.Next()).ToImmutableArray();
+			var randomOrder = _loopingData.OrderBy(_ => random.Next()).ToArray();
 		
 			var sorter = new Vla.Engine.TopologicalSorter(randomOrder);
 			
-			Assert.That(sorter.Sort(), Is.EquivalentTo(new[] { "A", "E", "D", "C", "B" }));
+			Assert.That(sorter.Sort().Select(x => x.value), Is.EquivalentTo(new[] { "A", "E", "D", "C", "B" }));
+			Assert.That(sorter.Sort().Select(x => x.dependencies), Is.EquivalentTo(new[] { 1, 1, 1, 1, 1 }));
 		}
 	}
 }

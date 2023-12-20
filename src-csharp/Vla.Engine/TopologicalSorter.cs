@@ -5,9 +5,9 @@ namespace Vla.Engine;
 /// <summary>
 ///  A topological sorter for nodes.
 /// </summary>
-public readonly struct TopologicalSorter(ImmutableArray<(string from, string to)> connections)
+public readonly struct TopologicalSorter(params (string from, string to)[] connections)
 {
-	public ImmutableDictionary<string, ImmutableArray<string>> Graph { get; } = CreateGraph(connections);
+	public ImmutableDictionary<string, ImmutableArray<string>> Graph { get; } = CreateGraph(connections.ToImmutableArray());
 	
 	public ImmutableArray<string> FindDependencies(string nodeId)
 	{
@@ -29,7 +29,7 @@ public readonly struct TopologicalSorter(ImmutableArray<(string from, string to)
 			.ToImmutableArray();
 	}
 	
-	public ImmutableArray<string> Sort()
+	public ImmutableArray<(string value, int dependencies)> Sort()
 	{
 		var visited = new HashSet<string>();
 		var stack = new Stack<string>();
@@ -39,15 +39,15 @@ public readonly struct TopologicalSorter(ImmutableArray<(string from, string to)
 			Visit(nodeId, ref visited, ref stack);
 		}
 
-		var sortedNodes = new List<string>();
+		var sortedNodes = new List<(string value, int dependencies)>();
 
 		while (stack.Count > 0)
 		{
-			var nodeId = stack.Pop();
-			sortedNodes.Add(nodeId);
+			var id = stack.Pop();
+			sortedNodes.Add((id, Graph[id].Length));
 		}
-
-		return sortedNodes.ToImmutableArray();
+		
+		return sortedNodes.OrderBy(x => x.dependencies).ToImmutableArray();
 	}
 
 	private void Visit(string nodeId, ref HashSet<string> visited, ref Stack<string> stack)

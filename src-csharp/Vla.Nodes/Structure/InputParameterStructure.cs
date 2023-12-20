@@ -3,7 +3,7 @@ using Vla.Helpers;
 
 namespace Vla.Nodes.Structure;
 
-public readonly struct InputParameterStructure(string id, string name, Type type)
+public readonly struct InputParameterStructure(string id, string name, Type type) : IParameterStructure
 {
     [JsonProperty("id")]
     public string Id { get; init; } = id;
