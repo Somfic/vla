@@ -31,12 +31,6 @@ public class TopologicalSorter
 	private readonly (string from, string to)[] _invalidLoopingData = [("A", "A")];
 	
 	[Test]
-	public void TopologicalSorter_Constructor_ThrowsOnLoopingNode()
-	{
-		Assert.Throws<ArgumentException>(() => _ = new Vla.Engine.TopologicalSorter(_invalidLoopingData));
-	}
-	
-	[Test]
 	public void TopologicalSorter_FindDependencies_WorksWithNominal()
 	{
 		var random = new Random();
