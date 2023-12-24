@@ -2,10 +2,10 @@ using System.Collections.Immutable;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Vla.Abstractions.Connection;
+using Vla.Abstractions.Instance;
+using Vla.Abstractions.Structure;
 using Vla.Helpers;
-using Vla.Nodes.Connection;
-using Vla.Nodes.Instance;
-using Vla.Nodes.Structure;
 
 namespace Vla.Engine;
 

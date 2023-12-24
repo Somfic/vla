@@ -1,10 +1,8 @@
 ﻿using System.Reflection;
-using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions;
+using Vla.Abstractions.Structure;
+using Vla.Addon;
 using Vla.Helpers;
-using Vla.Nodes.Attributes;
-using Vla.Nodes.Structure;
 
 namespace Vla.Nodes;
 
@@ -53,11 +51,7 @@ public static class NodeExtensions
 
     private static string GetName(Type type)
     {
-        return type.GetCustomAttributes()
-            .Where(x => x.GetType() == typeof(NodeAttribute))
-            .Select(x => x as NodeAttribute)
-            .Select(x => x!.Name)
-            .First();
+        return type.Name;
     }
 
     private static string[] GetSearchTerms(Type type)

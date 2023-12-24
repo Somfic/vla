@@ -34,14 +34,6 @@
 
 
 
-    <ItemGroup>
-      <Folder Include="Web\" />
-    </ItemGroup>
-
-
-
-
-
 
 
 

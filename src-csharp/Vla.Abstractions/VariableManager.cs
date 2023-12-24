@@ -1,9 +1,10 @@
 ﻿using System.Collections.Immutable;
+using Vla.Addon.Services;
 using Vla.Helpers;
 
 namespace Vla.Abstractions;
 
-public class VariableManager
+public class VariableManager : IVariableManager
 {
     private ImmutableDictionary<string, object?> _variables = ImmutableDictionary<string, object?>.Empty;
 

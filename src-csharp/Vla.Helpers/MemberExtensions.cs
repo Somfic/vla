@@ -1,6 +1,4 @@
 using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Xml;
 using LoxSmoke.DocXml;
 
 namespace Vla.Helpers;

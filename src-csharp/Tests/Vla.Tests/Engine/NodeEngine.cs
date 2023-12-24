@@ -1,19 +1,18 @@
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Engine;
+using Vla.Abstractions.Connection;
+using Vla.Abstractions.Instance;
+using Vla.Addon;
 using Vla.Nodes;
-using Vla.Nodes.Attributes;
-using Vla.Nodes.Connection;
-using Vla.Nodes.Instance;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Vla.Tests.Engine;
 
 public class NodeEngine
 {
-	[Node("Number constant")]
+	[Node]
 	public class NumberConstantNode : INode
 	{
 		public string Name => "Number constant";
@@ -29,7 +28,7 @@ public class NodeEngine
 		}
 	}
 	
-	[Node("Math add")]
+	[Node]
 	public class MathAddNode : INode
 	{
 		public string Name => "Add";

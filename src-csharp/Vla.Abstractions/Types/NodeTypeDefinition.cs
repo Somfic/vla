@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Drawing;
 using Newtonsoft.Json;
+using Vla.Addon;
 using Vla.Helpers;
 
 namespace Vla.Abstractions.Types;

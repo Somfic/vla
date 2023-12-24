@@ -2,9 +2,9 @@
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Somfic.Common;
-using Vla.Abstractions;
+using Vla.Abstractions.Structure;
 using Vla.Abstractions.Types;
-using Vla.Nodes.Structure;
+using Vla.Addon;
 
 namespace Vla.Nodes;
 
@@ -27,7 +27,7 @@ public class NodeService
 
         foreach (var type in types)
         {
-            NodeExtensions.ToStructure(type)
+            type.ToStructure()
                 .On(structures.Add)
                 .OnError(x => _log.LogWarning(x, "Could not register node {Node}", type.Name));
         }

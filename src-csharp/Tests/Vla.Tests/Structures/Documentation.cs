@@ -1,6 +1,7 @@
 using Somfic.Common;
+using Vla.Addon;
 using Vla.Nodes;
-using Vla.Nodes.Attributes;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Vla.Tests.Structures;
@@ -10,7 +11,7 @@ public class Documentation
 	/// <summary>
 	/// Node description
 	/// </summary>
-	[Node("Initial node name")]
+	[Node]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode

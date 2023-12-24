@@ -20,15 +20,16 @@ var host = Host.CreateDefaultBuilder()
         s.AddSingleton<InputService>();
         s.AddSingleton<VariableManager>();
         s.AddSingleton<WorkspaceService>();
-        s.AddSingleton<ExtensionsService>();
-        s.UseExtensions(ExtensionsService.Path);
+        s.AddSingleton<AddonService>();
+        s.UseAddons(AddonService.Path);
     }).ConfigureLogging(s =>
     {
         s.SetMinimumLevel(LogLevel.Debug);
     })
     .Build();
-var extensions = host.Services.GetRequiredService<ExtensionsService>();
-extensions.RegisterExtensions();
+
+var addons = host.Services.GetRequiredService<AddonService>();
+addons.RegisterAddons();
 
 var nodes = host.Services.GetRequiredService<NodeService>();
 var workspaces = host.Services.GetRequiredService<WorkspaceService>();
@@ -65,9 +66,6 @@ server.MessageReceived.OnChange(async args =>
     }
 });
 
-await extensions.OnStart();
-
 await server.MarkReady();
 while (server.IsRunning)
     await Task.Delay(1000);
-await extensions.OnStop();

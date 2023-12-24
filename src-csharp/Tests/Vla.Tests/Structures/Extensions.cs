@@ -1,13 +1,14 @@
 ﻿using Newtonsoft.Json;
 using Somfic.Common;
+using Vla.Addon;
 using Vla.Nodes;
-using Vla.Nodes.Attributes;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Vla.Tests.Structures;
 
 public class Extensions
 {
-	[Node("Initial node name")]
+	[Node]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode
@@ -47,7 +48,7 @@ public class Extensions
 		
 		var structure = structureResult.Expect();
 		
-		Assert.That(structure.Name, Is.EqualTo("Initial node name"));
+		Assert.That(structure.Name, Is.EqualTo(nameof(ValidNode)));
 	}
 
 	[Test]

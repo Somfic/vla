@@ -1,15 +1,16 @@
 ﻿using Newtonsoft.Json;
 using Somfic.Common;
+using Vla.Abstractions.Instance;
+using Vla.Addon;
 using Vla.Nodes;
-using Vla.Nodes.Attributes;
-using Vla.Nodes.Instance;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Vla.Tests.Instances;
 
 public class Extensions
 {
-	[Node("Initial node name")]
+	[Node]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode

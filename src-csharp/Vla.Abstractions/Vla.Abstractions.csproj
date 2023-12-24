@@ -20,9 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Vla.Addon\Vla.Addon.csproj" />
       <ProjectReference Include="..\Vla.Helpers\Vla.Helpers.csproj" />
-      <ProjectReference Include="..\Vla.Nodes\Vla.Nodes.csproj" />
     </ItemGroup>
-
 
 </Project>

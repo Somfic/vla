@@ -2,10 +2,11 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions.Extensions;
+using Vla.Abstractions;
+using Vla.Abstractions.Structure;
 using Vla.Abstractions.Types;
 using Vla.Nodes;
-using Vla.Nodes.Structure;
+using Dependency = Vla.Addon.Metadata.Dependency;
 
 namespace Vla.Workspace;
 
@@ -13,18 +14,18 @@ public class WorkspaceService
 {
     private readonly ILogger<WorkspaceService> _log;
     private readonly NodeService _nodes;
-    private readonly ExtensionsService _extensions;
+    private readonly AddonService _addons;
 
     private readonly string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Vla", "Workspaces");
 
     private readonly Abstractions.Web.Web _defaultWeb = new("Untitled web");
 
-    public WorkspaceService(ILogger<WorkspaceService> log, NodeService nodes, ExtensionsService extensions)
+    public WorkspaceService(ILogger<WorkspaceService> log, NodeService nodes, AddonService addons)
     {
         _log = log;
         _nodes = nodes;
-        _extensions = extensions;
+        _addons = addons;
         Directory.CreateDirectory(_path);
     }
 
@@ -86,7 +87,7 @@ public class WorkspaceService
                     Path = path,
                     Created = DateTime.Now,
                     LastModified = DateTime.Now,
-                    Extensions = [new Dependency("Core", Version.Parse("1.0.0"))]
+                    Addons = [ ("Core", new Version(0,0,0))]
                 };
                 await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
                 return workspace;
@@ -117,9 +118,9 @@ public class WorkspaceService
 
             workspace = workspace with { Structures = [], Types = [], Path = path };
 
-            foreach (var dependency in workspace.Extensions)
+            foreach (var dependency in workspace.Addons)
             {
-                var extension = _extensions.Extensions.First(x => x.Key.Name == dependency.Name && x.Key.Version >= dependency.Version).Value;
+                var extension = _addons.Addons.First(x => x.Name == dependency.Name && x.Version >= dependency.MinVersion);
                 var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
 
                 workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
