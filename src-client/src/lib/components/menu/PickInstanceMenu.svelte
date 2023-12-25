@@ -4,6 +4,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { generateGuid, getDefaultValueForType } from '$lib/context';
 	import { workspace } from '$lib/state.svelte';
+	import type { ParameterInstance, PropertyInstance } from '$lib/models/instance';
 
 	const dispatch = createEventDispatcher();
 
@@ -95,15 +96,16 @@
 						inputs: r.item.inputs.map((p) => {
 							return {
 								id: p.id,
-								value: p.defaultValue
-							};
+								defaultValue: p.defaultValue
+							} as ParameterInstance;
 						}),
 						properties: r.item.properties.map((p) => {
 							return {
+								id: p.id,
 								name: p.name,
 								type: p.type,
 								value: getDefaultValueForType(p.type)
-							};
+							} as PropertyInstance;
 						})
 					});
 				}

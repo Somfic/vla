@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { Svelvet } from 'svelvet';
 	import EditorNode from './EditorNode.svelte';
-	import { type NodeInstanceConnection, runWeb } from '$lib/nodes';
-	import type { Web } from '$lib/nodes';
+	import { runWeb } from '$lib/nodes';
 	import { invokeMenu, menu } from '$lib/menu';
 	import { createEventDispatcher } from 'svelte';
+	import type { Web } from '$lib/models/web';
+	import type { NodeConnection } from '$lib/models/connection';
 
 	export let web: Web;
 
@@ -27,7 +28,7 @@
 		dispatchChange();
 	}
 
-	function detailToInstance(detail: any): NodeInstanceConnection {
+	function detailToInstance(detail: any): NodeConnection {
 		return {
 			from: {
 				instanceId: detail.sourceNode.id.substring(2), // remove "n-"

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import { type ParameterStructure, type ParameterInstance, type NodeStructure } from '$lib/nodes';
 	import Value from './Value.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { workspace } from '$lib/state.svelte';
+	import type { NodeStructure } from '$lib/models/structure';
+	import type { ParameterInstance } from '$lib/models/instance';
 
 	export let structure: NodeStructure;
 	export let parameter: ParameterInstance;
@@ -29,7 +30,7 @@
 		<Value
 			on:change={() => dispatch('change')}
 			type={typeDefinition}
-			bind:value={parameter.value}
+			bind:value={parameter.defaultValue}
 			input
 		/>
 	</div>

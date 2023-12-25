@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type { TypeDefinition } from '$lib/models/definition';
 	import { createEventDispatcher } from 'svelte';
-	import type { TypeDefinition } from '$lib/nodes';
 
 	export let type: TypeDefinition;
 	export let value: any;

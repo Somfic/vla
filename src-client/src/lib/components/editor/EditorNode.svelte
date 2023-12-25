@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { Anchor, Node } from 'svelvet';
-	import {
-		type NodeInstance,
-		type ParameterInstance,
-		type ParameterStructure,
-		type Web
-	} from '$lib/nodes';
+
 	import EditorProperty from './EditorProperty.svelte';
 	import EditorAnchor from './EditorAnchor.svelte';
 	import { get } from 'svelte/store';
@@ -14,6 +9,9 @@
 	import EditorAnchorDefaultValue from './EditorAnchorDefaultValue.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { workspace } from '$lib/state.svelte';
+	import type { NodeInstance, ParameterInstance } from '$lib/models/instance';
+	import type { Web } from '$lib/models/web';
+	import type { ParameterStructure } from '$lib/models/structure';
 
 	export let instance: NodeInstance;
 	export let web: Web;
@@ -21,9 +19,6 @@
 	const dispatch = createEventDispatcher();
 
 	$: structure = get(workspace)?.structures?.find((s) => s.nodeType == instance.nodeType)!;
-	$: result = get(workspace)
-		?.webs.find((w) => w.id == web.id)
-		?.result.instances.find((i) => i.id == instance.id);
 
 	function getConnections(input: ParameterInstance | ParameterStructure): [string, string][] {
 		let array: [string, string][] = [];
@@ -67,8 +62,7 @@
 		on:contextmenu={handleClick}
 	>
 		<div class="title">
-			{result?.value?.name ??
-				structure.nodeType.split(',')[0].split('.').slice(-1)[0].replace('Node', '')}
+			{structure.nodeType.split(',')[0].split('.').slice(-1)[0].replace('Node', '')}
 		</div>
 
 		{#if structure.properties.length > 0}
@@ -129,7 +123,8 @@
 							<div class="value">
 								<ComputedValue
 									type={typeToDefinition(output.type)}
-									id={`${instance.id}.${output.id}`}
+									instanceId={instance.id}
+									parameterId={output.id}
 									output
 								/>
 							</div>

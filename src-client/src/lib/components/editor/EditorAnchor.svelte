@@ -1,17 +1,23 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import { type ParameterInstance, type NodeStructure, type ParameterStructure } from '$lib/nodes';
 	import { workspace } from '$lib/state.svelte';
+	import type {
+		InputParameterStructure,
+		NodeStructure,
+		OutputParameterStructure,
+		ParameterStructure
+	} from '$lib/models/structure';
+	import type { ParameterInstance } from '$lib/models/instance';
 
 	export let input: boolean = false;
 	export let output: boolean = false;
 	export let structure: NodeStructure;
-	export let parameter: ParameterInstance | ParameterStructure;
+	export let parameter: ParameterInstance | InputParameterStructure | OutputParameterStructure;
 	export let linked: boolean;
 	export let hovering: boolean;
 	export let connecting: boolean;
 
-	$: parameterType = structure.inputs
+	$: parameterType = (structure.inputs as ParameterStructure[])
 		.concat(structure.outputs)
 		.find((i) => i.id == parameter.id)
 		?.type.replace('&', '');

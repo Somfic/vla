@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Edge, type WritableEdge } from 'svelvet';
-	import { type ParameterStructure, instanceFromId } from '$lib/nodes';
+	import { instanceFromId } from '$lib/nodes';
 	import { get } from 'svelte/store';
 	import { blendColors } from '$lib/color';
 	import { workspace } from '$lib/state.svelte';
+	import type { ParameterStructure } from '$lib/models/structure';
 
 	let ref: SVGPathElement | undefined = undefined;
 	let edge: WritableEdge;

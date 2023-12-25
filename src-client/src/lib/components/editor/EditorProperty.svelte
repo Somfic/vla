@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import type { NodeStructure, PropertyStructure, PropertyInstance } from '$lib/nodes';
 	import Value from './Value.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { workspace } from '$lib/state.svelte';
+	import type { PropertyStructure } from '$lib/models/structure';
 
 	export let property: PropertyStructure;
 	export let value: any;
@@ -14,7 +14,7 @@
 </script>
 
 <div class="property">
-	<div class="name">{property.name}</div>
+	<div class="name">{property.name} ({property.id})</div>
 	<Value {type} bind:value on:change={() => dispatch('change')} />
 </div>
 

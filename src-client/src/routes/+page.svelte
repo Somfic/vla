@@ -3,6 +3,8 @@
 	import Menu from '$lib/components/menu/Menu.svelte';
 	import Explorer from '$lib/layout/Explorer.svelte';
 	import Shortcuts from '$lib/layout/Shortcuts.svelte';
+	import type { Workspace } from '$lib/models/workspace';
+	import { saveWorkspace } from '$lib/nodes';
 	import { webId, web, workspace } from '$lib/state.svelte';
 	import { sendMessage, startListening } from '$lib/ws';
 	import { onMount } from 'svelte';
@@ -13,11 +15,9 @@
 	});
 
 	function handleWebChange(e: CustomEvent) {
-		sendMessage({
-			type: 'update-web',
-			web: e.detail.web,
-			workspace: get(workspace)?.path
-		});
+		let w = get(workspace);
+		if (w == undefined) return;
+		saveWorkspace(w);
 	}
 </script>
 

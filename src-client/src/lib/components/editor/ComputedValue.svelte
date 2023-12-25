@@ -1,21 +1,22 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import { type TypeDefinition } from '$lib/nodes';
 	import Value from './Value.svelte';
-	import { web } from '$lib/state.svelte';
+	import type { TypeDefinition } from '$lib/models/definition';
+	import { result } from '$lib/state.svelte';
 
-	export let id: string;
+	export let instanceId: string;
+	export let parameterId: string;
 	export let input: boolean = false;
 	export let output: boolean = false;
 	export let type: TypeDefinition;
 
 	let value: string | undefined = undefined;
 
-	web.subscribe((r) => {
-		if (r == undefined) return;
-		if (r.result.values == undefined) return;
-
-		value = r.result.values.find((v) => v.id == id)?.value;
+	result.subscribe((r) => {
+		let nodeResults = r.find((r) => r.instanceId === instanceId);
+		let parameterResults = nodeResults?.inputs.concat(nodeResults?.outputs);
+		let parameterResult = parameterResults?.find((r) => r.parameterId === parameterId);
+		value = parameterResult?.value;
 	});
 </script>
 
