@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Immutable;
+using Newtonsoft.Json;
+using Vla.Abstractions.Instance;
 
 namespace Vla.Server.Messages;
 
-public readonly struct RunWebMessage(Abstractions.Web.Web web) : ISocketMessage
+public readonly struct RunWorkspaceMessage(Abstractions.Web.Workspace workspace) : ISocketMessage
 {
-    public static implicit operator RunWebMessage(Abstractions.Web.Web web) => new(web);
-
-    [JsonProperty("web")]
-    public Abstractions.Web.Web Web { get; init; } = web;
+    [JsonProperty("workspace")]
+    public Abstractions.Web.Workspace Workspace { get; init; } = workspace;
 }
 
 public readonly struct UpdateWebMessage(Abstractions.Web.Web web) : ISocketMessage
@@ -17,4 +17,9 @@ public readonly struct UpdateWebMessage(Abstractions.Web.Web web) : ISocketMessa
     
     [JsonProperty("workspace")]
     public string WorkspacePath { get; init; } = string.Empty;
+}
+public readonly struct ExecutionResultMessage(ImmutableArray<NodeExecutionResult> results) : ISocketMessage
+{
+    [JsonProperty("results")]
+    public ImmutableArray<NodeExecutionResult> Results { get; init; } = results;
 }

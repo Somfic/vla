@@ -18,19 +18,25 @@ public class NodeEngine
 		_serviceProvider = serviceProvider;
 	}
 	
-	public NodeEngine SetStructures(params NodeStructure[] structures)
+	public NodeEngine SetStructures(ImmutableArray<NodeStructure> structures)
 	{
-		Structures = structures.ToImmutableArray();
+		Structures = structures;
 		return this;
 	}
 	
 	public NodeEngine SetGraph(ImmutableArray<NodeInstance> instances,
 		ImmutableArray<NodeConnection> connections)
 	{
-		var sorter = new TopologicalSorter(connections.Select(x => (x.Source.InstanceId, x.Target.InstanceId)).ToArray());
-		Instances = sorter.Sort().Select(x => instances.First(y => y.Id == x.value)).ToImmutableArray();
-
+		var sorter = new TopologicalSorter(connections.Select(x => (x.Source.InstanceId.ToString(), x.Target.InstanceId.ToString())).ToArray());
+		Instances = sorter.Sort().Select(x => instances.First(y => y.Id == Guid.Parse(x.value))).ToImmutableArray();
 		Connections = connections;
+		
+		// Clear all implicit and explicit values that do not have a connection attached to them
+		// ImplicitValues = ImplicitValues.Where(v => !connections.Any(c => c.Source.Id == v.Key || c.Target.Id == v.Key)).ToImmutableDictionary();
+		// ExplicitValues = ExplicitValues.Where(v => !connections.Any(c => c.Source.Id == v.Key || c.Target.Id == v.Key)).ToImmutableDictionary();
+		
+		ImplicitValues = ImmutableDictionary<string, object>.Empty;
+		ExplicitValues = ImmutableDictionary<string, object>.Empty;
 		
 		return this;
 	}
@@ -47,19 +53,19 @@ public class NodeEngine
 	public ImmutableDictionary<string, object> ExplicitValues { get; private set; } = ImmutableDictionary<string, object>.Empty;
 
 	
-	private ImmutableDictionary<string, object> _instances = ImmutableDictionary<string, object>.Empty;
+	private ImmutableDictionary<Guid, object> _instances = ImmutableDictionary<Guid, object>.Empty;
 	
-	public ImmutableDictionary<string, NodeExecutionResult> Tick()
+	public ImmutableArray<NodeExecutionResult> Tick()
 	{
-		var results = new Dictionary<string, NodeExecutionResult>();
+		var results = ImmutableArray<NodeExecutionResult>.Empty;
 		
 		foreach (var instance in Instances)
 		{
 			var result = ExecuteNode(instance);
-			results.Add(instance.Id, result);
+			results = results.Add(result);
 		}
 
-		return results.ToImmutableDictionary();
+		return results;
 	}
 
 	private NodeExecutionResult ExecuteNode(NodeInstance instance)
@@ -104,9 +110,13 @@ public class NodeEngine
 		
 		var parameters = ConstructInvocationParameters(invokeMethod, instance, structure);
 		
+		// TODO: There must be a better way to do this...
 		try
 		{
 			invokeMethod.Invoke(nodeInstance, parameters);
+			
+			var inputs = new List<ParameterResult>();
+			var outputs = new List<ParameterResult>();
 		
 			for (var i = 0; i < parameters.Length; i++)
 			{
@@ -115,13 +125,27 @@ public class NodeEngine
 				if (parameter is OutputParameterStructure outputParameter)
 				{
 					SetValue(instance, outputParameter, parameters[i]);
+					outputs.Add(new ParameterResult(parameter.Id, parameters[i]));
+				}
+				else
+				{
+					inputs.Add(new ParameterResult(parameter.Id, parameters[i]));
 				}
 			}
 
-			return new NodeExecutionResult();
+			return new NodeExecutionResult
+			{
+				InstanceId = instance.Id,
+				Inputs = inputs.ToImmutableArray(),
+				Outputs = outputs.ToImmutableArray(),
+				Exception = null,
+			};
 		} 
 		catch (Exception e)
 		{
+			var inputs = new List<ParameterResult>();
+			var outputs = new List<ParameterResult>();
+			
 			for (var i = 0; i < parameters.Length; i++)
 			{
 				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
@@ -130,10 +154,21 @@ public class NodeEngine
 				{
 					var fallback = parameter.Type.GetDefaultValueForType()!;
 					SetValue(instance, outputParameter, fallback);
+					outputs.Add(new ParameterResult(parameter.Id, fallback));
+				}
+				else
+				{
+					inputs.Add(new ParameterResult(parameter.Id, parameters[i]));
 				}
 			}
-			
-			return new NodeExecutionResult(e.InnerException);
+
+			return new NodeExecutionResult
+			{
+				InstanceId = instance.Id,
+				Inputs = inputs.ToImmutableArray(),
+				Outputs = outputs.ToImmutableArray(),
+				Exception = e
+			};
 		}
 	}
 

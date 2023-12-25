@@ -59,6 +59,6 @@ public readonly struct Workspace(string name)
     /// <summary>
     /// The extensions active in the workspace.
     /// </summary>
-    [JsonProperty("extensions")]
+    [JsonProperty("addons")]
     public ImmutableArray<Dependency> Addons { get; init; } = ImmutableArray<Dependency>.Empty;
 }

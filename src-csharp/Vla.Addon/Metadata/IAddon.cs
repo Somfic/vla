@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Vla.Addon.Metadata;
 
@@ -99,8 +100,10 @@ public readonly struct Dependency(string name, Version minVersion)
 {
 	public static implicit operator Dependency((string name, Version minVersion) tuple) => new(tuple.name, tuple.minVersion);
 	
+	[JsonProperty("name")]
 	public string Name { get; } = name;
 	
+	[JsonProperty("minVersion")]
 	public Version MinVersion { get; } = minVersion;
 }
 

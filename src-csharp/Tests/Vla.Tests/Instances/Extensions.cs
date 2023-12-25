@@ -33,10 +33,8 @@ public class Extensions
 		var structure = NodeExtensions.ToStructure<ValidNode>().Expect();
 		var instance = new NodeInstance().From(structure);
 
-		Assert.That(instance.Id, Is.Not.Null);
 		Assert.That(instance.Id, Is.Not.Empty);
-		Assert.That(instance.Id, Is.Not.EqualTo(Guid.Empty.ToString()));
-		Assert.That(instance.Id, Has.Length.EqualTo(Guid.NewGuid().ToString().Length));
+		Assert.That(instance.Id, Is.Not.EqualTo(Guid.Empty));
 	}
 
 	[Test]

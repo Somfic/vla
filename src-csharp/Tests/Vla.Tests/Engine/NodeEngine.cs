@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Somfic.Common;
 using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
+using Vla.Abstractions.Structure;
 using Vla.Addon;
 using Vla.Nodes;
 
@@ -58,13 +59,14 @@ public class NodeEngine
 			.WithSource(constantInstance2, "result")
 			.WithTarget(addInstance, "b");
 
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
 		ImmutableArray<NodeInstance> instances = [constantInstance1, constantInstance2, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection, constantToBConnection];
 
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure, constantStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		engine.Tick();
@@ -88,13 +90,14 @@ public class NodeEngine
 			.WithSource(constantInstance, "result")
 			.WithTarget(addInstance, "a");
 
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure, constantStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		engine.Tick();
@@ -118,13 +121,14 @@ public class NodeEngine
 			.WithSource(constantInstance, "result")
 			.WithTarget(addInstance, "a");
 
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure, constantStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		engine.Tick();
@@ -146,13 +150,14 @@ public class NodeEngine
 			.WithSource(constantInstance, "result")
 			.WithTarget(addInstance, "a");
 
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure, constantStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		engine.Tick();
@@ -174,13 +179,14 @@ public class NodeEngine
 			.WithSource(constantInstance, "result")
 			.WithTarget(addInstance, "a");
 
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure, constantStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		engine.Tick();
@@ -203,13 +209,14 @@ public class NodeEngine
 			.WithSource(constantInstance, "result")
 			.WithTarget(addInstance, "a");
 
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure, constantStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		engine.Tick();
@@ -226,13 +233,14 @@ public class NodeEngine
 			.WithSource(addInstance, "result")
 			.WithTarget(addInstance, "a");
 		
+		ImmutableArray<NodeStructure> structures = [addStructure];
 		ImmutableArray<NodeInstance> instances = [addInstance];
 		ImmutableArray<NodeConnection> connections = [connection];
 		
 		var services = new ServiceCollection().BuildServiceProvider();
 		
 		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(addStructure)
+			.SetStructures(structures)
 			.SetGraph(instances, connections);
 
 		for (int i = 0; i < 1000; i++)

@@ -1,10 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Immutable;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Somfic.Common;
 using Vla.Abstractions;
+using Vla.Addon.Services;
+using Vla.Engine;
 using Vla.Input;
 using Vla.Nodes;
 using Vla.Server;
@@ -18,9 +21,10 @@ var host = Host.CreateDefaultBuilder()
         s.AddSingleton<WebsocketService>();
         s.AddSingleton<NodeService>();
         s.AddSingleton<InputService>();
-        s.AddSingleton<VariableManager>();
+        s.AddSingleton<IVariableManager, VariableManager>();
         s.AddSingleton<WorkspaceService>();
         s.AddSingleton<AddonService>();
+        s.AddSingleton<NodeEngine>();
         s.UseAddons(AddonService.Path);
     }).ConfigureLogging(s =>
     {
@@ -31,18 +35,17 @@ var host = Host.CreateDefaultBuilder()
 var addons = host.Services.GetRequiredService<AddonService>();
 addons.RegisterAddons();
 
+var engine = host.Services.GetRequiredService<NodeEngine>();
 var nodes = host.Services.GetRequiredService<NodeService>();
 var workspaces = host.Services.GetRequiredService<WorkspaceService>();
 var server = host.Services.GetRequiredService<WebsocketService>();
-
-if (!workspaces.Exists("Workspace"))
-    await workspaces.CreateOrLoadAsync("Workspace");
 
 // Start the websocket server
 await server.StartAsync();
 
 server.ClientConnected.OnChange(async c =>
 {
+    await workspaces.CreateOrLoadAsync("Workspace");
     await server.SendAsync(c, new WorkspacesMessage(await workspaces.ListAsync()));
 });
 
@@ -54,18 +57,24 @@ server.MessageReceived.OnChange(async args =>
 
     switch (message["id"]?.Value<string>()?.ToLower())
     {
-        case "update-web":
-            var workspaceChanged = JsonConvert.DeserializeObject<UpdateWebMessage>(json);
-            var workspace = (await workspaces.CreateOrLoadAsync(workspaceChanged.WorkspacePath))
-                .On(x =>
-                {
-                    
-                });
-                
+        case "save-workspace":
+        {
+            var runWorkspace = JsonConvert.DeserializeObject<RunWorkspaceMessage>(json);
+            var workspace = runWorkspace.Workspace;
+            await workspaces.SaveAsync(workspace);
+            
+            engine.SetStructures(workspace.Structures);
+            engine.SetGraph(workspace.Webs.SelectMany(x => x.Instances).ToImmutableArray(), workspace.Webs.SelectMany(x => x.Connections).ToImmutableArray());
             break;
+        }
     }
 });
 
 await server.MarkReady();
+
 while (server.IsRunning)
-    await Task.Delay(1000);
+{
+    var results = engine.Tick();
+    await server.BroadcastAsync(new ExecutionResultMessage(results));
+    await Task.Delay(100);
+}
