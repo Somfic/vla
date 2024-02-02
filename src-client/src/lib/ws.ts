@@ -1,5 +1,5 @@
 import { get, writable, type Writable } from 'svelte/store';
-import type { Workspace } from './nodes';
+import type { Workspace } from './models/workspace';
 import { reset, result, workspaces } from './state.svelte';
 
 let ws: WebSocket = null as any;
@@ -28,7 +28,7 @@ export function startListening() {
 		messages.update((old) => [...old, e.data]);
 
 		const message = JSON.parse(e.data) as SocketMessage;
-		console.log('<', message);
+		//onsole.log('<', message);
 
 		switch (message.type) {
 			case 'Progress':

@@ -4,6 +4,7 @@
 
 	export let type: TypeDefinition;
 	export let value: any;
+
 	export let readonly = false;
 	export let input = false;
 	export let output = false;

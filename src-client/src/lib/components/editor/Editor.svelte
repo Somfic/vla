@@ -12,11 +12,21 @@
 	const dispatch = createEventDispatcher();
 
 	function connection(e: any) {
-		// FIXME: Make sure this is distinct
+		let sourceId = detailToInstance(e.detail).from.instanceId;
+		let targetId = detailToInstance(e.detail).to.instanceId;
+
 		if (
-			web.connections.find((c) => JSON.stringify(c) == JSON.stringify(detailToInstance(e.detail)))
-		)
+			web.connections.find(
+				(c) =>
+					c.from.instanceId == sourceId &&
+					c.to.instanceId == targetId &&
+					c.from.propertyId == detailToInstance(e.detail).from.propertyId &&
+					c.to.propertyId == detailToInstance(e.detail).to.propertyId
+			)
+		) {
+			console.log('connection already exists!!');
 			return;
+		}
 		web.connections = [...web.connections, detailToInstance(e.detail)];
 		dispatchChange();
 	}

@@ -12,12 +12,21 @@
 	$: source = findParameter(edge?.source.id, false);
 	$: target = findParameter(edge?.target.id, true);
 
-	$: sourceType = get(workspace)?.types.find(
-		(t) => t.name.replace('&', '') == source?.type.replace('&', '')
-	)!;
-	$: targetType = get(workspace)?.types.find(
-		(t) => t.name.replace('&', '') == target?.type.replace('&', '')
-	)!;
+	$: sourceType = get(workspace)?.types.find((t) => t.name.replace('&', '') == source?.type)!;
+	$: targetType = get(workspace)?.types.find((t) => t.name.replace('&', '') == target?.type)!;
+
+	$: console.log(
+		'source',
+		source,
+		'sourceType',
+		sourceType,
+		'target',
+		target,
+		'targetType',
+		targetType
+	);
+
+	$: console.log(get(workspace)?.types);
 
 	$: startColor = sourceType?.color?.hex ?? '#ffffff';
 	$: midwayColor = blendColors(startColor, stopColor, 0.5);
@@ -26,6 +35,8 @@
 	$: gradientName = `gradient-${edge?.target.id ?? 'default'}`;
 
 	function findParameter(id: string | null, isInput: boolean): ParameterStructure | undefined {
+		console.log('findParameter', id, isInput);
+
 		if (id == null) return undefined;
 
 		let parameterId = id.split('/')[0].substring(2); // remove "A-"

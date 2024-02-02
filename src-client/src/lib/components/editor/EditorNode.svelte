@@ -31,11 +31,11 @@
 	}
 
 	function handleKeyPress(e: KeyboardEvent) {
-		if (e.key == 'Delete') {
-			console.log('delete', instance.id);
-			web.instances = web.instances.filter((i) => i.id != instance.id);
-			dispatch('change');
-		}
+		// if (e.key == 'Delete') {
+		// 	console.log('delete', instance.id);
+		// 	web.instances = web.instances.filter((i) => i.id != instance.id);
+		// 	dispatch('change');
+		// }
 	}
 
 	function handleClick(e: MouseEvent) {

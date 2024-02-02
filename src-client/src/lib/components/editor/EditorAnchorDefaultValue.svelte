@@ -11,6 +11,10 @@
 	export let linked: boolean;
 	export let connecting: boolean;
 
+	let value = JSON.parse(parameter.defaultValue);
+
+	$: parameter.defaultValue = JSON.stringify(value);
+
 	const dispatch = createEventDispatcher();
 
 	function handleClick(e: MouseEvent) {
@@ -27,12 +31,7 @@
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="default" on:mousedown={handleClick}>
-		<Value
-			on:change={() => dispatch('change')}
-			type={typeDefinition}
-			bind:value={parameter.defaultValue}
-			input
-		/>
+		<Value on:change={() => dispatch('change')} type={typeDefinition} bind:value input />
 	</div>
 </div>
 
