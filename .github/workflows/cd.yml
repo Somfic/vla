@@ -56,6 +56,19 @@ jobs:
               run: yarn
               working-directory: ./src-client
 
+            - name: Setup cargo-llvm-cov
+              uses: taiki-e/install-action@cargo-llvm-cov
+
+            - name: Generate Cargo.lock
+              run: cargo generate-lockfile
+              working-directory: ./src-tauri
+
+            - name: Install system dependencies
+              if: matrix.platform == 'ubuntu-20.04' || matrix.platform == 'macos-latest'
+              run: |
+                  chmod +x ./scripts/deps.sh
+                  ./scripts/deps.sh
+
             - name: Tag version
               run: yarn run tag-version ${{ github.event.milestone.title }}
 
