@@ -11,7 +11,7 @@
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-static": "^3.0.0",
-		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/kit": "^2.4.3",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
@@ -31,7 +31,7 @@
 		"tslib": "^2.4.1",
 		"tsx": "^4.6.2",
 		"typescript": "^5.3.3",
-		"vite": "^5.0.3",
+		"vite": "^5.0.12",
 		"vitest": "^0.32.2",
 		"wait-on": "^7.2.0"
 	},
