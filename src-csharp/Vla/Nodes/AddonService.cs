@@ -69,7 +69,7 @@ public static class AddonExtensions
     private static IServiceCollection UseAddon(Type type, IServiceCollection services)
     {
         if (Activator.CreateInstance(type) is not Addon.Metadata.Addon instance)
-            throw new Exception($"Could not create instance of {type.FullName}");
+            throw new Exception($"Could not create instance of {type.FullName}. Does it inherit from {nameof(Addon.Metadata.Addon)}?");
 
         try
         {

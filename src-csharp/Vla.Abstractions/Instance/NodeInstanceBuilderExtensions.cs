@@ -15,6 +15,7 @@ public static class NodeInstanceBuilderExtensions
                 .Select(p => new PropertyInstance(p.Id, p.Type, p.DefaultValue))
                 .ToImmutableArray()
         };
+        
         return node;
     }
 
@@ -47,10 +48,14 @@ public static class NodeInstanceBuilderExtensions
             };
         }
 
-        return node with
+        node = node with
         {
             Inputs = node.Inputs.Add(new ParameterInstance(id, value))
         };
+        
+        Console.WriteLine(JsonConvert.SerializeObject(node));
+
+        return node;
     }
 
     public static NodeInstance WithPosition(this NodeInstance node, int x, int y)

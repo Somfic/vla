@@ -80,5 +80,5 @@ while (server.IsRunning)
 {
     var results = engine.Tick();
     await server.BroadcastAsync(new ExecutionResultMessage(results));
-    await Task.Delay(1000);
+    await Task.Delay(100);
 }

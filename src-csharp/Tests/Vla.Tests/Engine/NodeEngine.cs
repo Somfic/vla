@@ -1,10 +1,15 @@
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Somfic.Common;
+using Vla.Abstractions;
 using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
 using Vla.Abstractions.Structure;
 using Vla.Addon;
+using Vla.Addon.Core.Variables;
+using Vla.Addon.Services;
 using Vla.Nodes;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -63,11 +68,7 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [constantInstance1, constantInstance2, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection, constantToBConnection];
 
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		engine.Tick();
 
@@ -94,11 +95,7 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		engine.Tick();
 
@@ -125,11 +122,7 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		engine.Tick();
 
@@ -154,11 +147,7 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		engine.Tick();
 
@@ -183,11 +172,7 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		engine.Tick();
 
@@ -213,11 +198,7 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
 		ImmutableArray<NodeConnection> connections = [constantToAConnection];
 
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		engine.Tick();
 
@@ -237,16 +218,56 @@ public class NodeEngine
 		ImmutableArray<NodeInstance> instances = [addInstance];
 		ImmutableArray<NodeConnection> connections = [connection];
 		
-		var services = new ServiceCollection().BuildServiceProvider();
-		
-		var engine = new Vla.Engine.NodeEngine(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		var engine = CreateEngine(structures, instances, connections);
 
 		for (int i = 0; i < 1000; i++)
 		{
 			engine.Tick();
 			Assert.That(engine.Values[$"{addInstance.Id}.result"], Is.EqualTo(i + 1));
 		}
+	}
+
+	[Test]
+	public void NodeEngine_Tick_ImplicitlyConvertsValues()
+	{
+		var setStringStructure = NodeExtensions.ToStructure<SetStringVariable>().Expect();
+		var getStringStructure = NodeExtensions.ToStructure<GetStringVariable>().Expect();
+		
+		var setStringInstance = new NodeInstance().From(setStringStructure).WithInput("value", "Hello, world!");
+		var getStringInstance = new NodeInstance().From(getStringStructure);
+		
+		var setStringToGetConnection = new NodeConnection()
+			.WithSource(setStringInstance, "result")
+			.WithTarget(getStringInstance, "value");
+		
+		ImmutableArray<NodeStructure> structures = [setStringStructure, getStringStructure];
+		ImmutableArray<NodeInstance> instances = [setStringInstance, getStringInstance];
+		ImmutableArray<NodeConnection> connections = [setStringToGetConnection];
+		
+		var engine = CreateEngine(structures, instances, connections);
+		
+		engine.Tick();
+		
+		Assert.That(engine.Values[$"{setStringInstance.Id}.value"], Is.EqualTo("Hello, world!"));
+		Assert.That(engine.Values[$"{getStringInstance.Id}.value"], Is.EqualTo("Hello, world!"));
+	}
+	
+	private static Vla.Engine.NodeEngine CreateEngine(ImmutableArray<NodeStructure> structures, ImmutableArray<NodeInstance> instances, ImmutableArray<NodeConnection> connections)
+	{
+		var services = Host.CreateDefaultBuilder()
+			.ConfigureServices(s =>
+			{
+				s.AddSingleton<IVariableManager, VariableManager>();
+			})
+			.ConfigureLogging(l =>
+			{
+				l.AddConsole();
+			})
+			.Build()
+			.Services;
+		
+		return ActivatorUtilities.CreateInstance<Vla.Engine.NodeEngine>(services)
+			.SetStructures(structures)
+			.SetGraph(instances, connections);
 	}
 }

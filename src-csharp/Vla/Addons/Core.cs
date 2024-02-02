@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Vla.Abstractions;
+using Vla.Addon.Services;
 
 namespace Vla.Addons;
 
@@ -20,7 +22,6 @@ public class CoreAddon : Addon.Metadata.Addon
 	
 	public override IServiceCollection ConfigureServices(IServiceCollection services)
 	{
-		Console.WriteLine("Configuring services...");
 		return services;
 	}
 }

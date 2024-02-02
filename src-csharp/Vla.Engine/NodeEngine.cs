@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
@@ -12,10 +13,12 @@ namespace Vla.Engine;
 public class NodeEngine
 {
 	private readonly IServiceProvider _serviceProvider;
-
-	public NodeEngine(IServiceProvider serviceProvider)
+	private readonly ILogger<NodeEngine> _log;
+	
+	public NodeEngine(ILogger<NodeEngine> log, IServiceProvider serviceProvider)
 	{
 		_serviceProvider = serviceProvider;
+		_log = log;	
 	}
 	
 	public NodeEngine SetStructures(ImmutableArray<NodeStructure> structures)
@@ -54,7 +57,7 @@ public class NodeEngine
 
 	
 	private ImmutableDictionary<Guid, object> _instances = ImmutableDictionary<Guid, object>.Empty;
-	
+
 	public ImmutableArray<NodeExecutionResult> Tick()
 	{
 		var results = ImmutableArray<NodeExecutionResult>.Empty;
@@ -71,21 +74,30 @@ public class NodeEngine
 	private NodeExecutionResult ExecuteNode(NodeInstance instance)
 	{
 		var structure = Structures.First(x => x.NodeType == instance.NodeType);
-		
-		if (!_instances.ContainsKey(instance.Id))
-			_instances = _instances.Add(instance.Id, ActivatorUtilities.CreateInstance(_serviceProvider, instance.NodeType));
-		
+
+		try
+		{
+			if (!_instances.ContainsKey(instance.Id))
+				_instances = _instances.Add(instance.Id,
+					ActivatorUtilities.CreateInstance(_serviceProvider, instance.NodeType));
+		}
+		catch (Exception ex)
+		{
+			_log.LogError(ex, "Could not create instance of {NodeType}", structure.NodeType);
+			throw;
+		}
+
 		var nodeInstance = _instances[instance.Id];
-		
+
 		// Properties
 		foreach (var property in structure.Properties)
 		{
 			var propInfo = structure.NodeType.GetProperty(property.Name);
 			var propType = propInfo?.PropertyType;
-                    
-			if(propType == null)
+
+			if (propType == null)
 				continue;
-                    
+
 			var castedDefaultValue = JsonConvert.DeserializeObject(property.DefaultValue, propType);
 			propInfo?.SetValue(nodeInstance, castedDefaultValue);
 		}
@@ -94,30 +106,31 @@ public class NodeEngine
 		{
 			var propInfo = structure.NodeType.GetProperty(property.Id);
 			var propType = propInfo?.PropertyType;
-                    
-			if(propType == null)
+
+			if (propType == null)
 				continue;
-                    
+
 			var castedValue = JsonConvert.DeserializeObject(property.Value, propType);
 			propInfo?.SetValue(nodeInstance, castedValue);
 		}
-		
+
 		// Invocation
 		var invokeMethod = structure.NodeType.GetMethod(structure.ExecuteMethod);
-		
-		if(invokeMethod == null)
-			throw new ArgumentException($"Could not find execute method {structure.ExecuteMethod} on type {structure.NodeType.Name}");
-		
+
+		if (invokeMethod == null)
+			throw new ArgumentException(
+				$"Could not find execute method {structure.ExecuteMethod} on type {structure.NodeType.Name}");
+
 		var parameters = ConstructInvocationParameters(invokeMethod, instance, structure);
-		
+
 		// TODO: There must be a better way to do this...
 		try
 		{
 			invokeMethod.Invoke(nodeInstance, parameters);
-			
+
 			var inputs = new List<ParameterResult>();
 			var outputs = new List<ParameterResult>();
-		
+
 			for (var i = 0; i < parameters.Length; i++)
 			{
 				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
@@ -140,12 +153,12 @@ public class NodeEngine
 				Outputs = outputs.ToImmutableArray(),
 				Exception = null,
 			};
-		} 
+		}
 		catch (Exception e)
 		{
 			var inputs = new List<ParameterResult>();
 			var outputs = new List<ParameterResult>();
-			
+
 			for (var i = 0; i < parameters.Length; i++)
 			{
 				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
@@ -211,22 +224,30 @@ public class NodeEngine
 
 	private object GetImplicitValue(string id, NodeInstance instance, InputParameterStructure parameter)
 	{
-		// Default values might be changed by the user while the graph is running
-		// if (ImplicitValues.TryGetValue(id, out var value))
-		// 	return value;
-		var instanceParameter = GetParameterInstanceFromMethod(instance, parameter);
+		try
+		{
+			// Default values might be changed by the user while the graph is running
+			// if (ImplicitValues.TryGetValue(id, out var value))
+			// 	return value;
+			var instanceParameter = GetParameterInstanceFromMethod(instance, parameter);
 
-		var defaultValue = JsonConvert.DeserializeObject(parameter.DefaultValue, parameter.Type);
+			var defaultValue = JsonConvert.DeserializeObject(parameter.DefaultValue, parameter.Type);
 
-		if (instanceParameter?.Id == parameter.Id)
-			defaultValue = JsonConvert.DeserializeObject(instanceParameter.Value.DefaultValue, parameter.Type);
+			if (instanceParameter?.Id == parameter.Id)
+				defaultValue = JsonConvert.DeserializeObject(instanceParameter.Value.DefaultValue, parameter.Type);
 
-		if (ImplicitValues.ContainsKey(id))
-			ImplicitValues = ImplicitValues.SetItem(id, defaultValue);
-		else
-			ImplicitValues = ImplicitValues.Add(id, defaultValue);
+			if (ImplicitValues.ContainsKey(id))
+				ImplicitValues = ImplicitValues.SetItem(id, defaultValue);
+			else
+				ImplicitValues = ImplicitValues.Add(id, defaultValue);
 
-		return defaultValue;
+			return defaultValue;
+		}
+		catch (Exception ex)
+		{
+			_log.LogWarning(ex, "Could not get implicit value for {Id}", id);
+			throw;
+		}
 	}
 
 	private dynamic[] ConstructInvocationParameters(MethodBase method, NodeInstance instance, NodeStructure structure)
