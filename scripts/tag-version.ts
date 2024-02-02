@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
+import fetch from "sync-fetch";
 
 // Get command line argument for the version
 var version = process.argv[2].trim();
@@ -11,7 +12,7 @@ if (version === "") {
 
 if (version === "major" || version === "minor" || version === "patch") {
     // Get the current version
-    var currentVersion = (await (await fetch("https://api.github.com/repos/somfic/vla/releases/latest")).json()).tag_name.replace("v", "");
+    var currentVersion = fetch("https://api.github.com/repos/somfic/vla/releases/latest").json().tag_name.replace("v", "");
 
     console.log("Current version is " + currentVersion + " " + version);
 
@@ -62,8 +63,8 @@ if (!versionRegex.test(version)) {
 }
 
 const packageJson = "package.json";
-const cargoToml = join("..", "src-tauri", "Cargo.toml");
-const tauriConf = join("..", "src-tauri", "tauri.conf.json");
+const cargoToml = join("src-tauri", "Cargo.toml");
+const tauriConf = join("src-tauri", "tauri.conf.json");
 
 // Update the package.json file
 console.log(`Updating ${packageJson} to version ${version}`);
