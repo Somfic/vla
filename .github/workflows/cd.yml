@@ -4,27 +4,7 @@ on:
         types: [closed]
 
 jobs:
-    changelog:
-        permissions: write-all
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Generate release notes
-              uses: Decathlon/release-notes-generator-action@v3.1.6
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  USE_MILESTONE_TITLE: "true"
-                  FILENAME: "CHANGELOG"
-
-            - name: Push changes
-              uses: stefanzweifel/git-auto-commit-action@v5
-              with:
-                  commit_message: "Update CHANGELOG.md"
-
     release:
-        needs: changelog
         permissions: write-all
         strategy:
             matrix:
@@ -57,6 +37,13 @@ jobs:
               uses: swatinem/rust-cache@v2
               with:
                   workspaces: "./src-tauri -> target"
+
+            - name: Generate release notes
+              uses: Decathlon/release-notes-generator-action@v3.1.6
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  USE_MILESTONE_TITLE: "true"
+                  FILENAME: "CHANGELOG"
 
             - name: Read changelog
               id: notes
