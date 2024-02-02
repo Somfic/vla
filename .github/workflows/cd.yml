@@ -25,6 +25,7 @@ jobs:
                   path: CHANGELOG.md
 
     release:
+        needs: changelog
         permissions: write-all
         strategy:
             matrix:
