@@ -4,15 +4,18 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Somfic.Common;
+
 using Vla.Abstractions;
 using Vla.Addon.Services;
+using Vla.Addons;
 using Vla.Engine;
 using Vla.Input;
 using Vla.Nodes;
 using Vla.Server;
 using Vla.Server.Messages;
 using Vla.Workspace;
+
+Directory.CreateDirectory(AddonService.Path);
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureServices(s =>
@@ -25,6 +28,7 @@ var host = Host.CreateDefaultBuilder()
         s.AddSingleton<WorkspaceService>();
         s.AddSingleton<AddonService>();
         s.AddSingleton<NodeEngine>();
+        s.UseAddon<CoreAddon>();
         s.UseAddons(AddonService.Path);
     }).ConfigureLogging(s =>
     {
@@ -76,5 +80,5 @@ while (server.IsRunning)
 {
     var results = engine.Tick();
     await server.BroadcastAsync(new ExecutionResultMessage(results));
-    await Task.Delay(100);
+    await Task.Delay(1000);
 }

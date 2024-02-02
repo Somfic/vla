@@ -43,13 +43,13 @@ public static class AddonExtensions
         foreach (var dll in dlls)
         {
             var assembly = Assembly.LoadFrom(dll);
-            services = UseAddons(assembly, services);
+            services = UseAddons(services, assembly);
         }
         
         return services;
     }
 
-    public static IServiceCollection UseAddons(Assembly assembly, IServiceCollection services)
+    public static IServiceCollection UseAddons(this IServiceCollection services, Assembly assembly)
     {
         var extensionTypes = assembly.GetTypes().Where(x => x.IsAssignableTo(typeof(Addon.Metadata.Addon)));
 
@@ -59,6 +59,11 @@ public static class AddonExtensions
         }
 
         return services;
+    }
+    
+    public static IServiceCollection UseAddon<TAddon>(this IServiceCollection services) where TAddon : Addon.Metadata.Addon
+    {
+        return UseAddon(typeof(TAddon), services);
     }
 
     private static IServiceCollection UseAddon(Type type, IServiceCollection services)
