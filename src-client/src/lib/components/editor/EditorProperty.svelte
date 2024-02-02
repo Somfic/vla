@@ -4,13 +4,14 @@
 	import { createEventDispatcher } from 'svelte';
 	import { workspace } from '$lib/state.svelte';
 	import type { PropertyStructure } from '$lib/models/structure';
+	import { findDefinitionByType } from '$lib/definition';
 
 	export let property: PropertyStructure;
 	export let value: any;
 
 	const dispatch = createEventDispatcher();
 
-	$: type = get(workspace)?.types.find((x) => x.type == property.type)!;
+	$: type = findDefinitionByType(property.type)!;
 </script>
 
 <div class="property">

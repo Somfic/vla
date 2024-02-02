@@ -5,6 +5,7 @@
 	import { blendColors } from '$lib/color';
 	import { workspace } from '$lib/state.svelte';
 	import type { ParameterStructure } from '$lib/models/structure';
+	import { findDefinitionByType } from '$lib/definition';
 
 	let ref: SVGPathElement | undefined = undefined;
 	let edge: WritableEdge;
@@ -12,21 +13,8 @@
 	$: source = findParameter(edge?.source.id, false);
 	$: target = findParameter(edge?.target.id, true);
 
-	$: sourceType = get(workspace)?.types.find((t) => t.name.replace('&', '') == source?.type)!;
-	$: targetType = get(workspace)?.types.find((t) => t.name.replace('&', '') == target?.type)!;
-
-	$: console.log(
-		'source',
-		source,
-		'sourceType',
-		sourceType,
-		'target',
-		target,
-		'targetType',
-		targetType
-	);
-
-	$: console.log(get(workspace)?.types);
+	$: sourceType = findDefinitionByType(source?.type ?? '');
+	$: targetType = findDefinitionByType(target?.type ?? '');
 
 	$: startColor = sourceType?.color?.hex ?? '#ffffff';
 	$: midwayColor = blendColors(startColor, stopColor, 0.5);
@@ -35,8 +23,6 @@
 	$: gradientName = `gradient-${edge?.target.id ?? 'default'}`;
 
 	function findParameter(id: string | null, isInput: boolean): ParameterStructure | undefined {
-		console.log('findParameter', id, isInput);
-
 		if (id == null) return undefined;
 
 		let parameterId = id.split('/')[0].substring(2); // remove "A-"

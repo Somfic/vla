@@ -8,6 +8,7 @@
 		ParameterStructure
 	} from '$lib/models/structure';
 	import type { ParameterInstance } from '$lib/models/instance';
+	import { findDefinitionByType } from '$lib/definition';
 
 	export let input: boolean = false;
 	export let output: boolean = false;
@@ -21,7 +22,7 @@
 		.concat(structure.outputs)
 		.find((i) => i.id == parameter.id)
 		?.type.replace('&', '');
-	$: typeDefinition = get(workspace)?.types.find((t) => t.type.replace('&', '') == parameterType)!;
+	$: typeDefinition = findDefinitionByType(parameterType);
 </script>
 
 <div

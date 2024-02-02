@@ -12,6 +12,7 @@
 	import type { NodeInstance, ParameterInstance } from '$lib/models/instance';
 	import type { Web } from '$lib/models/web';
 	import type { ParameterStructure } from '$lib/models/structure';
+	import { findDefinitionByType } from '$lib/definition';
 
 	export let instance: NodeInstance;
 	export let web: Web;
@@ -48,11 +49,8 @@
 	}
 
 	function typeToDefinition(type: string) {
-		return get(workspace)?.types.find((t) => t.type == type)!;
-	}
 </script>
 
-<Node let:grabHandle let:selected id={instance.id} on:nodeClicked edge={EditorEdge}>
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		use:grabHandle
@@ -122,7 +120,7 @@
 						<div class="output">
 							<div class="value">
 								<ComputedValue
-									type={typeToDefinition(output.type)}
+									type={findDefinitionByType(output.type)}
 									instanceId={instance.id}
 									parameterId={output.id}
 									output

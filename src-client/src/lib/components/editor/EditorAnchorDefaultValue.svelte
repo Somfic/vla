@@ -5,6 +5,7 @@
 	import { workspace } from '$lib/state.svelte';
 	import type { NodeStructure } from '$lib/models/structure';
 	import type { ParameterInstance } from '$lib/models/instance';
+	import { findDefinitionByType } from '$lib/definition';
 
 	export let structure: NodeStructure;
 	export let parameter: ParameterInstance;
@@ -24,7 +25,7 @@
 	}
 
 	$: parameterType = structure.inputs.find((i) => i.id == parameter.id)?.type.replace('&', '')!;
-	$: typeDefinition = get(workspace)?.types.find((t) => t.type == parameterType)!;
+	$: typeDefinition = findDefinitionByType(parameterType);
 </script>
 
 <div class="default-wrapper" class:linked class:connecting>

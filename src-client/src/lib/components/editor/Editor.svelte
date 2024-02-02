@@ -24,7 +24,6 @@
 					c.to.propertyId == detailToInstance(e.detail).to.propertyId
 			)
 		) {
-			console.log('connection already exists!!');
 			return;
 		}
 		web.connections = [...web.connections, detailToInstance(e.detail)];
