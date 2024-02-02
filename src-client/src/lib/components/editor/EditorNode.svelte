@@ -47,10 +47,16 @@
 		e.preventDefault();
 		dispatch('change');
 	}
-
-	function typeToDefinition(type: string) {
 </script>
 
+<Node
+	bind:position={instance.metadata.position}
+	let:grabHandle
+	let:selected
+	id={instance.id}
+	on:nodeClicked
+	edge={EditorEdge}
+>
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		use:grabHandle
