@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Power", "Exponent", "Exponential", "Pow", "^")]
 public class PowerMathNode : INode

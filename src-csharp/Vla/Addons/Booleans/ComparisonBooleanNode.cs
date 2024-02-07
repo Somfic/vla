@@ -1,6 +1,6 @@
 namespace Vla.Addon.Core.Booleans;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Booleans")]
 [NodeTags("Compare", "Operator", "Equals", "==", "!=", "Comparison")]
 public class ComparisonBooleanNode : INode

@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Constant;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Constant")]
 [NodeTags("Boolean", "Constant", "Value", "True", "False")]
 public class BooleanConstantNode : INode

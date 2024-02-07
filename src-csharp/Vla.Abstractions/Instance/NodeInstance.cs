@@ -26,6 +26,9 @@ public readonly struct NodeExecutionResult()
     [JsonProperty("instanceId")]
     public Guid InstanceId { get; init; } = Guid.Empty;
     
+    [JsonProperty("wasExecuted")]
+    public bool WasExecuted { get; init; } = false;
+    
     [JsonProperty("inputs")]
     public ImmutableArray<ParameterResult> Inputs { get; init; } = ImmutableArray<ParameterResult>.Empty;
     

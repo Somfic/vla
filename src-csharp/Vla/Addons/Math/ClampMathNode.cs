@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Math", "Clamp", "Clamp01", "Clamp 0-1", "Min", "Max")]
 public class ClampMathNode : INode

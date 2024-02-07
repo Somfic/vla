@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+using Vla.Addon;
 
 namespace Vla.Abstractions.Structure;
 
@@ -9,6 +10,11 @@ public static class NodeStructureBuilderExtensions
     {
         node = node.WithSearchTerms(name);
         return node with { Name = name };
+    }
+    
+    public static NodeStructure WithPurity(this NodeStructure node, Purity purity)
+    {
+        return node with { Purity = purity };
     }
 
     public static NodeStructure WithDescription(this NodeStructure node, string description)

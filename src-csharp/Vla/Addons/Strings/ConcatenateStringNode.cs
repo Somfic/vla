@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Strings;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Strings")]
 [NodeTags("Strings", "Concatenate", "Concat", "Join", "Append", "Prepend")]
 public class ConcatenateStringNode : INode

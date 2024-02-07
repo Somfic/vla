@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Booleans;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Booleans")]
 [NodeTags("Not", "Operator", "!", "Logic", "Gate", "Toggle")]
 public class NotBooleanNode : INode

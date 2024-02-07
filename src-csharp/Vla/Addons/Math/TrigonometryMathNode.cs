@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Math", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sine", "Cosine", "Tangent", "Arcsine", "Arccosine", "Arctangent", "Trigonometry", "Hyperbolic", "Hyperbolic sine", "Hyperbolic cosine", "Hyperbolic tangent", "Hyperbolic arcsine", "Hyperbolic arccosine", "Hyperbolic arctangent", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh")]
 public class TrigonometryMathNode : INode

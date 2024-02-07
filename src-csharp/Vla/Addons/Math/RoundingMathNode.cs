@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Math", "Rounding", "Round", "Floor", "Ceil", "Truncate")]
 public class RoundingMathNode : INode

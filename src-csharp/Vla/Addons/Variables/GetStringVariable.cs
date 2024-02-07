@@ -2,7 +2,7 @@
 
 namespace Vla.Addon.Core.Variables;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Variables")]
 [NodeTags("Get", "String", "Load")]
 public class GetStringVariable(IVariableManager variableManager) : INode

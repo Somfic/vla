@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Math", "Conversion", "Radians", "Degrees")]
 public class ConversionMathNode : INode

@@ -1,6 +1,6 @@
 namespace Vla.Addon.Core.Number;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Number")]
 [NodeTags("Compare", "Number", "Double", "Float", "Decimal", "Integer", "Equal", "Not equal", "Greater than", "Greater than or equal to", "Less than", "Less than or equal to", "Bigger", "Smaller", "==", "!=", ">", ">=", "<", "<=")]
 public class ComparisonNumberNode : INode

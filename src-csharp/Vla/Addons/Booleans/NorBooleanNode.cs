@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Booleans;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Booleans")]
 [NodeTags("Nor", "Operator", "!|", "Logic", "Gate")]
 public class NorBooleanNode : INode

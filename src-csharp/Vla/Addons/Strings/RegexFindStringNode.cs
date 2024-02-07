@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Strings;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Strings")]
 [NodeTags("Strings", "Regex", "Find", "Search", "Match")]
 public class RegexFindStringNode : INode

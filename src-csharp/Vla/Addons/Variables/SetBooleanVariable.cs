@@ -2,7 +2,7 @@
 
 namespace Vla.Addon.Core.Variables;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Variables")]
 [NodeTags("Set", "Boolean", "Bool", "Save")]
 public class SetBooleanVariable(IVariableManager variableManager) : INode

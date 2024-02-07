@@ -10,7 +10,7 @@ namespace Vla.Tests.Instances;
 
 public class Extensions
 {
-	[Node]
+	[Node(Purity.Deterministic)]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode

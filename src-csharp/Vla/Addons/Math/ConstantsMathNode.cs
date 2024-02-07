@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Math", "Constants", "Pi", "E", "Tau", "π", "τ")]
 public class ConstantsMathNode : INode

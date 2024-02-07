@@ -8,7 +8,7 @@ namespace Vla.Tests.Structures;
 
 public class Extensions
 {
-	[Node]
+	[Node(Purity.Deterministic)]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode
@@ -146,5 +146,18 @@ public class Extensions
 		var structure = structureResult.Expect();
 		
 		Assert.That(structure.ExecuteMethod, Is.EqualTo("Execute"));
+	}
+
+	[Test]
+	public void ToStructure_ValidNode_HasCorrectPurity()
+	{
+		var structureResult = NodeExtensions.ToStructure<ValidNode>();
+
+		if (structureResult.IsError)
+			throw structureResult.Error.Expect();
+		
+		var structure = structureResult.Expect();
+		
+		Assert.That(structure.Purity, Is.EqualTo(Purity.Deterministic));
 	}
 }

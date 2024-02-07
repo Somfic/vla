@@ -31,6 +31,7 @@ public static class NodeExtensions
             new NodeStructure()
                 .WithType(type)
                 .WithName(GetName(type))
+                .WithPurity(GetPurity(type))
                 .WithDescription(type.GetDocumentation())
                 .WithCategory(GetCategory(type))
                 .WithSearchTerms(GetSearchTerms(type).ToArray())
@@ -52,6 +53,11 @@ public static class NodeExtensions
     private static string GetName(Type type)
     {
         return type.Name;
+    }
+    
+    private static Purity GetPurity(Type type)
+    {
+        return type.GetCustomAttribute<NodeAttribute>()?.Purity ?? Purity.Deterministic;
     }
 
     private static string[] GetSearchTerms(Type type)

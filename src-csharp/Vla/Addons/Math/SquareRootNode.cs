@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Math;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Math")]
 [NodeTags("Square root", "Inverse square root", "Sqrt", "InvSqrt", "√", "1/√")]
 public class SquareRootMathNode : INode

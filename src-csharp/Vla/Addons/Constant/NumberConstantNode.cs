@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Constant;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Constant")]
 [NodeTags("Number", "Constant", "Value", "Double", "Float", "Decimal", "Integer")]
 public class NumberConstantNode : INode

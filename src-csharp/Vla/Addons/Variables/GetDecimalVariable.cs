@@ -2,7 +2,7 @@
 
 namespace Vla.Addon.Core.Variables;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Variables")]
 [NodeTags("Get", "Decimal", "Float", "Double", "Load")]
 public class GetDecimalVariable(IVariableManager variableManager) : INode

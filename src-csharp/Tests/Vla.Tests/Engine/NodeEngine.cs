@@ -18,7 +18,7 @@ namespace Vla.Tests.Engine;
 
 public class NodeEngine
 {
-	[Node]
+	[Node(Purity.Deterministic)]
 	public class NumberConstantNode : INode
 	{
 		public string Name => "Number constant";
@@ -34,7 +34,7 @@ public class NodeEngine
 		}
 	}
 	
-	[Node]
+	[Node(Purity.Deterministic)]
 	public class MathAddNode : INode
 	{
 		public string Name => "Add";
@@ -252,6 +252,76 @@ public class NodeEngine
 		Assert.That(engine.Values[$"{getStringInstance.Id}.value"], Is.EqualTo("Hello, world!"));
 	}
 	
+	[Test]
+	public void NodeEngine_Tick_RunsDeterministicNodesOnce()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
+		var addInstance = new NodeInstance().From(addStructure);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var engine = CreateEngine(structures, instances, connections);
+
+		var results1 = engine.Tick();
+
+		Assert.That(results1, Has.Length.EqualTo(2));
+		Assert.That(results1[0].WasExecuted, Is.True);
+		Assert.That(results1[1].WasExecuted, Is.True);
+
+		var results2 = engine.Tick();
+		
+		Assert.That(results2, Has.Length.EqualTo(2));
+		Assert.That(results2[0].WasExecuted, Is.False);
+		Assert.That(results2[1].Outputs.SequenceEqual(results1[1].Outputs), Is.True);
+		Assert.That(results2[1].WasExecuted, Is.False);
+		Assert.That(results2[1].Outputs.SequenceEqual(results1[1].Outputs), Is.True);
+	}
+	
+	[Test]
+	public void NodeEngine_Tick_RerunsDeterministicIfChanged()
+	{
+		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
+		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+
+		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
+		var addInstance = new NodeInstance().From(addStructure);
+
+		var constantToAConnection = new NodeConnection()
+			.WithSource(constantInstance, "result")
+			.WithTarget(addInstance, "a");
+
+		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
+		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
+		ImmutableArray<NodeConnection> connections = [constantToAConnection];
+
+		var engine = CreateEngine(structures, instances, connections);
+
+		var results1 = engine.Tick();
+
+		Assert.That(results1, Has.Length.EqualTo(2));
+		Assert.That(results1[0].WasExecuted, Is.True);
+		Assert.That(results1[1].WasExecuted, Is.True);
+
+		constantInstance = constantInstance.WithProperty("Value", 13);
+		instances = [constantInstance, addInstance];
+		engine.SetGraph(instances, connections);
+
+		var results2 = engine.Tick();
+		
+		Assert.That(results2, Has.Length.EqualTo(2));
+		Assert.That(results2[0].WasExecuted, Is.True);
+		Assert.That(results2[1].WasExecuted, Is.True);
+	}
+	
 	private static Vla.Engine.NodeEngine CreateEngine(ImmutableArray<NodeStructure> structures, ImmutableArray<NodeInstance> instances, ImmutableArray<NodeConnection> connections)
 	{
 		var services = Host.CreateDefaultBuilder()
@@ -262,6 +332,7 @@ public class NodeEngine
 			.ConfigureLogging(l =>
 			{
 				l.AddConsole();
+				l.SetMinimumLevel(LogLevel.Trace);
 			})
 			.Build()
 			.Services;

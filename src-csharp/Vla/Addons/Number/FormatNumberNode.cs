@@ -1,6 +1,6 @@
 ﻿namespace Vla.Addon.Core.Number;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Numbers")]
 [NodeTags("Format", "Pretty")]
 public class FormatNumberNode : INode

@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
 using Vla.Abstractions.Structure;
+using Vla.Addon;
 using Vla.Helpers;
 
 namespace Vla.Engine;
@@ -14,6 +15,7 @@ public class NodeEngine
 {
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<NodeEngine> _log;
+	private readonly IDictionary<Guid, (List<ParameterResult> inputs, List<ParameterResult> outputs)> _pureNodeResults = new Dictionary<Guid, (List<ParameterResult> inputs, List<ParameterResult> outputs)>();
 	
 	public NodeEngine(ILogger<NodeEngine> log, IServiceProvider serviceProvider)
 	{
@@ -60,35 +62,20 @@ public class NodeEngine
 
 	public ImmutableArray<NodeExecutionResult> Tick()
 	{
-		var results = ImmutableArray<NodeExecutionResult>.Empty;
-		
-		foreach (var instance in Instances)
-		{
-			var result = ExecuteNode(instance);
-			results = results.Add(result);
-		}
-
-		return results;
+		return Instances.Select(ExecuteNode).ToImmutableArray();
 	}
 
 	private NodeExecutionResult ExecuteNode(NodeInstance instance)
 	{
 		var structure = Structures.First(x => x.NodeType == instance.NodeType);
 
-		try
-		{
-			if (!_instances.ContainsKey(instance.Id))
-				_instances = _instances.Add(instance.Id,
-					ActivatorUtilities.CreateInstance(_serviceProvider, instance.NodeType));
-		}
-		catch (Exception ex)
-		{
-			_log.LogError(ex, "Could not create instance of {NodeType}", structure.NodeType);
-			throw;
-		}
+		_log.LogTrace("Executing node {NodeType} ({Id})", structure.NodeType.Name, instance.Id);
+		
+		if (!_instances.ContainsKey(instance.Id))
+			_instances = _instances.Add(instance.Id, ActivatorUtilities.CreateInstance(_serviceProvider, instance.NodeType));
 
 		var nodeInstance = _instances[instance.Id];
-
+		
 		// Properties
 		foreach (var property in structure.Properties)
 		{
@@ -123,32 +110,54 @@ public class NodeEngine
 
 		var parameters = ConstructInvocationParameters(invokeMethod, instance, structure);
 
+		// Check to see if the node is pure, if it is, check if the inputs are the same as the last time it was executed
+		// If they are, return the last result
+		if (structure.Purity == Purity.Deterministic)
+		{
+			_log.LogDebug("This node is pure, checking if the inputs are the same as the last time it was executed...");
+			
+			if (_pureNodeResults.TryGetValue(instance.Id, out var lastResult))
+			{
+				_log.LogDebug("This node has been executed before, checking if the inputs are the same...");
+				
+				var (inputs, _) = GetInputOutputFromParameters(invokeMethod, structure, instance, parameters);
+				
+				_log.LogDebug("   Last inputs: {LastInputs}", lastResult.inputs.Select(x => $"{x.ParameterId}: {JsonConvert.SerializeObject(x.Value)}"));
+				_log.LogDebug("Current inputs: {CurrentInputs}", inputs.Select(x => $"{x.ParameterId}: {JsonConvert.SerializeObject(x.Value)}"));
+				_log.LogDebug("   Last outputs: {LastOutputs}", lastResult.outputs.Select(x => $"{x.ParameterId}: {JsonConvert.SerializeObject(x.Value)}"));
+				
+				if (lastResult.inputs.SequenceEqual(inputs))
+				{
+					return new NodeExecutionResult
+					{
+						InstanceId = instance.Id,
+						WasExecuted = false,
+						Inputs = inputs.ToImmutableArray(),
+						Outputs = lastResult.outputs.ToImmutableArray(),
+						Exception = null
+					};
+				}
+			}
+			else
+			{
+				_log.LogDebug("This node has not been executed before, continuing...");
+			}
+		}
+		
 		// TODO: There must be a better way to do this...
 		try
 		{
 			invokeMethod.Invoke(nodeInstance, parameters);
 
-			var inputs = new List<ParameterResult>();
-			var outputs = new List<ParameterResult>();
-
-			for (var i = 0; i < parameters.Length; i++)
-			{
-				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
-
-				if (parameter is OutputParameterStructure outputParameter)
-				{
-					SetValue(instance, outputParameter, parameters[i]);
-					outputs.Add(new ParameterResult(parameter.Id, parameters[i]));
-				}
-				else
-				{
-					inputs.Add(new ParameterResult(parameter.Id, parameters[i]));
-				}
-			}
+			var (inputs, outputs) = GetInputOutputFromParameters(invokeMethod, structure, instance, parameters);
+			
+			if(structure.Purity == Purity.Deterministic)
+				_pureNodeResults[instance.Id] = (inputs, outputs);
 
 			return new NodeExecutionResult
 			{
 				InstanceId = instance.Id,
+				WasExecuted = true,
 				Inputs = inputs.ToImmutableArray(),
 				Outputs = outputs.ToImmutableArray(),
 				Exception = null,
@@ -178,6 +187,7 @@ public class NodeEngine
 			return new NodeExecutionResult
 			{
 				InstanceId = instance.Id,
+				WasExecuted = false,
 				Inputs = inputs.ToImmutableArray(),
 				Outputs = outputs.ToImmutableArray(),
 				Exception = e
@@ -187,6 +197,9 @@ public class NodeEngine
 
 	private void SetValue(NodeInstance instance, OutputParameterStructure parameter, object value)
 	{
+		if (value == null)
+			return;
+		
 		var outputId = $"{instance.Id}.{parameter.Id}";
 		SetValue(outputId, value);
 
@@ -204,12 +217,43 @@ public class NodeEngine
 		}
 	}
 
-	private void SetValue(string id, object value)
+	private (List<ParameterResult> inputs, List<ParameterResult> outputs) GetInputOutputFromParameters(MethodBase invokeMethod, NodeStructure structure, NodeInstance instance, object[] parameters)
 	{
+		var inputs = new List<ParameterResult>();
+		var outputs = new List<ParameterResult>();
+
+		for (var i = 0; i < parameters.Length; i++)
+		{
+			var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
+
+			if (parameter is OutputParameterStructure outputParameter)
+			{
+				SetValue(instance, outputParameter, parameters[i]);
+				outputs.Add(new ParameterResult(parameter.Id, parameters[i]));
+			}
+			else
+			{
+				inputs.Add(new ParameterResult(parameter.Id, parameters[i]));
+			}
+		}
+		
+		return (inputs, outputs);
+	}
+
+	private void SetValue(string id, object? value)
+	{
+		if (value == null)
+			return;
+		
 		if (ExplicitValues.ContainsKey(id))
 			ExplicitValues = ExplicitValues.SetItem(id, value);
 		else
 			ExplicitValues = ExplicitValues.Add(id, value);
+	}
+	
+	private string GetInputSha(NodeInstance instance)
+	{
+		instance.Inputs.Select(x => x.Id).OrderBy(x => x.Id);
 	}
 	
 	private object GetValue(NodeInstance instance, InputParameterStructure parameter)

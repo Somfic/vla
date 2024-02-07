@@ -11,7 +11,7 @@ public class Documentation
 	/// <summary>
 	/// Node description
 	/// </summary>
-	[Node]
+	[Node(Purity.Deterministic)]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode

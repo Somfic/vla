@@ -1,6 +1,6 @@
 namespace Vla.Addon.Core.Strings;
 
-[Node]
+[Node(Purity.Deterministic)]
 [NodeCategory("Strings")]
 [NodeTags("Compare", "Strings", "Equal", "Not equal", "Includes", "Starts with", "Ends with", "Contains", "Comparison", "==", "!=")]
 

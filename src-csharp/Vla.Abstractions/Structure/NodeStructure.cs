@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
+using Vla.Addon;
 
 namespace Vla.Abstractions.Structure;
 
@@ -14,6 +15,9 @@ public readonly struct NodeStructure
 
     [JsonProperty("name")]
     public string Name { get; init; } = string.Empty;
+
+    [JsonProperty("purity")] 
+    public Purity Purity { get; init; } = Purity.Deterministic;
     
     [JsonProperty("description")]
     public string Description { get; init; } = string.Empty;
