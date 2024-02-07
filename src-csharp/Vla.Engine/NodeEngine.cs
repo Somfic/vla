@@ -251,11 +251,6 @@ public class NodeEngine
 			ExplicitValues = ExplicitValues.Add(id, value);
 	}
 	
-	private string GetInputSha(NodeInstance instance)
-	{
-		instance.Inputs.Select(x => x.Id).OrderBy(x => x.Id);
-	}
-	
 	private object GetValue(NodeInstance instance, InputParameterStructure parameter)
 	{
 		var id = $"{instance.Id}.{parameter.Id}";
