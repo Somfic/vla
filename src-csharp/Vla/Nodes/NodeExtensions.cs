@@ -55,9 +55,9 @@ public static class NodeExtensions
         return type.Name;
     }
     
-    private static Purity GetPurity(Type type)
+    private static NodePurity GetPurity(Type type)
     {
-        return type.GetCustomAttribute<NodeAttribute>()?.Purity ?? Purity.Deterministic;
+        return type.GetCustomAttribute<NodeAttribute>()?.Purity ?? NodePurity.Deterministic;
     }
 
     private static string[] GetSearchTerms(Type type)

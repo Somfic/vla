@@ -112,7 +112,7 @@ public class NodeEngine
 
 		// Check to see if the node is pure, if it is, check if the inputs are the same as the last time it was executed
 		// If they are, return the last result
-		if (structure.Purity == Purity.Deterministic)
+		if (structure.Purity == NodePurity.Deterministic)
 		{
 			_log.LogDebug("This node is pure, checking if the inputs are the same as the last time it was executed...");
 			
@@ -151,7 +151,7 @@ public class NodeEngine
 
 			var (inputs, outputs) = GetInputOutputFromParameters(invokeMethod, structure, instance, parameters);
 			
-			if(structure.Purity == Purity.Deterministic)
+			if(structure.Purity == NodePurity.Deterministic)
 				_pureNodeResults[instance.Id] = (inputs, outputs);
 
 			return new NodeExecutionResult

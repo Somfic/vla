@@ -12,7 +12,7 @@ public static class NodeStructureBuilderExtensions
         return node with { Name = name };
     }
     
-    public static NodeStructure WithPurity(this NodeStructure node, Purity purity)
+    public static NodeStructure WithPurity(this NodeStructure node, NodePurity purity)
     {
         return node with { Purity = purity };
     }

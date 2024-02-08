@@ -62,15 +62,15 @@ server.MessageReceived.OnChange(async args =>
     switch (message["id"]?.Value<string>()?.ToLower())
     {
         case "save-workspace":
-        {
-            var runWorkspace = JsonConvert.DeserializeObject<RunWorkspaceMessage>(json);
-            var workspace = runWorkspace.Workspace;
-            await workspaces.SaveAsync(workspace);
-            
-            engine.SetStructures(workspace.Structures);
-            engine.SetGraph(workspace.Webs.SelectMany(x => x.Instances).ToImmutableArray(), workspace.Webs.SelectMany(x => x.Connections).ToImmutableArray());
-            break;
-        }
+            {
+                var runWorkspace = JsonConvert.DeserializeObject<RunWorkspaceMessage>(json);
+                var workspace = runWorkspace.Workspace;
+                await workspaces.SaveAsync(workspace);
+
+                engine.SetStructures(workspace.Structures);
+                engine.SetGraph(workspace.Webs.SelectMany(x => x.Instances).ToImmutableArray(), workspace.Webs.SelectMany(x => x.Connections).ToImmutableArray());
+                break;
+            }
     }
 });
 

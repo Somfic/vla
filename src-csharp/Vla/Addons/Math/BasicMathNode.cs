@@ -1,18 +1,23 @@
-﻿namespace Vla.Addon.Core.Math;
+﻿using System.Collections.Immutable;
 
-[Node(Purity.Deterministic)]
+namespace Vla.Addon.Core.Math;
+
+[Node]
 [NodeCategory("Math")]
 [NodeTags("Add", "Subtract", "Multiply", "Divide", "+", "-", "*", "/", "Plus", "Minus", "Times")]
-public class BasicMathNode : INode
+public class BasicMathNode : Node
 {
-    public string Name => Mode.GetValueName();
-
+    public override string Name => Mode.GetValueName();
+    
     [NodeProperty]
     public MathMode Mode { get; set; } = MathMode.Add;
 
-    public void Execute([NodeInput("A")] double a, [NodeInput("B")] double b, [NodeOutput("Result")] out double result)
+    public override ImmutableArray<NodeOutput> Execute()
     {
-        result = Mode switch
+        var a = Input("A", 0d);
+        var b = Input("B", 0d);
+
+        var result = Mode switch
         {
             MathMode.Add => a + b,
             MathMode.Subtract => a - b,
@@ -20,8 +25,10 @@ public class BasicMathNode : INode
             MathMode.Divide => a / b,
             _ => throw new ArgumentOutOfRangeException()
         };
-    }
 
+        return [Output("Result", result)];
+    }
+    
     public enum MathMode
     {
         Add,

@@ -8,7 +8,7 @@ namespace Vla.Tests.Structures;
 
 public class Extensions
 {
-	[Node(Purity.Deterministic)]
+	[Node]
 	[NodeCategory("Testing")]
 	[NodeTags("Tag")]
 	public class ValidNode : INode
@@ -158,6 +158,6 @@ public class Extensions
 		
 		var structure = structureResult.Expect();
 		
-		Assert.That(structure.Purity, Is.EqualTo(Purity.Deterministic));
+		Assert.That(structure.Purity, Is.EqualTo(NodePurity.Deterministic));
 	}
 }

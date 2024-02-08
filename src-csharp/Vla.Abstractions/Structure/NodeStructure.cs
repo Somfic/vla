@@ -17,7 +17,7 @@ public readonly struct NodeStructure
     public string Name { get; init; } = string.Empty;
 
     [JsonProperty("purity")] 
-    public Purity Purity { get; init; } = Purity.Deterministic;
+    public NodePurity Purity { get; init; } = NodePurity.Deterministic;
     
     [JsonProperty("description")]
     public string Description { get; init; } = string.Empty;

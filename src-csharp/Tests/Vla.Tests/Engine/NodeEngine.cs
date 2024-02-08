@@ -8,7 +8,6 @@ using Vla.Abstractions.Connection;
 using Vla.Abstractions.Instance;
 using Vla.Abstractions.Structure;
 using Vla.Addon;
-using Vla.Addon.Core.Variables;
 using Vla.Addon.Services;
 using Vla.Nodes;
 
@@ -18,30 +17,36 @@ namespace Vla.Tests.Engine;
 
 public class NodeEngine
 {
-	[Node(Purity.Deterministic)]
-	public class NumberConstantNode : INode
+	[Node]
+	public class NumberConstantNode : Node
 	{
-		public string Name => "Number constant";
-
-		[NodeProperty] public double Value { get; set; } = 100;
+		public override string Name => "Number constant";
 		
-		public void Execute([NodeOutput] out double result)
+		[NodeProperty] 
+		public double Value { get; set; } = 100;
+		
+		public override ImmutableArray<NodeOutput> Execute()
 		{
 			if (Value < 0)
 				throw new ArgumentException("Value cannot be negative");
-			
-			result = Value;
+
+			return [Output("Value", Value)];
 		}
 	}
 	
-	[Node(Purity.Deterministic)]
-	public class MathAddNode : INode
+	[Node]
+	public class MathAddNode : Node
 	{
-		public string Name => "Add";
+		public override string Name => "Add";
 		
-		public void Execute([NodeOutput] out int result, [NodeInput] int a, [NodeInput] int b = 1)
+		public override ImmutableArray<NodeOutput> Execute()
 		{
-			result = a + b;
+			var a = Input("A", 0d);
+			var b = Input("B", 0d);
+
+			var result = a + b;
+
+			return [Output("Result", result)];
 		}
 	}
 
