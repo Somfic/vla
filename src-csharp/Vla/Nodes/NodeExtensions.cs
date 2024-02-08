@@ -1,55 +1,11 @@
 ﻿using System.Reflection;
 using Somfic.Common;
-using Vla.Abstractions.Structure;
 using Vla.Addon;
-using Vla.Helpers;
 
 namespace Vla.Nodes;
 
 public static class NodeExtensions
 {
-    public static Result<NodeStructure> ToStructure(this Type type) =>
-        Result.Value(type)
-            .Guard(x => !x.IsAbstract, "Node must not be abstract")
-            .Guard(x => x.IsAssignableTo(typeof(INode)), "Node must implement INode")
-            .Guard(x => x.GetCustomAttribute<NodeAttribute>() is not null, "Node must have a NodeAttribute")
-            .Guard(x => GetMainMethod(x).IsSome,
-                "Node must have exactly one method with either one or more NodeOutputAttributes or one or more NodeInputAttributes")
-            .Guard(x => GetMainMethod(x).Expect().GetParameters()
-                    .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
-                    .All(y => y.GetCustomAttribute<NodeOutputAttribute>() is null),
-                "Node must have no parameters with both NodeInputAttribute and NodeOutputAttribute")
-            .Guard(x => GetMainMethod(x).Expect().ReturnType == typeof(void), "Node must have void as return type")
-            .Guard(x => GetMainMethod(x).Expect().IsPublic, "Node must have a public execution path")
-            .Pipe(BuildStructure);
-
-    public static Result<NodeStructure> ToStructure<TNode>() where TNode : INode => ToStructure(typeof(TNode));
-
-    private static Result<NodeStructure> BuildStructure(Type type)
-    {
-        return Result.Try((() =>
-            new NodeStructure()
-                .WithType(type)
-                .WithName(GetName(type))
-                .WithPurity(GetPurity(type))
-                .WithDescription(type.GetDocumentation())
-                .WithCategory(GetCategory(type))
-                .WithSearchTerms(GetSearchTerms(type).ToArray())
-                .WithMethod(GetMainMethod(type).Expect())
-                .WithProperties(type.GetProperties()
-                    .Where(y => y.GetCustomAttribute<NodePropertyAttribute>() is not null)
-                    .Select(y => PropertyStructure.FromPropertyInfo(y, type))
-                    .ToArray())
-                .WithInputs(GetMainMethod(type).Expect().GetParameters()
-                    .Where(y => y.GetCustomAttribute<NodeInputAttribute>() is not null)
-                    .Select(InputParameterStructure.FromParameterInfo)
-                    .ToArray())
-                .WithOutputs(GetMainMethod(type).Expect().GetParameters()
-                    .Where(y => y.GetCustomAttribute<NodeOutputAttribute>() is not null)
-                    .Select(OutputParameterStructure.FromParameterInfo)
-                    .ToArray())));
-    }
-
     private static string GetName(Type type)
     {
         return type.Name;

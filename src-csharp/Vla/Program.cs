@@ -53,7 +53,7 @@ server.ClientConnected.OnChange(async c =>
     await server.SendAsync(c, new WorkspacesMessage(await workspaces.ListAsync()));
 });
 
-server.MessageReceived.OnChange(async args =>
+server.MessageReceived.OnChange(args =>
 {
     var (client, json) = args;
 
@@ -63,15 +63,17 @@ server.MessageReceived.OnChange(async args =>
     {
         case "save-workspace":
             {
-                var runWorkspace = JsonConvert.DeserializeObject<RunWorkspaceMessage>(json);
-                var workspace = runWorkspace.Workspace;
-                await workspaces.SaveAsync(workspace);
-
-                engine.SetStructures(workspace.Structures);
-                engine.SetGraph(workspace.Webs.SelectMany(x => x.Instances).ToImmutableArray(), workspace.Webs.SelectMany(x => x.Connections).ToImmutableArray());
+                // var runWorkspace = JsonConvert.DeserializeObject<RunWorkspaceMessage>(json);
+                // var workspace = runWorkspace.Workspace;
+                // await workspaces.SaveAsync(workspace);
+                //
+                // engine.SetStructures(workspace.Structures);
+                // engine.SetGraph(workspace.Webs.SelectMany(x => x.Instances).ToImmutableArray(), workspace.Webs.SelectMany(x => x.Connections).ToImmutableArray());
                 break;
             }
     }
+
+    return Task.CompletedTask;
 });
 
 await server.MarkReady();
@@ -79,6 +81,6 @@ await server.MarkReady();
 while (server.IsRunning)
 {
     var results = engine.Tick();
-    await server.BroadcastAsync(new ExecutionResultMessage(results));
+    // await server.BroadcastAsync(new ExecutionResultMessage(results));
     await Task.Delay(100);
 }

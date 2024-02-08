@@ -2,11 +2,8 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions;
-using Vla.Abstractions.Structure;
 using Vla.Abstractions.Types;
 using Vla.Nodes;
-using Dependency = Vla.Addon.Metadata.Dependency;
 
 namespace Vla.Workspace;
 
@@ -116,17 +113,17 @@ public class WorkspaceService
             if (workspace.Webs.Length == 0)
                 workspace = workspace with { Webs = ImmutableArray.Create(_defaultWeb) };
 
-            workspace = workspace with { Structures = [], Types = [], Path = path };
+            // workspace = workspace with { Structures = [], Types = [], Path = path };
 
             foreach (var dependency in workspace.Addons)
             {
                 var extension = _addons.Addons.First(x => x.Name == dependency.Name && x.Version >= dependency.MinVersion);
-                var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
+                //var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
 
-                workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
+                //workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
             }
 
-            workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
+            //workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
 
             // Clean up double connections in the webs
             workspace = workspace with
@@ -152,7 +149,7 @@ public class WorkspaceService
     private string GetWorkspacePath(string name) => Path.Combine(_path, $"{name}.vla");
     private static string EncodeWorkspace(Abstractions.Web.Workspace workspace)
     {
-        workspace = workspace with { Path = string.Empty, Structures = ImmutableArray<NodeStructure>.Empty, Types = ImmutableArray<NodeTypeDefinition>.Empty };
+        //workspace = workspace with { Path = string.Empty, Structures = ImmutableArray<NodeStructure>.Empty, Types = ImmutableArray<NodeTypeDefinition>.Empty };
         return JsonConvert.SerializeObject(workspace, Formatting.Indented);
     }
 

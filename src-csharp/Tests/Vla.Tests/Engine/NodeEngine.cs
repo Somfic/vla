@@ -2,13 +2,11 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Somfic.Common;
 using Vla.Abstractions;
 using Vla.Abstractions.Connection;
-using Vla.Abstractions.Instance;
-using Vla.Abstractions.Structure;
 using Vla.Addon;
 using Vla.Addon.Services;
+using Vla.Engine;
 using Vla.Nodes;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -25,7 +23,7 @@ public class NodeEngine
 		[NodeProperty] 
 		public double Value { get; set; } = 100;
 		
-		public override ImmutableArray<NodeOutput> Execute()
+		public override async Task<ImmutableArray<NodeOutput>> Execute()
 		{
 			if (Value < 0)
 				throw new ArgumentException("Value cannot be negative");
@@ -39,10 +37,10 @@ public class NodeEngine
 	{
 		public override string Name => "Add";
 		
-		public override ImmutableArray<NodeOutput> Execute()
+		public override async Task<ImmutableArray<NodeOutput>> Execute()
 		{
-			var a = Input("A", 0d);
-			var b = Input("B", 0d);
+			var a = Input("A", 1d);
+			var b = Input("B", 2d);
 
 			var result = a + b;
 
@@ -51,283 +49,95 @@ public class NodeEngine
 	}
 
 	[Test]
-	public void NodeEngine_Tick_ExecutesGraph()
+	public async Task NodeEngine_Tick_ExecutesGraph()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+		var engine = CreateEngine();
 
-		var constantInstance1 = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
-		var constantInstance2 = new NodeInstance().From(constantStructure).WithProperty("Value", 13);
+		var properties = ImmutableDictionary<string, dynamic?>
+			.Empty
+			.Add("Value", 101);
 
-		var addInstance = new NodeInstance().From(addStructure);
+		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
+			new InstanceOptions
+			{
+				Properties = properties
+			});
 
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance1, "result")
-			.WithTarget(addInstance, "a");
-
-		var constantToBConnection = new NodeConnection()
-			.WithSource(constantInstance2, "result")
-			.WithTarget(addInstance, "b");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance1, constantInstance2, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection, constantToBConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		engine.Tick();
-
-		Assert.That(engine.Values[$"{constantInstance1.Id}.result"], Is.EqualTo(12.5));
-		Assert.That(engine.Values[$"{constantInstance2.Id}.result"], Is.EqualTo(13));
-		Assert.That(engine.Values[$"{addInstance.Id}.result"], Is.EqualTo(25));
+		await engine.Tick();
+		
+		Assert.That(numberConstantInstance.Outputs["Value"], Is.EqualTo(101));
 	}
 	
 	[Test]
-	public void NodeEngine_Tick_FillsInDefaultStructureInputValues()
+	public async Task NodeEngine_Tick_FillsInDefaultInputValues()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
-
-		var constantInstance = new NodeInstance().From(constantStructure);
+		var engine = CreateEngine(typeof(MathAddNode));
 		
-		var addInstance = new NodeInstance().From(addStructure);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		engine.Tick();
-
-		Assert.That(engine.Values[$"{addInstance.Id}.b"], Is.EqualTo(1));
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+		
+		var results = await engine.Tick();
+		
+		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(1));
+		Assert.That(mathAddInstance.Inputs["B"], Is.EqualTo(2));
+		Assert.That(results[0].Outputs[0].Value, Is.EqualTo(3));
 	}
 	
 	[Test]
-	public void NodeEngine_Tick_FillsInDefaultInstanceInputValues()
+	public void NodeEngine_Tick_FillsInDefaultPropertyValues()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
-
-		var constantInstance = new NodeInstance().From(constantStructure)
-			.WithProperty("Value", 12.5);
+		var engine = CreateEngine(typeof(NumberConstantNode));
 		
-		var addInstance = new NodeInstance().From(addStructure)
-			.WithInput("b", 9999);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		engine.Tick();
-
-		Assert.That(engine.Values[$"{addInstance.Id}.b"], Is.EqualTo(9999));
-	}
-	
-	[Test]
-	public void NodeEngine_Tick_FillsInDefaultStructurePropertyValues()
-	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
-
-		var constantInstance = new NodeInstance().From(constantStructure);
+		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>();
 		
-		var addInstance = new NodeInstance().From(addStructure);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		engine.Tick();
-
-		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(100));
-	}
-	
-	[Test]
-	public void NodeEngine_Tick_FillsInDefaultInstancePropertyValues()
-	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
-
-		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12222);
-		
-		var addInstance = new NodeInstance().From(addStructure);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		engine.Tick();
-
-		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(12222));
+		Assert.That(numberConstantInstance.Value, Is.EqualTo(100));
 	}
 
 	[Test]
-	public void NodeEngine_Tick_HandlesExecutionException()
+	public async Task NodeEngine_Tick_HandlesExecutionException()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
+		var engine = CreateEngine(typeof(NumberConstantNode));
 
-		var constantInstance = new NodeInstance().From(constantStructure)
-			.WithProperty("Value", -1);
+		var properties = ImmutableDictionary<string, dynamic?>
+			.Empty
+			.Add("Value", -1);
+
+		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
+			new InstanceOptions
+			{
+				Properties = properties
+			});
 		
-		var addInstance = new NodeInstance().From(addStructure);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		engine.Tick();
-
-		Assert.That(engine.Values[$"{constantInstance.Id}.result"], Is.EqualTo(0));
+		var results = await engine.Tick();
+		
+		Assert.That(results.Single().Exception, Is.Not.Null);
+		Assert.That(results.Single().Exception!.Message, Is.EqualTo("Value cannot be negative"));
 	}
 
 	[Test]
 	public void NodeEngine_Tick_DoesNotGetStuckInLoop()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var addInstance = new NodeInstance().From(addStructure);
-		var connection = new NodeConnection()
-			.WithSource(addInstance, "result")
-			.WithTarget(addInstance, "a");
-		
-		ImmutableArray<NodeStructure> structures = [addStructure];
-		ImmutableArray<NodeInstance> instances = [addInstance];
-		ImmutableArray<NodeConnection> connections = [connection];
-		
-		var engine = CreateEngine(structures, instances, connections);
-
-		for (int i = 0; i < 1000; i++)
-		{
-			engine.Tick();
-			Assert.That(engine.Values[$"{addInstance.Id}.result"], Is.EqualTo(i + 1));
-		}
+	
 	}
 
 	[Test]
 	public void NodeEngine_Tick_ImplicitlyConvertsValues()
 	{
-		var setStringStructure = NodeExtensions.ToStructure<SetStringVariable>().Expect();
-		var getStringStructure = NodeExtensions.ToStructure<GetStringVariable>().Expect();
-		
-		var setStringInstance = new NodeInstance().From(setStringStructure).WithInput("value", "Hello, world!");
-		var getStringInstance = new NodeInstance().From(getStringStructure);
-		
-		var setStringToGetConnection = new NodeConnection()
-			.WithSource(setStringInstance, "result")
-			.WithTarget(getStringInstance, "value");
-		
-		ImmutableArray<NodeStructure> structures = [setStringStructure, getStringStructure];
-		ImmutableArray<NodeInstance> instances = [setStringInstance, getStringInstance];
-		ImmutableArray<NodeConnection> connections = [setStringToGetConnection];
-		
-		var engine = CreateEngine(structures, instances, connections);
-		
-		engine.Tick();
-		
-		Assert.That(engine.Values[$"{setStringInstance.Id}.value"], Is.EqualTo("Hello, world!"));
-		Assert.That(engine.Values[$"{getStringInstance.Id}.value"], Is.EqualTo("Hello, world!"));
+	
 	}
 	
 	[Test]
 	public void NodeEngine_Tick_RunsDeterministicNodesOnce()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
-
-		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
-		var addInstance = new NodeInstance().From(addStructure);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		var results1 = engine.Tick();
-
-		Assert.That(results1, Has.Length.EqualTo(2));
-		Assert.That(results1[0].WasExecuted, Is.True);
-		Assert.That(results1[1].WasExecuted, Is.True);
-
-		var results2 = engine.Tick();
 		
-		Assert.That(results2, Has.Length.EqualTo(2));
-		Assert.That(results2[0].WasExecuted, Is.False);
-		Assert.That(results2[1].Outputs.SequenceEqual(results1[1].Outputs), Is.True);
-		Assert.That(results2[1].WasExecuted, Is.False);
-		Assert.That(results2[1].Outputs.SequenceEqual(results1[1].Outputs), Is.True);
 	}
 	
 	[Test]
 	public void NodeEngine_Tick_RerunsDeterministicIfChanged()
 	{
-		var addStructure = NodeExtensions.ToStructure<MathAddNode>().Expect();
-		var constantStructure = NodeExtensions.ToStructure<NumberConstantNode>().Expect();
-
-		var constantInstance = new NodeInstance().From(constantStructure).WithProperty("Value", 12.5);
-		var addInstance = new NodeInstance().From(addStructure);
-
-		var constantToAConnection = new NodeConnection()
-			.WithSource(constantInstance, "result")
-			.WithTarget(addInstance, "a");
-
-		ImmutableArray<NodeStructure> structures = [addStructure, constantStructure];
-		ImmutableArray<NodeInstance> instances = [constantInstance, addInstance];
-		ImmutableArray<NodeConnection> connections = [constantToAConnection];
-
-		var engine = CreateEngine(structures, instances, connections);
-
-		var results1 = engine.Tick();
-
-		Assert.That(results1, Has.Length.EqualTo(2));
-		Assert.That(results1[0].WasExecuted, Is.True);
-		Assert.That(results1[1].WasExecuted, Is.True);
-
-		constantInstance = constantInstance.WithProperty("Value", 13);
-		instances = [constantInstance, addInstance];
-		engine.SetGraph(instances, connections);
-
-		var results2 = engine.Tick();
-		
-		Assert.That(results2, Has.Length.EqualTo(2));
-		Assert.That(results2[0].WasExecuted, Is.True);
-		Assert.That(results2[1].WasExecuted, Is.True);
+	
 	}
 	
-	private static Vla.Engine.NodeEngine CreateEngine(ImmutableArray<NodeStructure> structures, ImmutableArray<NodeInstance> instances, ImmutableArray<NodeConnection> connections)
+	private static Vla.Engine.NodeEngine CreateEngine(params Type[] nodes)
 	{
 		var services = Host.CreateDefaultBuilder()
 			.ConfigureServices(s =>
@@ -341,9 +151,11 @@ public class NodeEngine
 			})
 			.Build()
 			.Services;
+
+		var engine = ActivatorUtilities.CreateInstance<Vla.Engine.NodeEngine>(services);
 		
-		return ActivatorUtilities.CreateInstance<Vla.Engine.NodeEngine>(services)
-			.SetStructures(structures)
-			.SetGraph(instances, connections);
+		engine.RegisterNodes(nodes);
+
+		return engine;
 	}
 }

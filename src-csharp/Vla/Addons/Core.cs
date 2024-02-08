@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Vla.Abstractions;
-using Vla.Addon.Services;
 
 namespace Vla.Addons;
 
