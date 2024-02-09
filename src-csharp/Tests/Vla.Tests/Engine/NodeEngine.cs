@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Vla.Abstractions;
 using Vla.Abstractions.Connection;
 using Vla.Addon;
@@ -15,6 +16,16 @@ namespace Vla.Tests.Engine;
 
 public class NodeEngine
 {
+	[Node]
+	public class TextConstantNode : Node
+	{
+		public override string Name { get; }
+		public override async Task<ImmutableArray<NodeOutput>> Execute()
+		{
+			return [Output("Value", "12")];
+		}
+	}
+	
 	[Node]
 	public class NumberConstantNode : Node
 	{
@@ -39,11 +50,17 @@ public class NodeEngine
 		
 		public override async Task<ImmutableArray<NodeOutput>> Execute()
 		{
+			Console.WriteLine("Hello");
+			
 			var a = Input("A", 1d);
 			var b = Input("B", 2d);
 
+			Console.WriteLine($"NODE: inputs {JsonConvert.SerializeObject(Inputs)}");
+            
 			var result = a + b;
 
+			Console.WriteLine($"NODE: {result} = {a} + {b}");
+			
 			return [Output("Result", result)];
 		}
 	}
@@ -52,20 +69,21 @@ public class NodeEngine
 	public async Task NodeEngine_Tick_ExecutesGraph()
 	{
 		var engine = CreateEngine();
-
-		var properties = ImmutableDictionary<string, dynamic?>
-			.Empty
-			.Add("Value", 101);
-
+		
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+		
 		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
 			new InstanceOptions
 			{
-				Properties = properties
+				Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Value", 101)
 			});
+		
+		engine.CreateConnection(numberConstantInstance, "Value", mathAddInstance, "A");
 
 		await engine.Tick();
 		
 		Assert.That(numberConstantInstance.Outputs["Value"], Is.EqualTo(101));
+		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(101));
 	}
 	
 	[Test]
@@ -83,7 +101,7 @@ public class NodeEngine
 	}
 	
 	[Test]
-	public void NodeEngine_Tick_FillsInDefaultPropertyValues()
+	public void NodeEngine_CreateInstance_FillsInDefaultPropertyValues()
 	{
 		var engine = CreateEngine(typeof(NumberConstantNode));
 		
@@ -114,15 +132,42 @@ public class NodeEngine
 	}
 
 	[Test]
-	public void NodeEngine_Tick_DoesNotGetStuckInLoop()
+	public async Task NodeEngine_Tick_DoesNotGetStuckInLoop()
 	{
-	
+		var engine = CreateEngine(typeof(MathAddNode));
+		
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+		
+		engine.CreateConnection(new NodeConnection(mathAddInstance, "Result", mathAddInstance, "A"));
+
+		var result = await engine.Tick();
+		
+		Assert.That(result.Single().Exception, Is.Null);
+		Assert.That(mathAddInstance.Outputs["Result"], Is.EqualTo(3));
+		
+		result = await engine.Tick();
+		
+		Assert.That(result.Single().Exception, Is.Null);
+		Assert.That(mathAddInstance.Outputs["Result"], Is.EqualTo(5));
 	}
 
 	[Test]
-	public void NodeEngine_Tick_ImplicitlyConvertsValues()
+	public async Task NodeEngine_Tick_ImplicitlyConvertsValues()
 	{
-	
+		var engine = CreateEngine();
+		
+		var textConstantInstance = engine.CreateInstance<TextConstantNode>();
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+		
+		engine.CreateConnection(textConstantInstance, "Value", mathAddInstance, "A");
+
+		var results = await engine.Tick();
+		
+		foreach (var nodeExecutionResult in results)
+		{
+			Assert.That(nodeExecutionResult.Exception, Is.Null);
+		}
+		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(12));
 	}
 	
 	[Test]

@@ -21,12 +21,23 @@ public abstract class Node
     
     protected T? Input<T>(string name, T defaultValue)
     {
+	    // Check if the input is already set
 	    if (Inputs.TryGetValue(name, out var value))
-		    return value;
-
-	    Inputs = Inputs.SetItem(name, defaultValue);
-        
-        return defaultValue;
+	    {
+		    try
+		    {
+			    // Try to convert the value to the desired type
+			    return SetInput(name, (T?)Convert.ChangeType(value, typeof(T)));
+		    }
+		    catch
+		    {
+			    // If the conversion fails, return the default value
+			    return SetInput(name, defaultValue);
+		    }
+	    }
+	    
+	    // If this is the first time the input is accessed, return the default value
+	    return SetInput(name, defaultValue);
     }
     
     protected NodeOutput Output<T>(string name, T? value)
@@ -35,4 +46,10 @@ public abstract class Node
 	    
 	    return new NodeOutput(name, value);
     }
+    
+    internal T SetInput<T>(string name, T value)
+    {
+	    Inputs = Inputs.SetItem(name, value);
+	    return value;
+    } 
 }
