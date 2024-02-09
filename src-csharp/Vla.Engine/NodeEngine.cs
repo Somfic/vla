@@ -22,6 +22,8 @@ public class NodeEngine
 
 	public ImmutableArray<NodeConnection> Connections { get; private set; } = ImmutableArray<NodeConnection>.Empty;
 
+	public ImmutableDictionary<string, dynamic?> CachedOutputs { get; private set; } = ImmutableDictionary<string, dynamic?>.Empty;
+	
 	public void CreateConnection(Node source, string sourceOutput, Node target, string targetInput) => CreateConnection(new NodeConnection(source, sourceOutput, target, targetInput));
 
 	public void CreateConnection(NodeConnection connection)
@@ -29,39 +31,42 @@ public class NodeEngine
 		Connections = Connections.Add(connection);
 	}
 
-	public T CreateInstance<T>(InstanceOptions? options = null) where T : Node
+	public T CreateInstance<T>(NodeInstance? instance = null) where T : Node
 	{
-		options ??= new InstanceOptions();
+		instance ??= new NodeInstance();
 
-		return (T)CreateInstance(typeof(T), options);
+		instance = instance with { Type = typeof(T) };
+
+		return (T)CreateInstance(instance);
 	}
 
-	private Node CreateInstance(Type type, InstanceOptions options)
+	public Node CreateInstance(NodeInstance instance)
 	{
 		// Check if the type is a node
-		if (!type.IsSubclassOf(typeof(Node)))
+		if (!instance.Type.IsSubclassOf(typeof(Node)))
 		{
-			_log.LogWarning("Type {Type} is not a node", type.Name);
-			throw new InvalidOperationException();
+			_log.LogWarning("Type {Type} is not a node", instance.Type.Name);
+			throw new InvalidOperationException($"{instance.Type.Name} does not inherit from {nameof(Node)}");
 		}
 
-		var instance = ActivatorUtilities.CreateInstance(_serviceProvider, type);
+		var nodeInstance = ActivatorUtilities.CreateInstance(_serviceProvider, instance.Type) as Node ?? throw new InvalidOperationException("Could not create node instance");
 
-		foreach (var property in options.Properties)
+		nodeInstance.Purity = instance.GetType().GetCustomAttribute<NodeAttribute>()?.Purity ?? NodePurity.Deterministic;
+		nodeInstance.Id = instance.Guid ?? Guid.NewGuid();
+		nodeInstance.Inputs = instance.Inputs;
+		nodeInstance.Outputs = instance.Outputs;
+		
+		foreach (var property in instance.Properties)
 		{
-			var propertyInfo = type.GetProperty(property.Key, BindingFlags.Public | BindingFlags.Instance);
+			var propertyInfo = instance.Type.GetProperty(property.Key, BindingFlags.Public | BindingFlags.Instance);
 			if (propertyInfo == null)
 			{
-				_log.LogWarning("Property {Property} not found on node {Node}", property.Key, type.Name);
+				_log.LogWarning("Property {Property} not found on node {Node}", property.Key, instance.Type.Name);
 				continue;
 			}
 
-			propertyInfo.SetValue(instance, property.Value);
+			propertyInfo.SetValue(nodeInstance, property.Value);
 		}
-
-		var nodeInstance = instance as Node ?? throw new InvalidOperationException("Could not create node instance");
-
-		nodeInstance.Id = Guid.NewGuid();
 
 		Instances = Instances.Add(nodeInstance);
 
@@ -70,7 +75,7 @@ public class NodeEngine
 
 	public async Task<ImmutableArray<NodeExecutionResult>> Tick()
 	{
-		var sorter = new TopologicalSorter(Connections.Select(x => (x.Source.InstanceId.ToString(), x.Target.InstanceId.ToString())).ToArray());
+		var sorter = new TopologicalSorter(Connections.Select(x => (x.Source.Node.ToString(), x.Target.Node.ToString())).ToArray());
 
 		var sortedInstances = sorter.Sort()
 			.Select(x => Guid.Parse(x.value))
@@ -95,20 +100,20 @@ public class NodeEngine
 
 				// Get all the inputs this output is connected to
 				var inputs = Connections
-					.Where(x => x.Source.InstanceId == instance.Id && x.Source.PropertyId == output.Name)
+					.Where(x => x.Source.Node == instance.Id && x.Source.Name == output.Name)
 					.Select(x => x.Target);
 
 				Console.WriteLine($"Found {JsonConvert.SerializeObject(inputs)}");
 
-			// For each input, set the value to the original output, with conversion to the input type
+			    // For each input, set the value to the original output, with conversion to the input type
 				foreach (var input in inputs)
 				{
-					var node = Instances.First(x => x.Id == input.InstanceId);
+					var node = Instances.First(x => x.Id == input.Node);
 					var nodeIndex = Instances.IndexOf(node);
 
-					Instances[nodeIndex].SetInput(input.PropertyId, output.Value);
+					Instances[nodeIndex].SetInput(input.Name, output.Value);
 					
-					Console.WriteLine($"Setting input {input.Id} on {node.Name} to {output.Value}");
+					Console.WriteLine($"Setting input {input.Name} on {node.Name} to {output.Value}");
 					
 					Instances = Instances.SetItem(nodeIndex, node);
 				}
@@ -119,23 +124,64 @@ public class NodeEngine
 
 		return results.ToImmutableArray();
 	}
+	
+	public string SaveState()
+	{
+		var state = new EngineState
+		{
+			Instances = Instances.Select(x => new NodeInstance
+			{
+				Type = x.GetType(),
+				Guid = x.Id,
+				Properties = x.Properties,
+				Inputs = x.Inputs,
+				Outputs = x.Outputs
+			}).ToImmutableArray(),
+			Connections = Connections
+		};
+
+		return JsonConvert.SerializeObject(state, Formatting.Indented);
+	}
+
+	public void LoadState(string engineState)
+	{
+		var state = JsonConvert.DeserializeObject<EngineState>(engineState);
+		
+		if(state == null)
+			throw new InvalidOperationException("Could not deserialize engine state");
+
+		Instances = state.Instances.Select(x =>
+		{
+			var instance = CreateInstance(x);
+
+			foreach (var input in x.Inputs)
+			{
+				instance.SetInput(input.Key, input.Value);
+			}
+
+			return instance;
+		}).ToImmutableArray();
+
+		Connections = state.Connections;
+	}
 
 	private async Task<NodeExecutionResult> ExecuteNode(Node node)
 	{
 		try
 		{
-			Console.WriteLine($"Executing {node.GetType().Name} with {JsonConvert.SerializeObject(node.Inputs)}");
-			return new NodeExecutionResult(await node.Execute(), node.Id);
+			await node.Execute();
+			
+			var outputs = node
+				.Outputs
+				.Select(x => new NodeOutput(x.Key, x.Value))
+				.ToImmutableArray();
+			
+			return new NodeExecutionResult(outputs, node.Id, true);
 		}
 		catch (Exception ex)
 		{
-			return new NodeExecutionResult(ex, node.Id);
+			return new NodeExecutionResult(ex, node.Id, true);
 		}
-	}
-
-	public void RegisterNodes(Type[] nodes)
-	{
-
 	}
 }
 
@@ -143,31 +189,54 @@ public readonly struct NodeExecutionResult
 {
 	public Guid Id { get; }
 
+	public bool Executed { get; }
+
 	public ImmutableArray<NodeOutput> Outputs { get; }
 
 	public Exception? Exception { get; }
 
-	public NodeExecutionResult(ImmutableArray<NodeOutput> outputs, Guid id)
+	public NodeExecutionResult(ImmutableArray<NodeOutput> outputs, Guid id, bool executed)
 	{
 		Outputs = outputs;
 		Exception = null;
 		Id = id;
+		Executed = executed;
 	}
 
-	public NodeExecutionResult(Exception exception, Guid id)
+	public NodeExecutionResult(Exception exception, Guid id, bool executed)
 	{
 		Exception = exception;
 		Outputs = ImmutableArray<NodeOutput>.Empty;
-		Id = Id;
+		Id = id;
+		Executed = executed;
 	}
 }
 
-public record InstanceOptions
+public record EngineState
 {
-	public InstanceOptions()
-	{
-		Properties = ImmutableDictionary<string, dynamic?>.Empty;
-	}
-
-	public ImmutableDictionary<string, dynamic?> Properties { get; init; }
+	[JsonProperty("instances")]
+	public ImmutableArray<NodeInstance> Instances { get; init; }
+	
+	[JsonProperty("connections")]
+	public ImmutableArray<NodeConnection> Connections { get; init; }
 }
+
+public record NodeInstance
+{
+
+	[JsonProperty("node")]
+	public Type Type { get; init; } = null!;
+
+	[JsonProperty("id")] 
+	public Guid? Guid { get; init; } = null;
+	
+	[JsonProperty("properties")]
+	public ImmutableDictionary<string, dynamic?> Properties { get; init; } = ImmutableDictionary<string, dynamic?>.Empty;
+	
+	[JsonProperty("inputs")]
+	public ImmutableDictionary<string, dynamic?> Inputs { get; init; } = ImmutableDictionary<string, dynamic?>.Empty;
+	
+	[JsonProperty("outputs")]
+	public ImmutableDictionary<string, dynamic?> Outputs { get; init; } = ImmutableDictionary<string, dynamic?>.Empty;
+}
+

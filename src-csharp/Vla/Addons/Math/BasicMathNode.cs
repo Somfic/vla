@@ -12,10 +12,10 @@ public class BasicMathNode : Node
     [NodeProperty]
     public MathMode Mode { get; set; } = MathMode.Add;
 
-    public override Task<ImmutableArray<NodeOutput>> Execute()
+    public override Task Execute()
     {
-        var a = Input("A", 0d);
-        var b = Input("B", 0d);
+        var a = Input<double>("A", 0);
+        var b = Input<double>("B", 0);
 
         var result = Mode switch
         {
@@ -26,7 +26,10 @@ public class BasicMathNode : Node
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        return Task.FromResult<ImmutableArray<NodeOutput>>([Output("Result", result)]);
+
+        Output("Result", result);
+
+        return Task.CompletedTask;
     }
     
     public enum MathMode

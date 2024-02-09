@@ -126,14 +126,14 @@ public class WorkspaceService
             //workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
 
             // Clean up double connections in the webs
-            workspace = workspace with
-            {
-                Webs = workspace.Webs.Select(web =>
-            {
-                var connections = web.Connections.DistinctBy(x => (x.Source.Id, x.Target.Id)).ToImmutableArray();
-                return web with { Connections = connections };
-            }).ToImmutableArray()
-            };
+            // workspace = workspace with
+            // {
+            //     Webs = workspace.Webs.Select(web =>
+            // {
+            //     var connections = web.Connections.DistinctBy(x => (x.Source.Id, x.Target.Id)).ToImmutableArray();
+            //     return web with { Connections = connections };
+            // }).ToImmutableArray()
+            // };
 
             return workspace;
         }))

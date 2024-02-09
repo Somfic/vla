@@ -4,11 +4,9 @@ namespace Vla.Abstractions.Connection;
 
 public readonly struct ConnectedProperty(Guid instanceId, string propertyId)
 {
-    [JsonProperty("instanceId")]
-    public Guid InstanceId { get; init; } = instanceId;
+    [JsonProperty("node")]
+    public Guid Node { get; init; } = instanceId;
 
-    [JsonProperty("propertyId")]
-    public string PropertyId { get; init; } = propertyId;
-    
-    public string Id => $"{InstanceId}.{PropertyId}";
+    [JsonProperty("name")]
+    public string Name { get; init; } = propertyId;
 }

@@ -20,48 +20,62 @@ public class NodeEngine
 	public class TextConstantNode : Node
 	{
 		public override string Name { get; }
-		public override async Task<ImmutableArray<NodeOutput>> Execute()
+
+		public override Task Execute()
 		{
-			return [Output("Value", "12")];
+			Output("Value", "12");
+			return Task.CompletedTask;
 		}
 	}
-	
+
 	[Node]
 	public class NumberConstantNode : Node
 	{
 		public override string Name => "Number constant";
-		
-		[NodeProperty] 
-		public double Value { get; set; } = 100;
-		
-		public override async Task<ImmutableArray<NodeOutput>> Execute()
+
+		[NodeProperty] public double Value { get; set; } = 100;
+
+		public override Task Execute()
 		{
 			if (Value < 0)
 				throw new ArgumentException("Value cannot be negative");
 
-			return [Output("Value", Value)];
+			Output("Value", Value);
+			return Task.CompletedTask;
 		}
 	}
-	
+
 	[Node]
 	public class MathAddNode : Node
 	{
 		public override string Name => "Add";
-		
-		public override async Task<ImmutableArray<NodeOutput>> Execute()
+
+		public override Task Execute()
 		{
-			Console.WriteLine("Hello");
-			
 			var a = Input("A", 1d);
 			var b = Input("B", 2d);
 
 			Console.WriteLine($"NODE: inputs {JsonConvert.SerializeObject(Inputs)}");
-            
+
 			var result = a + b;
 
 			Console.WriteLine($"NODE: {result} = {a} + {b}");
-			
-			return [Output("Result", result)];
+
+			Output("Result", result);
+
+			return Task.CompletedTask;
+		}
+	}
+
+	[Node(NodePurity.Probabilistic)]
+	public class CurrentTimeNode : Node
+	{
+		public override string Name { get; }
+
+		public override Task Execute()
+		{
+			Output("Time", DateTime.Now.ToLongTimeString());
+			return Task.CompletedTask;
 		}
 	}
 
@@ -69,126 +83,189 @@ public class NodeEngine
 	public async Task NodeEngine_Tick_ExecutesGraph()
 	{
 		var engine = CreateEngine();
-		
+
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
-		
+
 		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
-			new InstanceOptions
+			new NodeInstance
 			{
 				Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Value", 101)
 			});
-		
+
 		engine.CreateConnection(numberConstantInstance, "Value", mathAddInstance, "A");
 
-		await engine.Tick();
-		
+		var results = await engine.Tick();
+
+		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Exception, Is.Null);
 		Assert.That(numberConstantInstance.Outputs["Value"], Is.EqualTo(101));
 		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(101));
 	}
-	
+
 	[Test]
 	public async Task NodeEngine_Tick_FillsInDefaultInputValues()
 	{
-		var engine = CreateEngine(typeof(MathAddNode));
-		
+		var engine = CreateEngine();
+
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
-		
+
 		var results = await engine.Tick();
-		
+
+		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Exception, Is.Null);
 		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(1));
 		Assert.That(mathAddInstance.Inputs["B"], Is.EqualTo(2));
 		Assert.That(results[0].Outputs[0].Value, Is.EqualTo(3));
 	}
-	
+
 	[Test]
 	public void NodeEngine_CreateInstance_FillsInDefaultPropertyValues()
 	{
-		var engine = CreateEngine(typeof(NumberConstantNode));
-		
+		var engine = CreateEngine();
+
 		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>();
-		
+
 		Assert.That(numberConstantInstance.Value, Is.EqualTo(100));
 	}
 
 	[Test]
 	public async Task NodeEngine_Tick_HandlesExecutionException()
 	{
-		var engine = CreateEngine(typeof(NumberConstantNode));
+		var engine = CreateEngine();
 
 		var properties = ImmutableDictionary<string, dynamic?>
 			.Empty
 			.Add("Value", -1);
 
 		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
-			new InstanceOptions
+			new NodeInstance
 			{
 				Properties = properties
 			});
-		
+
 		var results = await engine.Tick();
-		
-		Assert.That(results.Single().Exception, Is.Not.Null);
-		Assert.That(results.Single().Exception!.Message, Is.EqualTo("Value cannot be negative"));
+
+		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Exception, Is.Not.Null);
+		Assert.That(results[0].Exception!.Message, Is.EqualTo("Value cannot be negative"));
 	}
 
 	[Test]
 	public async Task NodeEngine_Tick_DoesNotGetStuckInLoop()
 	{
-		var engine = CreateEngine(typeof(MathAddNode));
-		
+		var engine = CreateEngine();
+
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
-		
+
 		engine.CreateConnection(new NodeConnection(mathAddInstance, "Result", mathAddInstance, "A"));
 
-		var result = await engine.Tick();
-		
-		Assert.That(result.Single().Exception, Is.Null);
-		Assert.That(mathAddInstance.Outputs["Result"], Is.EqualTo(3));
-		
-		result = await engine.Tick();
-		
-		Assert.That(result.Single().Exception, Is.Null);
-		Assert.That(mathAddInstance.Outputs["Result"], Is.EqualTo(5));
+		for (var i = 0; i < 10000; i++)
+		{
+			var results = await engine.Tick();
+
+			Assert.That(results[0].Executed, Is.True);
+			Assert.That(results[0].Exception, Is.Null);
+		}
 	}
 
 	[Test]
 	public async Task NodeEngine_Tick_ImplicitlyConvertsValues()
 	{
 		var engine = CreateEngine();
-		
+
 		var textConstantInstance = engine.CreateInstance<TextConstantNode>();
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
-		
+
 		engine.CreateConnection(textConstantInstance, "Value", mathAddInstance, "A");
 
 		var results = await engine.Tick();
-		
-		foreach (var nodeExecutionResult in results)
-		{
-			Assert.That(nodeExecutionResult.Exception, Is.Null);
-		}
+
+		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Exception, Is.Null);
+		Assert.That(results[1].Executed, Is.True);
+		Assert.That(results[1].Exception, Is.Null);
+
 		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(12));
 	}
-	
+
 	[Test]
-	public void NodeEngine_Tick_RunsDeterministicNodesOnce()
+	[Ignore("To be implemented")]
+	public async Task NodeEngine_Tick_RunsDeterministicNodesOnce()
 	{
-		
+		var engine = CreateEngine();
+
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+
+		var results = await engine.Tick();
+
+
+		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Exception, Is.Null);
+
+		results = await engine.Tick();
+
+
+		Assert.That(results[0].Executed, Is.False);
 	}
-	
+
 	[Test]
 	public void NodeEngine_Tick_RerunsDeterministicIfChanged()
 	{
-	
+		var engine = CreateEngine();
+
+		var currentTimeInstance = engine.CreateInstance<CurrentTimeNode>();
+
+		var result = engine.Tick().Result;
+
+		Assert.That(result[0].Executed, Is.True);
+
+		result = engine.Tick().Result;
+
+		Assert.That(result[0].Executed, Is.True);
 	}
-	
-	private static Vla.Engine.NodeEngine CreateEngine(params Type[] nodes)
+
+	[Test]
+	[Ignore("To be implemented")]
+	public void NodeEngine_CreateInstance_ThrowsIfNodeNotRegistered()
+	{
+		var engine = CreateEngine();
+
+		Assert.Throws<InvalidOperationException>(() => engine.CreateInstance<MathAddNode>());
+	}
+
+	[Test]
+	public async Task NodeEngine_SaveState_SavesGraph()
+	{
+		var engine = CreateEngine();
+
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+
+		engine.CreateConnection(mathAddInstance, "Result", mathAddInstance, "A");
+
+		await engine.Tick();
+
+		Assert.That(engine.Instances.Count, Is.EqualTo(1));
+		Assert.That(engine.Connections.Count, Is.EqualTo(1));
+		Assert.That(engine.Instances[0].Outputs["Result"], Is.EqualTo(3));
+
+		var state = engine.SaveState();
+
+		var engine2 = CreateEngine();
+		engine2.LoadState(state);
+
+		Assert.That(engine2.Instances.Count, Is.EqualTo(1));
+		Assert.That(engine2.Connections.Count, Is.EqualTo(1));
+		Assert.That(engine2.Instances[0].Outputs["Result"], Is.EqualTo(3));
+
+		await engine2.Tick();
+
+		Assert.That(engine2.Instances[0].Outputs["Result"], Is.EqualTo(5));
+	}
+
+	private static Vla.Engine.NodeEngine CreateEngine()
 	{
 		var services = Host.CreateDefaultBuilder()
-			.ConfigureServices(s =>
-			{
-				s.AddSingleton<IVariableManager, VariableManager>();
-			})
+			.ConfigureServices(s => { s.AddSingleton<IVariableManager, VariableManager>(); })
 			.ConfigureLogging(l =>
 			{
 				l.AddConsole();
@@ -198,8 +275,6 @@ public class NodeEngine
 			.Services;
 
 		var engine = ActivatorUtilities.CreateInstance<Vla.Engine.NodeEngine>(services);
-		
-		engine.RegisterNodes(nodes);
 
 		return engine;
 	}
