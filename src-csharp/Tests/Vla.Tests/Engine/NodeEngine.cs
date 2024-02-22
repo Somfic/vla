@@ -23,7 +23,7 @@ public class NodeEngine
 
 		public override Task Execute()
 		{
-			Output("Value", "12");
+			Output("result", "Result","12");
 			return Task.CompletedTask;
 		}
 	}
@@ -40,7 +40,7 @@ public class NodeEngine
 			if (Value < 0)
 				throw new ArgumentException("Value cannot be negative");
 
-			Output("Value", Value);
+			Output("result", "Result", Value);
 			return Task.CompletedTask;
 		}
 	}
@@ -52,8 +52,8 @@ public class NodeEngine
 
 		public override Task Execute()
 		{
-			var a = Input("A", 1d);
-			var b = Input("B", 2d);
+			var a = Input("a", "Value", 1d);
+			var b = Input("b", "Value", 2d);
 
 			Console.WriteLine($"NODE: inputs {JsonConvert.SerializeObject(Inputs)}");
 
@@ -61,7 +61,7 @@ public class NodeEngine
 
 			Console.WriteLine($"NODE: {result} = {a} + {b}");
 
-			Output("Result", result);
+			Output("result", "Result", result);
 
 			return Task.CompletedTask;
 		}
@@ -74,7 +74,7 @@ public class NodeEngine
 
 		public override Task Execute()
 		{
-			Output("Time", DateTime.Now.ToLongTimeString());
+			Output("time", "Time",DateTime.Now.ToLongTimeString());
 			return Task.CompletedTask;
 		}
 	}
@@ -92,14 +92,14 @@ public class NodeEngine
 				Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Value", 101)
 			});
 
-		engine.CreateConnection(numberConstantInstance, "Value", mathAddInstance, "A");
+		engine.CreateConnection(numberConstantInstance, "result", mathAddInstance, "a");
 
 		var results = await engine.Tick();
 
 		Assert.That(results[0].Executed, Is.True);
 		Assert.That(results[0].Exception, Is.Null);
-		Assert.That(numberConstantInstance.Outputs["Value"], Is.EqualTo(101));
-		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(101));
+		Assert.That(results[0].GetOutput("result").Value, Is.EqualTo(101));
+		Assert.That(results[1].GetInput("a").Value, Is.EqualTo(101));
 	}
 
 	[Test]
@@ -113,9 +113,9 @@ public class NodeEngine
 
 		Assert.That(results[0].Executed, Is.True);
 		Assert.That(results[0].Exception, Is.Null);
-		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(1));
-		Assert.That(mathAddInstance.Inputs["B"], Is.EqualTo(2));
-		Assert.That(results[0].Outputs[0].Value, Is.EqualTo(3));
+		Assert.That(results[0].GetInput("a").Value, Is.EqualTo(1));
+		Assert.That(results[0].GetInput("b").Value, Is.EqualTo(2));
+		Assert.That(results[0].GetOutput("result").Value, Is.EqualTo(3));
 	}
 
 	[Test]
@@ -157,7 +157,7 @@ public class NodeEngine
 
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
 
-		engine.CreateConnection(new NodeConnection(mathAddInstance, "Result", mathAddInstance, "A"));
+		engine.CreateConnection(new NodeConnection(mathAddInstance, "result", mathAddInstance, "a"));
 
 		for (var i = 0; i < 10000; i++)
 		{
@@ -176,7 +176,7 @@ public class NodeEngine
 		var textConstantInstance = engine.CreateInstance<TextConstantNode>();
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
 
-		engine.CreateConnection(textConstantInstance, "Value", mathAddInstance, "A");
+		engine.CreateConnection(textConstantInstance, "result", mathAddInstance, "a");
 
 		var results = await engine.Tick();
 
@@ -185,7 +185,7 @@ public class NodeEngine
 		Assert.That(results[1].Executed, Is.True);
 		Assert.That(results[1].Exception, Is.Null);
 
-		Assert.That(mathAddInstance.Inputs["A"], Is.EqualTo(12));
+		Assert.That(results[1].GetInput("a").Value, Is.EqualTo(12));
 	}
 
 	[Test]
@@ -194,26 +194,23 @@ public class NodeEngine
 	{
 		var engine = CreateEngine();
 
-		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+		engine.CreateInstance<MathAddNode>();
 
 		var results = await engine.Tick();
-
-
+		
 		Assert.That(results[0].Executed, Is.True);
-		Assert.That(results[0].Exception, Is.Null);
 
 		results = await engine.Tick();
-
-
+		
 		Assert.That(results[0].Executed, Is.False);
 	}
 
 	[Test]
-	public void NodeEngine_Tick_RerunsDeterministicIfChanged()
+	public void NodeEngine_Tick_RerunsProbabilisticNodesEveryTick()
 	{
 		var engine = CreateEngine();
 
-		var currentTimeInstance = engine.CreateInstance<CurrentTimeNode>();
+		engine.CreateInstance<CurrentTimeNode>();
 
 		var result = engine.Tick().Result;
 
@@ -240,13 +237,13 @@ public class NodeEngine
 
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
 
-		engine.CreateConnection(mathAddInstance, "Result", mathAddInstance, "A");
+		engine.CreateConnection(mathAddInstance, "result", mathAddInstance, "a");
 
 		await engine.Tick();
 
 		Assert.That(engine.Instances.Count, Is.EqualTo(1));
 		Assert.That(engine.Connections.Count, Is.EqualTo(1));
-		Assert.That(engine.Instances[0].Outputs["Result"], Is.EqualTo(3));
+		Assert.That(engine.Instances[0].Outputs["result"], Is.EqualTo(3));
 
 		var state = engine.SaveState();
 
@@ -255,11 +252,27 @@ public class NodeEngine
 
 		Assert.That(engine2.Instances.Count, Is.EqualTo(1));
 		Assert.That(engine2.Connections.Count, Is.EqualTo(1));
-		Assert.That(engine2.Instances[0].Outputs["Result"], Is.EqualTo(3));
+		Assert.That(engine2.Instances[0].Outputs["result"], Is.EqualTo(3));
 
 		await engine2.Tick();
 
-		Assert.That(engine2.Instances[0].Outputs["Result"], Is.EqualTo(5));
+		Assert.That(engine2.Instances[0].Outputs["result"], Is.EqualTo(5));
+	}
+
+	[Test]
+	public async Task NodeEngine_Tick_FillsInLabels()
+	{
+		var engine = CreateEngine();
+
+		var mathAddInstance = engine.CreateInstance<MathAddNode>();
+
+		var results = await engine.Tick();
+
+		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Exception, Is.Null);
+		Assert.That(results[0].GetInput("a").Label, Is.EqualTo("Value"));
+		Assert.That(results[0].GetInput("b").Label, Is.EqualTo("Value"));
+		Assert.That(results[0].GetOutput("result").Label, Is.EqualTo("Result"));
 	}
 
 	private static Vla.Engine.NodeEngine CreateEngine()

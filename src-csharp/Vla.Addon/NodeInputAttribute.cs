@@ -1,28 +1,28 @@
 ﻿namespace Vla.Addon;
 
-[AttributeUsage(AttributeTargets.Property)]
-public class NodeInputAttribute(string? name = null) : Attribute
+public readonly struct NodeInput(string id, string label, dynamic? value) : INodeValue
 {
-    public string? Name { get; } = name;
-}
-
-public readonly struct NodeInput(string name, dynamic? value) : INodeValue
-{
-    public string Name { get; init; } = name;
+    public string Id { get; init; } = id;
+    
+    public string Label { get; init; } = label;
 
     public dynamic? Value { get; init; } = value;
 }
 
-public readonly struct NodeOutput(string name, dynamic? value) : INodeValue
+public readonly struct NodeOutput(string id, string label, dynamic? value) : INodeValue
 {
-    public string Name { get; init; } = name;
+    public string Id { get; init; } = id;
 
+    public string Label { get; init; } = label;
+    
     public dynamic? Value { get; init; } = value;
 }
 
 public interface INodeValue
 {
-    public string Name { get; }
+    public string Id { get; }
+    
+    public string Label { get; }
     
     public dynamic? Value { get; }
 }

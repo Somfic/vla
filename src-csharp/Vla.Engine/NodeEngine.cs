@@ -24,7 +24,7 @@ public class NodeEngine
 
 	public ImmutableDictionary<string, dynamic?> CachedOutputs { get; private set; } = ImmutableDictionary<string, dynamic?>.Empty;
 	
-	public void CreateConnection(Node source, string sourceOutput, Node target, string targetInput) => CreateConnection(new NodeConnection(source, sourceOutput, target, targetInput));
+	public void CreateConnection(Node source, string outputId, Node target, string inputId) => CreateConnection(new NodeConnection(source, outputId, target, inputId));
 
 	public void CreateConnection(NodeConnection connection)
 	{
@@ -75,32 +75,42 @@ public class NodeEngine
 
 	public async Task<ImmutableArray<NodeExecutionResult>> Tick()
 	{
-		var sorter = new TopologicalSorter(Connections.Select(x => (x.Source.Node.ToString(), x.Target.Node.ToString())).ToArray());
+		var sorter = new TopologicalSorter(Connections.Select(x => (x.Source.Node.ToString(), x.Target.Node.ToString()))
+			.ToArray());
 
-		var sortedInstances = sorter.Sort()
-			.Select(x => Guid.Parse(x.value))
+		Console.WriteLine(
+			$"Connections: {string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.Node).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.Node).Name}.{x.Target.Id}"))}");
+
+	var sortedInstances = sorter.Sort()
+			.Select(x => Guid.Parse(x))
 			.ToArray();
 
 		var unsortedInstances = Instances.Select(x => x.Id).Except(sortedInstances);
 		
 		var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
 
+		Console.WriteLine($"Execution order: {string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name))}");
+		
 		var results = new List<NodeExecutionResult>();
 
 		foreach (var instanceId in instances)
 		{
 			var instance = Instances.First(x => x.Id == instanceId);
 			
+			Console.WriteLine($"Executing node {instance.Name} ({instance.Id})");
+			
 			var result = await ExecuteNode(instance);
+
+			Console.WriteLine($"Node {instance.Name} ({instance.Id}) executed with result {JsonConvert.SerializeObject(result, Formatting.Indented)}");
 			
 			// Loop over all the outputs of this node execution
 			foreach (var output in result.Outputs)
 			{
-				Console.WriteLine($"Searching for inputs {instance.Id}.{output.Name} connects to");
+				Console.WriteLine($"Searching for inputs {instance.Id}.{output.Id} connects to");
 
 				// Get all the inputs this output is connected to
 				var inputs = Connections
-					.Where(x => x.Source.Node == instance.Id && x.Source.Name == output.Name)
+					.Where(x => x.Source.Node == instance.Id && x.Source.Id == output.Id)
 					.Select(x => x.Target);
 
 				Console.WriteLine($"Found {JsonConvert.SerializeObject(inputs)}");
@@ -111,9 +121,9 @@ public class NodeEngine
 					var node = Instances.First(x => x.Id == input.Node);
 					var nodeIndex = Instances.IndexOf(node);
 
-					Instances[nodeIndex].SetInput(input.Name, output.Value);
+					Instances[nodeIndex].SetInput(input.Id, output.Value);
 					
-					Console.WriteLine($"Setting input {input.Name} on {node.Name} to {output.Value}");
+					Console.WriteLine($"Setting input {input.Id} on {node.Name} to {output.Value}");
 					
 					Instances = Instances.SetItem(nodeIndex, node);
 				}
@@ -167,16 +177,22 @@ public class NodeEngine
 
 	private async Task<NodeExecutionResult> ExecuteNode(Node node)
 	{
+		
 		try
 		{
 			await node.Execute();
 			
-			var outputs = node
-				.Outputs
-				.Select(x => new NodeOutput(x.Key, x.Value))
+			var inputs = node
+				.Inputs
+				.Select(x => new NodeInput(x.Key, node.InputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key, x.Value))
 				.ToImmutableArray();
 			
-			return new NodeExecutionResult(outputs, node.Id, true);
+			var outputs = node
+				.Outputs
+				.Select(x => new NodeOutput(x.Key, node.OutputLabels.FirstOrDefault(y => y.Key == x.Key).Value  ?? x.Key, x.Value))
+				.ToImmutableArray();
+			
+			return new NodeExecutionResult(inputs, outputs, node.Id, true);
 		}
 		catch (Exception ex)
 		{

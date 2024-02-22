@@ -33,15 +33,4 @@ public static class NodeExtensions
             .Select(x => x!.Name)
             .FirstOrDefault();
     }
-
-    private static Maybe<MethodInfo> GetMainMethod(Type type) => GetApplicableMethods(type).FirstOrDefault();
-
-    private static MethodInfo[] GetApplicableMethods(Type type)
-    {
-        return type.GetMethods()
-            .Where(x => x.GetParameters().Any(y =>
-                y.GetCustomAttribute<NodeInputAttribute>() is not null ||
-                y.GetCustomAttribute<NodeOutputAttribute>() is not null))
-            .ToArray();
-    }
 }
