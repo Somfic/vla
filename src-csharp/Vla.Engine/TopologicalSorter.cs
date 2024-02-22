@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Newtonsoft.Json;
 
 namespace Vla.Engine;
 
@@ -9,84 +10,51 @@ public readonly struct TopologicalSorter(params (string from, string to)[] conne
 {
 	public ImmutableDictionary<string, ImmutableArray<string>> Graph { get; } = CreateGraph(connections.ToImmutableArray());
 	
-	public ImmutableArray<string> FindDependencies(string nodeId)
-	{
-		var visited = new HashSet<string>();
-		var stack = new Stack<string>();
-
-		Visit(nodeId, ref visited, ref stack);
-
-		var sortedNodes = new List<string>();
-
-		while (stack.Count > 0)
-		{
-			var id = stack.Pop();
-			sortedNodes.Add(id);
-		}
-
-		return sortedNodes
-			.Skip(1) // Skip the first node, since it's the node we're looking for dependencies for.
-			.ToImmutableArray();
-	}
-	
-	public ImmutableArray<(string value, int dependencies)> Sort()
-	{
-		var visited = new HashSet<string>();
-		var stack = new Stack<string>();
-
-		foreach (var nodeId in Graph.Keys)
-		{
-			Visit(nodeId, ref visited, ref stack);
-		}
-
-		var sortedNodes = new List<(string value, int dependencies)>();
-
-		while (stack.Count > 0)
-		{
-			var id = stack.Pop();
-			sortedNodes.Add((id, Graph[id].Length));
-		}
-		
-		return sortedNodes.OrderBy(x => x.dependencies).ToImmutableArray();
-	}
-
-	private void Visit(string nodeId, ref HashSet<string> visited, ref Stack<string> stack)
-	{
-		if(!Graph.TryGetValue(nodeId, out var value))
-			throw new ArgumentException($"The node with id {nodeId} does not exist in the graph.");
-		
-		if (!visited.Add(nodeId))
-			return;
-
-		foreach (var childId in value)
-		{
-			Visit(childId, ref visited, ref stack);
-		}
-		
-		stack.Push(nodeId);
-	}
-
 	private static ImmutableDictionary<string, ImmutableArray<string>> CreateGraph(ImmutableArray<(string from, string to)> connections)
 	{
 		var graph = new Dictionary<string, ImmutableArray<string>>();
 
 		foreach (var connection in connections)
 		{
-			// if(connection.from == connection.to)
-			// 	throw new ArgumentException("A node cannot be connected to itself.");
-			
 			if (!graph.ContainsKey(connection.from))
-				graph.Add(connection.from, []);
+				graph.Add(connection.from, ImmutableArray<string>.Empty);
 
 			if (!graph.ContainsKey(connection.to))
-				graph.Add(connection.to, []);
+				graph.Add(connection.to, ImmutableArray<string>.Empty);
 
-			graph[connection.to] = graph[connection.to]
-				.Add(connection.from)
+			graph[connection.from] = graph[connection.from]
+				.Add(connection.to)
 				.Distinct()
 				.ToImmutableArray();
 		}
 
 		return graph.ToImmutableDictionary();
+	}
+
+	public ImmutableArray<string> Sort()
+	{
+		var visited = new HashSet<string>();
+		var stack = new Stack<string>();
+
+		foreach (var nodeId in Graph.Keys)
+		{
+			if (!visited.Contains(nodeId))
+				Visit(nodeId, ref visited, ref stack);
+		}
+
+		return stack.ToImmutableArray();
+	}
+
+	private void Visit(string nodeId, ref HashSet<string> visited, ref Stack<string> stack)
+	{
+		visited.Add(nodeId);
+
+		foreach (var childId in Graph[nodeId])
+		{
+			if (!visited.Contains(childId))
+				Visit(childId, ref visited, ref stack);
+		}
+
+		stack.Push(nodeId);
 	}
 }
