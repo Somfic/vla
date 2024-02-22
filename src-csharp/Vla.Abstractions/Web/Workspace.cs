@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Newtonsoft.Json;
-using Vla.Abstractions.Types;
 using Vla.Addon.Metadata;
+using Vla.Nodes;
 
 namespace Vla.Abstractions.Web;
 
@@ -32,28 +32,22 @@ public readonly struct Workspace(string name)
     public DateTime LastModified { get; init; } = DateTime.Now;
 
     /// <summary>
-    /// The accent color of the workspace.
-    /// </summary>
-    [JsonProperty("color")]
-    public NodeTypeDefinition.ColorDefinition Color { get; init; } = System.Drawing.Color.Wheat;
-
-    /// <summary>
     /// The webs contained in the workspace.
     /// </summary>
     [JsonProperty("webs")]
     public ImmutableArray<Web> Webs { get; init; } = ImmutableArray<Web>.Empty;
 
-    // /// <summary>
-    // /// The structures possibly contained in the workspace. This is automatically set when loading.
-    // /// </summary>
-    // [JsonProperty("structures")]
-    // public ImmutableArray<NodeStructure> Structures { get; init; } = ImmutableArray<NodeStructure>.Empty;
+    /// <summary>
+    /// The structures possibly contained in the workspace. This is automatically set when loading.
+    /// </summary>
+    [JsonProperty("structures")]
+    public ImmutableArray<NodeStructure> Structures { get; init; } = ImmutableArray<NodeStructure>.Empty;
 
     /// <summary>
     /// The types possibly contained in the workspace. This is automatically set when loading.
     /// </summary>
     [JsonProperty("types")]
-    public ImmutableArray<NodeTypeDefinition> Types { get; init; } = ImmutableArray<NodeTypeDefinition>.Empty;
+    public ImmutableArray<TypeDefinition> Types { get; init; } = ImmutableArray<TypeDefinition>.Empty;
 
     /// <summary>
     /// The extensions active in the workspace.

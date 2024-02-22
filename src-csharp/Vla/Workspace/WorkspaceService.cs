@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Abstractions.Types;
 using Vla.Nodes;
 
 namespace Vla.Workspace;
