@@ -27,9 +27,4 @@
       <ProjectReference Include="..\..\Vla\Vla.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Instances\" />
-      <Folder Include="Structures\" />
-    </ItemGroup>
-
 </Project>
