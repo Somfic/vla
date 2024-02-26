@@ -1,9 +1,8 @@
 using System.Collections.Immutable;
 using Newtonsoft.Json;
 using Vla.Addon.Metadata;
-using Vla.Nodes;
 
-namespace Vla.Abstractions.Web;
+namespace Vla.Abstractions;
 
 public readonly struct Workspace(string name)
 {

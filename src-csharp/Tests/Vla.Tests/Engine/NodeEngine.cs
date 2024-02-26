@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vla.Abstractions;
-using Vla.Abstractions.Connection;
 using Vla.Addon;
 using Vla.Addon.Services;
 using Vla.Engine;
@@ -157,7 +156,7 @@ public class NodeEngine
 
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
 
-		engine.CreateConnection(new NodeConnection(mathAddInstance, "result", mathAddInstance, "a"));
+		engine.CreateConnection(new NodeConnection(mathAddInstance.Id, "result", mathAddInstance.Id, "a"));
 
 		for (var i = 0; i < 10000; i++)
 		{
@@ -231,7 +230,7 @@ public class NodeEngine
 	}
 
 	[Test]
-	public async Task NodeEngine_SaveState_SavesGraph()
+	public async Task NodeEngine_Web_SavesGraph()
 	{
 		var engine = CreateEngine();
 
@@ -245,10 +244,10 @@ public class NodeEngine
 		Assert.That(engine.Connections.Count, Is.EqualTo(1));
 		Assert.That(engine.Instances[0].Outputs["result"], Is.EqualTo(3));
 
-		var state = engine.SaveState();
+		var state = engine.SaveWeb();
 
 		var engine2 = CreateEngine();
-		engine2.LoadState(state);
+		engine2.LoadWeb(state);
 
 		Assert.That(engine2.Instances.Count, Is.EqualTo(1));
 		Assert.That(engine2.Connections.Count, Is.EqualTo(1));

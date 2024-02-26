@@ -45,6 +45,7 @@ public class WebsocketService
     {
         var wrappedMessage = new ServerMessage<TMessage>(message);
         var json = JsonConvert.SerializeObject(wrappedMessage);
+        Console.WriteLine($"> {json}");
         await _server.SendAsync(client.Guid, json);
     }
 

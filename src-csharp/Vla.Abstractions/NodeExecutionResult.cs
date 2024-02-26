@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Vla.Addon;
 
-namespace Vla.Engine;
+namespace Vla.Abstractions;
 
 public readonly struct NodeExecutionResult
 {

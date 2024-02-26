@@ -39,8 +39,6 @@ var host = Host.CreateDefaultBuilder()
 var addons = host.Services.GetRequiredService<AddonService>();
 addons.RegisterAddons();
 
-var engine = host.Services.GetRequiredService<NodeEngine>();
-var nodes = host.Services.GetRequiredService<NodeService>();
 var workspaces = host.Services.GetRequiredService<WorkspaceService>();
 var server = host.Services.GetRequiredService<WebsocketService>();
 
@@ -49,7 +47,7 @@ await server.StartAsync();
 
 server.ClientConnected.OnChange(async c =>
 {
-    await workspaces.CreateOrLoadAsync("Workspace");
+    await workspaces.CreateOrLoadAsync("Untitled");
     await server.SendAsync(c, new WorkspacesMessage(await workspaces.ListAsync()));
 });
 
@@ -80,7 +78,7 @@ await server.MarkReady();
 
 while (server.IsRunning)
 {
-    var results = engine.Tick();
+    // var results = engine.Tick();
     // await server.BroadcastAsync(new ExecutionResultMessage(results));
     await Task.Delay(100);
 }

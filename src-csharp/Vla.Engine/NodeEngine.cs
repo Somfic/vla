@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Vla.Abstractions.Connection;
+using Vla.Abstractions;
 using Vla.Addon;
 
 namespace Vla.Engine;
@@ -12,6 +12,9 @@ public class NodeEngine
 {
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<NodeEngine> _log;
+	
+	private string _name = "Untitled";
+	
 	public NodeEngine(ILogger<NodeEngine> log, IServiceProvider serviceProvider)
 	{
 		_serviceProvider = serviceProvider;
@@ -24,44 +27,46 @@ public class NodeEngine
 
 	public ImmutableDictionary<string, dynamic?> CachedOutputs { get; private set; } = ImmutableDictionary<string, dynamic?>.Empty;
 	
-	public void CreateConnection(Node source, string outputId, Node target, string inputId) => CreateConnection(new NodeConnection(source, outputId, target, inputId));
+	public void CreateConnection(Node source, string outputId, Node target, string inputId) => CreateConnection(new NodeConnection(source.Id, outputId, target.Id, inputId));
 
 	public void CreateConnection(NodeConnection connection)
 	{
 		Connections = Connections.Add(connection);
 	}
 
-	public T CreateInstance<T>(NodeInstance? instance = null) where T : Node
+	public T CreateInstance<T>(NodeInstanceOptions? options = null) where T : Node
 	{
-		instance ??= new NodeInstance();
+		options ??= new NodeInstanceOptions();
 
-		instance = instance with { Type = typeof(T) };
+		options = options with { Type = typeof(T) };
 
-		return (T)CreateInstance(instance);
+		return (T)CreateInstance(options);
 	}
 
-	public Node CreateInstance(NodeInstance instance)
+	public Node CreateInstance(NodeInstanceOptions options)
 	{
+		_log.LogInformation("Creating instance of {Type}", options.Type.Name);
+
 		// Check if the type is a node
-		if (!instance.Type.IsSubclassOf(typeof(Node)))
+		if (!options.Type.IsSubclassOf(typeof(Node)))
 		{
-			_log.LogWarning("Type {Type} is not a node", instance.Type.Name);
-			throw new InvalidOperationException($"{instance.Type.Name} does not inherit from {nameof(Node)}");
+			_log.LogWarning("Type {Type} is not a node", options.Type.Name);
+			throw new InvalidOperationException($"{options.Type.Name} does not inherit from {nameof(Node)}");
 		}
 
-		var nodeInstance = ActivatorUtilities.CreateInstance(_serviceProvider, instance.Type) as Node ?? throw new InvalidOperationException("Could not create node instance");
+		var nodeInstance = ActivatorUtilities.CreateInstance(_serviceProvider, options.Type) as Node ?? throw new InvalidOperationException("Could not create node instance");
 
-		nodeInstance.Purity = instance.GetType().GetCustomAttribute<NodeAttribute>()?.Purity ?? NodePurity.Deterministic;
-		nodeInstance.Id = instance.Guid ?? Guid.NewGuid();
-		nodeInstance.Inputs = instance.Inputs;
-		nodeInstance.Outputs = instance.Outputs;
+		nodeInstance.Purity = options.Type.GetCustomAttribute<NodeAttribute>()?.Purity ?? NodePurity.Deterministic;
+		nodeInstance.Id = options.Id ?? Guid.NewGuid();
+		nodeInstance.Inputs = options.Inputs ?? ImmutableDictionary<string, dynamic?>.Empty;
+		nodeInstance.Outputs = options.Outputs ?? ImmutableDictionary<string, dynamic?>.Empty;
 		
-		foreach (var property in instance.Properties)
+		foreach (var property in options.Properties ?? ImmutableDictionary<string, dynamic?>.Empty)
 		{
-			var propertyInfo = instance.Type.GetProperty(property.Key, BindingFlags.Public | BindingFlags.Instance);
+			var propertyInfo = options.Type.GetProperty(property.Key, BindingFlags.Public | BindingFlags.Instance);
 			if (propertyInfo == null)
 			{
-				_log.LogWarning("Property {Property} not found on node {Node}", property.Key, instance.Type.Name);
+				_log.LogWarning("Property {Property} not found on node {Node}", property.Key, options.Type.Name);
 				continue;
 			}
 
@@ -75,14 +80,14 @@ public class NodeEngine
 
 	public async Task<ImmutableArray<NodeExecutionResult>> Tick()
 	{
-		var sorter = new TopologicalSorter(Connections.Select(x => (x.Source.Node.ToString(), x.Target.Node.ToString()))
+		var sorter = new TopologicalSorter(Connections.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
 			.ToArray());
 
 		Console.WriteLine(
-			$"Connections: {string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.Node).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.Node).Name}.{x.Target.Id}"))}");
+			$"Connections: {string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.NodeId).Name}.{x.Target.Id}"))}");
 
-	var sortedInstances = sorter.Sort()
-			.Select(x => Guid.Parse(x))
+		var sortedInstances = sorter.Sort()
+			.Select(Guid.Parse)
 			.ToArray();
 
 		var unsortedInstances = Instances.Select(x => x.Id).Except(sortedInstances);
@@ -110,7 +115,7 @@ public class NodeEngine
 
 				// Get all the inputs this output is connected to
 				var inputs = Connections
-					.Where(x => x.Source.Node == instance.Id && x.Source.Id == output.Id)
+					.Where(x => x.Source.NodeId == instance.Id && x.Source.Id == output.Id)
 					.Select(x => x.Target);
 
 				Console.WriteLine($"Found {JsonConvert.SerializeObject(inputs)}");
@@ -118,7 +123,7 @@ public class NodeEngine
 			    // For each input, set the value to the original output, with conversion to the input type
 				foreach (var input in inputs)
 				{
-					var node = Instances.First(x => x.Id == input.Node);
+					var node = Instances.First(x => x.Id == input.NodeId);
 					var nodeIndex = Instances.IndexOf(node);
 
 					Instances[nodeIndex].SetInput(input.Id, output.Value);
@@ -135,31 +140,19 @@ public class NodeEngine
 		return results.ToImmutableArray();
 	}
 	
-	public string SaveState()
+	public Web SaveWeb()
 	{
-		var state = new EngineState
+		return new Web(_name)
 		{
-			Instances = Instances.Select(x => new NodeInstance
-			{
-				Type = x.GetType(),
-				Guid = x.Id,
-				Properties = x.Properties,
-				Inputs = x.Inputs,
-				Outputs = x.Outputs
-			}).ToImmutableArray(),
+			Instances = Instances.Select<Node, NodeInstance>(x => x).ToImmutableArray(),
 			Connections = Connections
 		};
-
-		return JsonConvert.SerializeObject(state, Formatting.Indented);
 	}
 
-	public void LoadState(string engineState)
+	public void LoadWeb(Web state)
 	{
-		var state = JsonConvert.DeserializeObject<EngineState>(engineState);
+		_name = state.Name;
 		
-		if(state == null)
-			throw new InvalidOperationException("Could not deserialize engine state");
-
 		Instances = state.Instances.Select(x =>
 		{
 			var instance = CreateInstance(x);

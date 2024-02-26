@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
 
-namespace Vla.Nodes;
+namespace Vla.Abstractions;
 
 public record struct TypeDefinition
 {

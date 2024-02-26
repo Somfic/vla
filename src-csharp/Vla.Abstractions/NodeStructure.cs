@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Vla.Addon;
 
-namespace Vla.Nodes;
+namespace Vla.Abstractions;
 
 public record struct NodeStructure
 {

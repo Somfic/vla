@@ -1,11 +1,13 @@
 using System.Collections.Immutable;
 using Newtonsoft.Json;
-using Vla.Abstractions.Connection;
 
-namespace Vla.Engine;
+namespace Vla.Abstractions;
 
-public record EngineState
+public readonly record struct Web(string Name)
 {
+	[JsonProperty("name")]
+	public string Name { get; init; } = Name;
+
 	[JsonProperty("instances")]
 	public ImmutableArray<NodeInstance> Instances { get; init; }
 	
