@@ -10,7 +10,4 @@ export interface Workspace {
 	lastModified: Date;
 	color: ColorDefinition;
 	webs: Web[];
-	structures: NodeStructure[];
-	types: TypeDefinition[];
-	addons: Dependency[];
 }

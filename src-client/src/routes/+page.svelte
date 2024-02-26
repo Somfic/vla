@@ -10,6 +10,8 @@
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 
+	let blurred = true;
+
 	onMount(() => {
 		startListening();
 	});
@@ -23,7 +25,7 @@
 
 <Menu />
 
-<main>
+<main class:blurred>
 	<Shortcuts />
 	<Explorer />
 	<div class="editor">
@@ -51,6 +53,12 @@
 		gap: $gap;
 		padding: $gap;
 		height: 100vh;
+		background-color: black;
+		transition: background-color 100ms ease-in-out;
+
+		&.blurred {
+			background-color: rgba(0, 0, 0, 0);
+		}
 	}
 
 	.shortcuts {

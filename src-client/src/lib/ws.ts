@@ -28,7 +28,7 @@ export function startListening() {
 		messages.update((old) => [...old, e.data]);
 
 		const message = JSON.parse(e.data) as SocketMessage;
-		//onsole.log('<', message);
+		console.log('<', message);
 
 		switch (message.type) {
 			case 'Progress':
