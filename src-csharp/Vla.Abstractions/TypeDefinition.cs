@@ -7,16 +7,16 @@ public record struct TypeDefinition
 {
 	[JsonProperty("type")]
 	public Type Type { get; init; }
-    
+
 	[JsonProperty("name")]
 	public string Name { get; init; }
-    
+
 	[JsonProperty("description")]
 	public string? Description { get; init; }
-    
+
 	[JsonProperty("possibleValues")]
 	public ImmutableArray<PossibleValue> PossibleValues { get; init; }
-    
+
 	public readonly struct PossibleValue(string label, dynamic? value)
 	{
 		[JsonProperty("label")]

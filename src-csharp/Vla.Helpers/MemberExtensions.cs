@@ -35,7 +35,7 @@ public static class DocumentationExtensions
 
 	public static string GetDocumentation(this PropertyInfo parameter)
 	{
-		try 
+		try
 		{
 			return Reader.GetMemberComments(parameter).Summary
 				.Trim();
@@ -45,5 +45,4 @@ public static class DocumentationExtensions
 			return string.Empty;
 		}
 	}
-
 }

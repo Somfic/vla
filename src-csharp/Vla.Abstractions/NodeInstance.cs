@@ -6,56 +6,58 @@ namespace Vla.Abstractions;
 
 public record struct NodeInstance()
 {
-	[JsonProperty("node")]
-	public Type Type { get; init; } 
-
-	[JsonProperty("id")] 
-	public Guid? Guid { get; init; }
-	
-	[JsonProperty("properties")]
-	public ImmutableDictionary<string, dynamic?> Properties { get; init; } 
-	
-	[JsonProperty("inputs")]
-	public ImmutableDictionary<string, dynamic?> Inputs { get; init; }
-	
-	[JsonProperty("outputs")]
-	public ImmutableDictionary<string, dynamic?> Outputs { get; init; }
-
-	public static implicit operator NodeInstance(Node node) => new(node);
 	private NodeInstance(Node node) : this()
 	{
+		Console.WriteLine("Converting node to node instance");
+		Console.WriteLine(JsonConvert.SerializeObject(node, Formatting.Indented));
+
 		Type = node.GetType();
 		Guid = node.Id;
-		Properties = node.Properties;
-		Inputs = node.Inputs;
-		Outputs = node.Outputs;
+		Properties = node.Properties.Select(x => new NamedValue(x.Key, x.Key, x.Value)).ToImmutableArray();
+		Inputs = node.Inputs.Select(x =>
+				new NamedValue(x.Key, node.InputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key, x.Value))
+			.ToImmutableArray();
+		Outputs = node.Outputs.Select(x =>
+				new NamedValue(x.Key, node.OutputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key, x.Value))
+			.ToImmutableArray();
+	}
+
+	[JsonProperty("node")]
+	public Type Type { get; init; }
+
+	[JsonProperty("id")]
+	public Guid? Guid { get; init; } = null;
+
+	[JsonProperty("properties")]
+	public ImmutableArray<NamedValue> Properties { get; init; } = ImmutableArray<NamedValue>.Empty;
+
+	[JsonProperty("inputs")]
+	public ImmutableArray<NamedValue> Inputs { get; init; } = ImmutableArray<NamedValue>.Empty;
+
+	[JsonProperty("outputs")]
+	public ImmutableArray<NamedValue> Outputs { get; init; } = ImmutableArray<NamedValue>.Empty;
+
+	public static implicit operator NodeInstance(Node node)
+	{
+		return new NodeInstance(node);
 	}
 }
 
-public record NodeInstanceOptions()
+public record struct NamedValue
 {
-	[JsonProperty("node")]
-	public Type Type { get; init; } = null!;
-	
-	[JsonProperty("id")]
-	public Guid? Id { get; init; } = null;
-	
-	[JsonProperty("properties")]
-	public ImmutableDictionary<string, dynamic?>? Properties { get; init; } = ImmutableDictionary<string, dynamic?>.Empty; 
-	
-	[JsonProperty("inputs")]
-	public ImmutableDictionary<string, dynamic?>? Inputs { get; init; } = ImmutableDictionary<string, dynamic?>.Empty;
-	
-	[JsonProperty("outputs")]
-	public ImmutableDictionary<string, dynamic?>? Outputs { get; init; } = ImmutableDictionary<string, dynamic?>.Empty;
-
-	public static implicit operator NodeInstanceOptions(NodeInstance instance) => new(instance);
-	private NodeInstanceOptions(NodeInstance instance) : this()
+	public NamedValue(string id, string label, dynamic? value)
 	{
-		Type = instance.Type;
-		Id = instance.Guid;
-		Properties = instance.Properties;
-		Inputs = instance.Inputs;
-		Outputs = instance.Outputs;
+		Id = id;
+		Label = label;
+		Value = value;
 	}
+
+	[JsonProperty("id")]
+	public string Id { get; init; }
+
+	[JsonProperty("label")]
+	public string Label { get; init; }
+
+	[JsonProperty("value")]
+	public dynamic? Value { get; init; }
 }

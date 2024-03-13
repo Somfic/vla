@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -6,8 +5,6 @@ using Newtonsoft.Json;
 using Vla.Abstractions;
 using Vla.Addon;
 using Vla.Addon.Services;
-using Vla.Engine;
-using Vla.Nodes;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -15,69 +12,6 @@ namespace Vla.Tests.Engine;
 
 public class NodeEngine
 {
-	[Node]
-	public class TextConstantNode : Node
-	{
-		public override string Name { get; }
-
-		public override Task Execute()
-		{
-			Output("result", "Result","12");
-			return Task.CompletedTask;
-		}
-	}
-
-	[Node]
-	public class NumberConstantNode : Node
-	{
-		public override string Name => "Number constant";
-
-		[NodeProperty] public double Value { get; set; } = 100;
-
-		public override Task Execute()
-		{
-			if (Value < 0)
-				throw new ArgumentException("Value cannot be negative");
-
-			Output("result", "Result", Value);
-			return Task.CompletedTask;
-		}
-	}
-
-	[Node]
-	public class MathAddNode : Node
-	{
-		public override string Name => "Add";
-
-		public override Task Execute()
-		{
-			var a = Input("a", "Value", 1d);
-			var b = Input("b", "Value", 2d);
-
-			Console.WriteLine($"NODE: inputs {JsonConvert.SerializeObject(Inputs)}");
-
-			var result = a + b;
-
-			Console.WriteLine($"NODE: {result} = {a} + {b}");
-
-			Output("result", "Result", result);
-
-			return Task.CompletedTask;
-		}
-	}
-
-	[Node(NodePurity.Probabilistic)]
-	public class CurrentTimeNode : Node
-	{
-		public override string Name { get; }
-
-		public override Task Execute()
-		{
-			Output("time", "Time",DateTime.Now.ToLongTimeString());
-			return Task.CompletedTask;
-		}
-	}
-
 	[Test]
 	public async Task NodeEngine_Tick_ExecutesGraph()
 	{
@@ -88,7 +22,7 @@ public class NodeEngine
 		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
 			new NodeInstance
 			{
-				Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Value", 101)
+				Properties = [new NamedValue("Value", "Value", 101)]
 			});
 
 		engine.CreateConnection(numberConstantInstance, "result", mathAddInstance, "a");
@@ -132,14 +66,10 @@ public class NodeEngine
 	{
 		var engine = CreateEngine();
 
-		var properties = ImmutableDictionary<string, dynamic?>
-			.Empty
-			.Add("Value", -1);
-
 		var numberConstantInstance = engine.CreateInstance<NumberConstantNode>(
 			new NodeInstance
 			{
-				Properties = properties
+				Properties = [new NamedValue("Value", "Value", -1)]
 			});
 
 		var results = await engine.Tick();
@@ -196,11 +126,11 @@ public class NodeEngine
 		engine.CreateInstance<MathAddNode>();
 
 		var results = await engine.Tick();
-		
+
 		Assert.That(results[0].Executed, Is.True);
 
 		results = await engine.Tick();
-		
+
 		Assert.That(results[0].Executed, Is.False);
 	}
 
@@ -289,5 +219,69 @@ public class NodeEngine
 		var engine = ActivatorUtilities.CreateInstance<Vla.Engine.NodeEngine>(services);
 
 		return engine;
+	}
+
+	[Node]
+	public class TextConstantNode : Node
+	{
+		public override string Name { get; }
+
+		public override Task Execute()
+		{
+			Output("result", "Result", "12");
+			return Task.CompletedTask;
+		}
+	}
+
+	[Node]
+	public class NumberConstantNode : Node
+	{
+		public override string Name => "Number constant";
+
+		[NodeProperty]
+		public double Value { get; set; } = 100;
+
+		public override Task Execute()
+		{
+			if (Value < 0)
+				throw new ArgumentException("Value cannot be negative");
+
+			Output("result", "Result", Value);
+			return Task.CompletedTask;
+		}
+	}
+
+	[Node]
+	public class MathAddNode : Node
+	{
+		public override string Name => "Add";
+
+		public override Task Execute()
+		{
+			var a = Input("a", "Value", 1d);
+			var b = Input("b", "Value", 2d);
+
+			Console.WriteLine($"NODE: inputs {JsonConvert.SerializeObject(Inputs)}");
+
+			var result = a + b;
+
+			Console.WriteLine($"NODE: {result} = {a} + {b}");
+
+			Output("result", "Result", result);
+
+			return Task.CompletedTask;
+		}
+	}
+
+	[Node(NodePurity.Probabilistic)]
+	public class CurrentTimeNode : Node
+	{
+		public override string Name { get; }
+
+		public override Task Execute()
+		{
+			Output("time", "Time", DateTime.Now.ToLongTimeString());
+			return Task.CompletedTask;
+		}
 	}
 }

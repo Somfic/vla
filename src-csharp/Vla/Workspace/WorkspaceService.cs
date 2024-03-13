@@ -4,191 +4,226 @@ using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Abstractions;
 using Vla.Addons.Math;
-using Vla.Engine;
 using Vla.Nodes;
 
 namespace Vla.Workspace;
 
 public class WorkspaceService
 {
-    private readonly ILogger<WorkspaceService> _log;
-    private readonly NodeService _nodes;
-    private readonly AddonService _addons;
+	private static readonly string RecentPath =
+		Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces");
 
-    private readonly string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "Workspaces");
+	private static readonly Web DefaultWeb = new("Pythagorean theorem")
+	{
+		Instances =
+		[
+			new NodeInstance
+			{
+				Guid = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+				Type = typeof(MathNode),
+				Properties = [new NamedValue("Mode", "Mode", MathNode.MathMode.Power)],
+				Inputs = [new NamedValue("power.value", "Value", 3), new NamedValue("power.base", "Base", 2)]
+			},
+			new NodeInstance
+			{
+				Guid = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+				Type = typeof(MathNode),
+				Properties = [new NamedValue("Mode", "Mode", MathNode.MathMode.Power)],
+				Inputs = [new NamedValue("power.value", "Value", 4), new NamedValue("power.base", "Base", 2)]
+			},
+			new NodeInstance
+			{
+				Guid = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+				Type = typeof(MathNode),
+				Properties = [new NamedValue("Mode", "Mode", MathNode.MathMode.Add)]
+			},
+			new NodeInstance
+			{
+				Guid = Guid.Parse("00000000-0000-0000-0000-000000000004"),
+				Type = typeof(MathNode),
+				Properties = [new NamedValue("Mode", "Mode", MathNode.MathMode.SquareRoot)]
+			}
+		],
+		Connections =
+		[
+			new NodeConnection(Guid.Parse("00000000-0000-0000-0000-000000000001"), "power.result",
+				Guid.Parse("00000000-0000-0000-0000-000000000003"), "add.a"),
+			new NodeConnection(Guid.Parse("00000000-0000-0000-0000-000000000002"), "power.result",
+				Guid.Parse("00000000-0000-0000-0000-000000000003"), "add.b"),
+			new NodeConnection(Guid.Parse("00000000-0000-0000-0000-000000000003"), "add.result",
+				Guid.Parse("00000000-0000-0000-0000-000000000004"), "squareRoot.value")
+		]
+	};
 
-    public WorkspaceService(ILogger<WorkspaceService> log, NodeService nodes, AddonService addons)
-    {
-        _log = log;
-        _nodes = nodes;
-        _addons = addons;
-        Directory.CreateDirectory(_path);
-    }
+	private readonly AddonService _addons;
 
-    public async Task<Result<Abstractions.Workspace>> CreateOrLoadAsync(string name)
-    {
-        if (Exists(name))
-            return await LoadAsync(name);
-        return await CreateAsync(name);
-    }
+	private readonly ILogger<WorkspaceService> _log;
+	private readonly NodeService _nodes;
 
-    public async Task<ImmutableArray<Abstractions.Workspace>> ListAsync()
-    {
-        var files = Directory.GetFiles(_path, "*.vla");
-        var workspaces = new List<Abstractions.Workspace>();
+	public WorkspaceService(ILogger<WorkspaceService> log, NodeService nodes, AddonService addons)
+	{
+		_log = log;
+		_nodes = nodes;
+		_addons = addons;
+	}
 
-        foreach (var file in files)
-        {
-            (await LoadAsync(Path.GetFileNameWithoutExtension(file)))
-                .On(workspaces.Add);
-        }
+	public Task<Result<ImmutableArray<Abstractions.Workspace>>> ListRecentAsync()
+	{
+		return Result.TryAsync(async () =>
+		{
+			var file = new FileStream(RecentPath, FileMode.OpenOrCreate);
 
-        return workspaces.ToImmutableArray();
-    }
+			var workspaces = new List<Abstractions.Workspace>();
 
-    public async Task SaveAsync(Abstractions.Workspace workspace)
-    {
-        (await Result.TryAsync(async () =>
-        {
-            workspace = workspace with { LastModified = DateTime.Now };
-            await File.WriteAllTextAsync(GetWorkspacePath(workspace.Name), EncodeWorkspace(workspace));
-            return true;
-        })).On(x => _log.LogInformation("Saved workspace {Name} at {Path}", workspace.Name, workspace.Path))
-            .OnError(x => _log.LogWarning(x, "Could not save workspace {Name} at {Path}", workspace.Name, workspace.Path));
+			using var reader = new StreamReader(file);
+			while (await reader.ReadLineAsync() is { } path)
+				if (Exists(path))
+					(await LoadAsync(path)).On(workspaces.Add);
 
-    }
+			await file.FlushAsync();
+			file.Close();
 
-    public void Delete(Abstractions.Workspace workspace)
-    {
-        var path = GetWorkspacePath(workspace.Name);
+			return workspaces.ToImmutableArray();
+		});
+	}
 
-        if (!Exists(workspace.Name))
-            return;
+	public Task<Result<Abstractions.Workspace>> CreateOrLoadAsync(string name, string path)
+	{
+		if (Exists(path))
+			return LoadAsync(path);
 
-        File.Delete(path);
-        _log.LogInformation("Deleted workspace {Name} at {Path}", workspace.Name, path);
-    }
+		return CreateAsync(name, path);
+	}
 
-    private async Task<Result<Abstractions.Workspace>> CreateAsync(string name)
-    {
-        if (Exists(name))
-            return new Exception($"Workspace {name} already exists");
+	public Task<Result<Abstractions.Workspace>> CreateOrLoadAsync(string path)
+	{
+		if (Exists(path))
+			return LoadAsync(path);
 
-        var path = GetWorkspacePath(name);
+		return CreateAsync(Path.GetFileNameWithoutExtension(path), path);
+	}
 
-        var result = (await Result.TryAsync(async () =>
-            {
-                var workspace = new Abstractions.Workspace(name)
-                {
-                    Path = path,
-                    Created = DateTime.Now,
-                    LastModified = DateTime.Now,
-                    Addons = [("Core", new Version(0, 0, 0))]
-                };
-                await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
-                return workspace;
-            }))
-            .On(x => _log.LogInformation("Created workspace {Name} at {Path}", x.Name, path))
-            .OnError(x => _log.LogWarning(x, "Could not create workspace {Name} at {Path}", name, path));
+	public async Task SaveAsync(Abstractions.Workspace workspace)
+	{
+		(await Result.TryAsync(async () =>
+			{
+				workspace = workspace with { LastModified = DateTime.Now };
+				await File.WriteAllTextAsync(workspace.Path, EncodeWorkspace(workspace));
+				return true;
+			})).On(x => _log.LogInformation("Saved workspace {Name} at {Path}", workspace.Name, workspace.Path))
+			.OnError(x =>
+				_log.LogWarning(x, "Could not save workspace {Name} at {Path}", workspace.Name, workspace.Path));
+	}
 
-        if (!result.IsError)
-            return await LoadAsync(name);
+	public void Delete(Abstractions.Workspace workspace)
+	{
+		if (!Exists(workspace.Path))
+			return;
 
-        return result;
-    }
+		File.Delete(workspace.Path);
+		_log.LogInformation("Deleted workspace {Name} at {Path}", workspace.Name, workspace.Path);
+	}
 
-    private async Task<Result<Abstractions.Workspace>> LoadAsync(string name)
-    {
-        var path = GetWorkspacePath(name);
+	private async Task<Result<Abstractions.Workspace>> CreateAsync(string name, string path)
+	{
+		if (Exists(path))
+			return new Exception($"A workspace already exists at {path}");
 
-        if (!Exists(name))
-            return new FileNotFoundException($"Workspace {name} does not exist", path);
+		var result = (await Result.TryAsync(async () =>
+			{
+				var workspace = new Abstractions.Workspace(name)
+				{
+					Name = name,
+					Path = path,
+					Created = DateTime.Now,
+					LastModified = DateTime.Now,
+					Addons = [("Core", new Version(0, 0, 0))]
+				};
+				await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
+				return workspace;
+			}))
+			.On(x => _log.LogInformation("Created workspace {Name} at {Path}", x.Name, path))
+			.OnError(x => _log.LogWarning(x, "Could not create workspace {Name} at {Path}", name, path));
 
-        return (await Result.TryAsync(async () =>
-        {
-            var json = await File.ReadAllTextAsync(path);
-            var workspace = DecodeWorkspace(json);
+		if (!result.IsError)
+			return await LoadAsync(name);
 
-            if (workspace.Webs.Length == 0) workspace = workspace with { Webs = ImmutableArray.Create(DefaultWeb) };
+		return result;
+	}
 
-            // workspace = workspace with { Structures = [], Types = [], Path = path };
+	private async Task<Result<Abstractions.Workspace>> LoadAsync(string path)
+	{
+		if (!Exists(path))
+			return new FileNotFoundException("Workspace file could not be found", path);
 
-            foreach (var dependency in workspace.Addons)
-            {
-                var extension = _addons.Addons.First(x => x.Name == dependency.Name && x.Version >= dependency.MinVersion);
-                //var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
+		return (await Result.TryAsync(async () =>
+			{
+				var json = await File.ReadAllTextAsync(path);
+				var workspace = DecodeWorkspace(json);
 
-                //workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
-            }
+				if (workspace.Webs.Length == 0) workspace = workspace with { Webs = ImmutableArray.Create(DefaultWeb) };
 
-            //workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
+				workspace = workspace with { Path = path };
 
-            // Clean up double connections in the webs
-            // workspace = workspace with
-            // {
-            //     Webs = workspace.Webs.Select(web =>
-            // {
-            //     var connections = web.Connections.DistinctBy(x => (x.Source.Id, x.Target.Id)).ToImmutableArray();
-            //     return web with { Connections = connections };
-            // }).ToImmutableArray()
-            // };
+				foreach (var dependency in workspace.Addons)
+				{
+					var extension = _addons.Addons.First(x =>
+						x.Name == dependency.Name && x.Version >= dependency.MinVersion);
+					// var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
 
-            return workspace;
-        }))
-            .On(x => _log.LogInformation("Loaded workspace {Name} with {Webs} webs at {Path}", x.Name, x.Webs.Length, path))
-            .OnError(x => _log.LogWarning(x, "Could not load workspace {Name} at {Path}", name, path));
-    }
+					//workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
+				}
 
-    public bool Exists(string name)
-    {
-        return File.Exists(GetWorkspacePath(name));
-    }
+				//workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
 
-    private string GetWorkspacePath(string name) => Path.Combine(_path, $"{name}.vla");
-    
-    private static string EncodeWorkspace(Abstractions.Workspace workspace)
-    {
-        //workspace = workspace with { Path = string.Empty, Structures = ImmutableArray<NodeStructure>.Empty, Types = ImmutableArray<NodeTypeDefinition>.Empty };
-        return JsonConvert.SerializeObject(workspace, Formatting.Indented);
-    }
+				// Clean up double connections in the webs
+				// workspace = workspace with
+				// {
+				//     Webs = workspace.Webs.Select(web =>
+				// {
+				//     var connections = web.Connections.DistinctBy(x => (x.Source.Id, x.Target.Id)).ToImmutableArray();
+				//     return web with { Connections = connections };
+				// }).ToImmutableArray()
+				// };
 
-    private static Abstractions.Workspace DecodeWorkspace(string encoded) => JsonConvert.DeserializeObject<Abstractions.Workspace>(encoded);
+				await MarkRecent(workspace);
 
-    private static readonly Web DefaultWeb = new("Pythagorean theorem")
-    {
-        Instances =
-        [
-            new NodeInstance
-            {
-                Guid = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Type = typeof(MathNode),
-                Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Mode", MathNode.MathMode.Power),
-                Inputs = ImmutableDictionary<string, dynamic?>.Empty.Add("power.value", 3).Add("power.base", 2)
-            },
-            new NodeInstance
-            {
-                Guid = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                Type = typeof(MathNode),
-                Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Mode", MathNode.MathMode.Power),
-                Inputs = ImmutableDictionary<string, dynamic?>.Empty.Add("power.value", 4).Add("power.base", 2)
-            },
-            new NodeInstance
-            {
-                Guid = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                Type = typeof(MathNode),
-                Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Mode", MathNode.MathMode.Add)
-            },
-            new NodeInstance
-            {
-                Guid = Guid.Parse("00000000-0000-0000-0000-000000000004"),
-                Type = typeof(MathNode),
-                Properties = ImmutableDictionary<string, dynamic?>.Empty.Add("Mode", MathNode.MathMode.SquareRoot)
-            }
-        ],
-        Connections = [
-            new NodeConnection(Guid.Parse("00000000-0000-0000-0000-000000000001"), "power.result", Guid.Parse("00000000-0000-0000-0000-000000000003"), "add.a"),
-            new NodeConnection(Guid.Parse("00000000-0000-0000-0000-000000000002"), "power.result", Guid.Parse("00000000-0000-0000-0000-000000000003"), "add.b"),
-            new NodeConnection(Guid.Parse("00000000-0000-0000-0000-000000000003"), "add.result", Guid.Parse("00000000-0000-0000-0000-000000000004"), "squareRoot.value")
-        ]
-    };
+				return workspace;
+			}))
+			.On(x => _log.LogInformation("Loaded workspace {Name} with {Webs} webs at {Path}", x.Name, x.Webs.Length,
+				path))
+			.OnError(x => _log.LogWarning(x, "Could not load workspace file at {Path}", path));
+	}
+
+	public bool Exists(string path)
+	{
+		return File.Exists(path);
+	}
+
+	private static async Task MarkRecent(Abstractions.Workspace workspace)
+	{
+		var recents = await File.ReadAllLinesAsync(RecentPath);
+		if (recents.Contains(workspace.Path))
+			return;
+
+		await File.AppendAllTextAsync(RecentPath, $"{workspace.Path}\n");
+
+		// TODO: Add this to configuration
+		if (recents.Length > 10)
+		{
+			var toRemove = recents.Length - 10;
+			await File.WriteAllLinesAsync(RecentPath, recents.Skip(toRemove));
+		}
+	}
+
+	private static string EncodeWorkspace(Abstractions.Workspace workspace)
+	{
+		//workspace = workspace with { Path = string.Empty, Structures = ImmutableArray<NodeStructure>.Empty, Types = ImmutableArray<NodeTypeDefinition>.Empty };
+		return JsonConvert.SerializeObject(workspace, Formatting.Indented);
+	}
+
+	private static Abstractions.Workspace DecodeWorkspace(string encoded)
+	{
+		return JsonConvert.DeserializeObject<Abstractions.Workspace>(encoded);
+	}
 }

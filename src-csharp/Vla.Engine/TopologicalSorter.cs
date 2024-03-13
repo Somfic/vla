@@ -1,16 +1,17 @@
 ﻿using System.Collections.Immutable;
-using Newtonsoft.Json;
 
 namespace Vla.Engine;
 
 /// <summary>
-///  A topological sorter for nodes.
+///     A topological sorter for nodes.
 /// </summary>
 public readonly struct TopologicalSorter(params (string from, string to)[] connections)
 {
-	public ImmutableDictionary<string, ImmutableArray<string>> Graph { get; } = CreateGraph(connections.ToImmutableArray());
-	
-	private static ImmutableDictionary<string, ImmutableArray<string>> CreateGraph(ImmutableArray<(string from, string to)> connections)
+	public ImmutableDictionary<string, ImmutableArray<string>> Graph { get; } =
+		CreateGraph(connections.ToImmutableArray());
+
+	private static ImmutableDictionary<string, ImmutableArray<string>> CreateGraph(
+		ImmutableArray<(string from, string to)> connections)
 	{
 		var graph = new Dictionary<string, ImmutableArray<string>>();
 
@@ -37,10 +38,8 @@ public readonly struct TopologicalSorter(params (string from, string to)[] conne
 		var stack = new Stack<string>();
 
 		foreach (var nodeId in Graph.Keys)
-		{
 			if (!visited.Contains(nodeId))
 				Visit(nodeId, ref visited, ref stack);
-		}
 
 		return stack.ToImmutableArray();
 	}
@@ -50,10 +49,8 @@ public readonly struct TopologicalSorter(params (string from, string to)[] conne
 		visited.Add(nodeId);
 
 		foreach (var childId in Graph[nodeId])
-		{
 			if (!visited.Contains(childId))
 				Visit(childId, ref visited, ref stack);
-		}
 
 		stack.Push(nodeId);
 	}

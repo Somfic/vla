@@ -1,10 +1,6 @@
-﻿using System.Collections.Immutable;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 using Vla.Abstractions;
 using Vla.Addon.Services;
 using Vla.Addons;
@@ -12,73 +8,32 @@ using Vla.Engine;
 using Vla.Input;
 using Vla.Nodes;
 using Vla.Server;
-using Vla.Server.Messages;
+using Vla.Websocket;
 using Vla.Workspace;
 
 Directory.CreateDirectory(AddonService.Path);
 
 var host = Host.CreateDefaultBuilder()
-    .ConfigureServices(s =>
-    {
-        s.AddHttpClient();
-        s.AddSingleton<WebsocketService>();
-        s.AddSingleton<NodeService>();
-        s.AddSingleton<InputService>();
-        s.AddSingleton<IVariableManager, VariableManager>();
-        s.AddSingleton<WorkspaceService>();
-        s.AddSingleton<AddonService>();
-        s.AddSingleton<NodeEngine>();
-        s.UseAddon<CoreAddon>();
-        s.UseAddons(AddonService.Path);
-    }).ConfigureLogging(s =>
-    {
-        s.SetMinimumLevel(LogLevel.Debug);
-    })
-    .Build();
+	.ConfigureServices(s =>
+	{
+		s.AddHttpClient();
+		s.AddSingleton<IWebsocketService, WebsocketService>();
+		s.AddSingleton<NodeService>();
+		s.AddSingleton<InputService>();
+		s.AddSingleton<IVariableManager, VariableManager>();
+		s.AddSingleton<WorkspaceService>();
+		s.AddSingleton<AddonService>();
+		s.AddSingleton<NodeEngine>();
+		s.UseAddon<CoreAddon>();
+		s.UseAddons(AddonService.Path);
+	}).ConfigureLogging(s => { s.SetMinimumLevel(LogLevel.Debug); })
+	.Build();
 
 var addons = host.Services.GetRequiredService<AddonService>();
 addons.RegisterAddons();
 
-var workspaces = host.Services.GetRequiredService<WorkspaceService>();
-var server = host.Services.GetRequiredService<WebsocketService>();
+var server = host.Services.GetRequiredService<ServerService>();
 
-// Start the websocket server
+server.OnTick(async () => { await Task.Delay(100); });
+
 await server.StartAsync();
-
-server.ClientConnected.OnChange(async c =>
-{
-    await workspaces.CreateOrLoadAsync("Untitled");
-    await server.SendAsync(c, new WorkspacesMessage(await workspaces.ListAsync()));
-});
-
-server.MessageReceived.OnChange(args =>
-{
-    var (client, json) = args;
-
-    var message = JObject.Parse(json);
-
-    switch (message["id"]?.Value<string>()?.ToLower())
-    {
-        case "save-workspace":
-            {
-                // var runWorkspace = JsonConvert.DeserializeObject<RunWorkspaceMessage>(json);
-                // var workspace = runWorkspace.Workspace;
-                // await workspaces.SaveAsync(workspace);
-                //
-                // engine.SetStructures(workspace.Structures);
-                // engine.SetGraph(workspace.Webs.SelectMany(x => x.Instances).ToImmutableArray(), workspace.Webs.SelectMany(x => x.Connections).ToImmutableArray());
-                break;
-            }
-    }
-
-    return Task.CompletedTask;
-});
-
-await server.MarkReady();
-
-while (server.IsRunning)
-{
-    // var results = engine.Tick();
-    // await server.BroadcastAsync(new ExecutionResultMessage(results));
-    await Task.Delay(100);
-}
