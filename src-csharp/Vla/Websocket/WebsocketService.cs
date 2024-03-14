@@ -41,14 +41,16 @@ public class WebsocketService : IWebsocketService
 
 	public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
 	{
+		_log.LogDebug("Starting broadcast of '{Message}'", message);
 		foreach (var client in _server.ListClients()) await SendAsync(client, message);
+		_log.LogDebug("Broadcast of '{Message}' completed", message);
 	}
 
 	public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage
 	{
 		var wrappedMessage = new ServerMessage<TMessage>(message);
 		var json = JsonConvert.SerializeObject(wrappedMessage);
-		Console.WriteLine($"> {json}");
+		_log.LogDebug("Sending message to {Guid}: '{Message}'", client.Guid, json);
 		await _server.SendAsync(client.Guid, json);
 	}
 
@@ -60,7 +62,9 @@ public class WebsocketService : IWebsocketService
 
 	private async Task OnMessageReceived(MessageReceivedEventArgs e)
 	{
-		await MessageReceived.Set((e.Client, Encoding.UTF8.GetString(e.Data.ToArray())));
+		var message = Encoding.UTF8.GetString(e.Data.ToArray());
+		_log.LogDebug("Message received from {Guid}: '{Message}'", e.Client.Guid, message);
+		await MessageReceived.Set((e.Client, message));
 	}
 
 
@@ -71,8 +75,8 @@ public class WebsocketService : IWebsocketService
 			return new ServerMessage<TMessage>(message);
 		}
 
-		[JsonProperty("type")]
-		public static string Type => typeof(TMessage).Name.Replace("Message", string.Empty);
+		[JsonProperty("id")]
+		public static string Id => typeof(TMessage).Name.Replace("Message", string.Empty);
 
 		[JsonProperty("data")]
 		public TMessage Data { get; init; } = message;

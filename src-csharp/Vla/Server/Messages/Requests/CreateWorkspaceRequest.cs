@@ -10,3 +10,9 @@ public readonly struct CreateWorkspaceRequest(string name, string path) : ISocke
 	[JsonProperty("path")]
 	public string Path { get; init; } = path;
 }
+
+public readonly struct WorkspaceRequest(Abstractions.Workspace workspace) : ISocketRequest
+{
+	[JsonProperty("workspace")]
+	public Abstractions.Workspace Workspace { get; init; } = workspace;
+}
