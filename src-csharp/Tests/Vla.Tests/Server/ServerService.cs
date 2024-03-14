@@ -55,7 +55,7 @@ public class ServerService
 	public async Task ServerService_Methods_CanInvokeWithAsyncValue()
 	{
 		var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test-async-value", client);
+		await TestServerMethod("test async value", client);
 		Assert.That(TestMethod.TestAsyncValueCalled, Is.True);
 	}
 	
@@ -63,7 +63,7 @@ public class ServerService
 	public async Task ServerService_Methods_CanInvokeWithAsyncNoValue()
 	{
 		var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test-async-novalue", client);
+		await TestServerMethod("test async novalue", client);
 		Assert.That(TestMethod.TestAsyncNoValueCalled, Is.True);
 	}
 	
@@ -71,14 +71,14 @@ public class ServerService
 	public async Task ServerService_Methods_CanInvokeWithValue()
 	{
 		var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test-value", client);
+		await TestServerMethod("test value", client);
 		Assert.That(TestMethod.TestValueCalled, Is.True);
 	}
 	
 	[Test]
 	public async Task ServerService_Methods_CanInvokeWithNoValue()
 	{ var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test-novalue", client);
+		await TestServerMethod("test novalue", client);
 		Assert.That(TestMethod.TestNoValueCalled, Is.True);
 	}
 	
@@ -86,7 +86,7 @@ public class ServerService
 	public async Task ServerService_Methods_PopulatesClientMetadata()
 	{
 		var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test-client-metadata", client);
+		await TestServerMethod("test client metadata", client);
 		Assert.That(TestMethod.TestClientMetadataCalled, Is.True);
 		Assert.That(TestMethod.TestClientMetadataClient, Is.Not.Null);
 	}
@@ -95,7 +95,7 @@ public class ServerService
 	public async Task ServerService_Methods_PopulatesRequest()
 	{
 		var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test-request", client);
+		await TestServerMethod("test request", client);
 		Assert.That(TestMethod.TestRequestCalled, Is.True);
 		Assert.That(TestMethod.TestRequestRequest, Is.Not.Null);
 	}
@@ -114,11 +114,12 @@ public class ServerService
 		await Task.Delay(10);
 	}
 
+	[ServerMethods("test")]
 	class TestMethod : IServerMethods
 	{
 		public static bool TestAsyncValueCalled { get; private set; }
 		
-		[Request("test-async-value")]
+		[ServerMethod("async value")]
 		public Task<ResponseMessage<int>> TestAsyncValue()
 		{
 			TestAsyncValueCalled = true;
@@ -127,7 +128,7 @@ public class ServerService
 		
 		 public static bool TestAsyncNoValueCalled { get; private set; }
 		
-		[Request("test-async-novalue")]
+		[ServerMethod("async novalue")]
 		public Task TestAsyncNoValue()
 		{
 			TestAsyncNoValueCalled = true;
@@ -136,7 +137,7 @@ public class ServerService
 		
 		public static bool TestValueCalled { get; private set; }
 		
-		[Request("test-value")]
+		[ServerMethod("value")]
 		public ResponseMessage<int> TestValue()
 		{
 			TestValueCalled = true;
@@ -145,7 +146,7 @@ public class ServerService
 		
 		public static bool TestNoValueCalled { get; private set; }
 		
-		[Request("test-novalue")]
+		[ServerMethod("novalue")]
 		public void TestNoValue()
 		{
 			TestNoValueCalled = true;
@@ -154,7 +155,7 @@ public class ServerService
 		public static bool TestClientMetadataCalled { get; set; }
 		public static ClientMetadata? TestClientMetadataClient { get; set; }
 		
-		[Request("test-client-metadata")]
+		[ServerMethod("client metadata")]
 		public void TestClientMetadata(ClientMetadata client)
 		{
 			TestClientMetadataCalled = true;
@@ -164,7 +165,7 @@ public class ServerService
 		public static bool TestRequestCalled { get; set; }
 		public static RequestMessage? TestRequestRequest { get; set; }
 		
-		[Request("test-request")]
+		[ServerMethod("request")]
 		public void TestRequest(RequestMessage request)
 		{
 			TestRequestCalled = true;

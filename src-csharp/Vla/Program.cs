@@ -33,7 +33,13 @@ var addons = host.Services.GetRequiredService<AddonService>();
 addons.RegisterAddons();
 
 var server = host.Services.GetRequiredService<ServerService>();
+var engine = host.Services.GetRequiredService<NodeEngine>();
 
-server.OnTick(async () => { await Task.Delay(100); });
+server.AddMethods<Vla.Server.Methods.Workspace>();
+
+server.OnTick(async () =>
+{
+	await engine.Tick();
+});
 
 await server.StartAsync();

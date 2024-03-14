@@ -110,14 +110,27 @@ public class ServerService
 			}
 
 			// TODO: Maybe cache the available methods, since they're constant at runtime
-			var methods = _serverMethods.SelectMany(x => x.GetType().GetMethods())
-				.Select(x => (method: x, attribute: x.GetCustomAttribute(typeof(RequestAttribute))))
+			var allMethods = _serverMethods.SelectMany(x => x.GetType().GetMethods())
+				.Select(x => (method: x, attribute: x.GetCustomAttribute(typeof(ServerMethodAttribute))))
 				.Where(x => x.attribute != null)
-				.Select(x => (x.method, attribute: x.attribute as RequestAttribute))
-				.Where(x => x.attribute != null &&
-				            x.attribute.Id.Equals(id, StringComparison.CurrentCultureIgnoreCase));
+				.Select(x => (x.method, methodId: (x.attribute as ServerMethodAttribute)!.Method))
+				.Select(x => (x.method, x.methodId, scopeId: x.method.DeclaringType!.GetCustomAttribute<ServerMethodsAttribute>()?.Scope))
+				.Select(x => (id: $"{x.scopeId} {x.methodId}".Trim(), x.method))
+				.ToImmutableArray();
+			
+			var methods = allMethods
+				.Where(x => x.id.Equals(id, StringComparison.CurrentCultureIgnoreCase))
+				.Select(x => x.method)
+				.ToImmutableArray();
 
-			foreach (var (method, attribute) in methods)
+			if (!methods.Any())
+			{
+				_log.LogWarning("No methods found for ID '{Id}', skipping", id);
+				_log.LogDebug("Applicable methods: {Methods}", string.Join(", ", allMethods.Select(x => x.id)));
+				return;
+			}
+            
+			foreach (var method in methods)
 			{
 				await InvokeMethod(_serverMethods.First(x => x.GetType() == method.DeclaringType), method, message, client);
 			}

@@ -181,7 +181,7 @@ public class WorkspaceService
 				// {
 				//     Webs = workspace.Webs.Select(web =>
 				// {
-				//     var connections = web.Connections.DistinctBy(x => (x.Source.Id, x.Target.Id)).ToImmutableArray();
+				//     var connections = web.Connections.DistinctBy(x => (x.Source.Method, x.Target.Method)).ToImmutableArray();
 				//     return web with { Connections = connections };
 				// }).ToImmutableArray()
 				// };
