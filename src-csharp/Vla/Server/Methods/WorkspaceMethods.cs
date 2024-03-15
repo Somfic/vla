@@ -8,17 +8,17 @@ using Vla.Workspace;
 namespace Vla.Server.Methods;
 
 [ServerMethods("workspace")]
-public class Workspace : IServerMethods
+public class WorkspaceMethods : IServerMethods
 {
 	private readonly WorkspaceService _workspaces;
 
-	public Workspace(WorkspaceService workspaces)
+	public WorkspaceMethods(WorkspaceService workspaces)
 	{
 		_workspaces = workspaces;
 	}
 
 	[ServerMethod("create")]
-	private async Task<ISocketResponse> Create(CreateWorkspaceRequest request)
+	public async Task<ISocketResponse> Create(CreateWorkspaceRequest request)
 	{
 		var workspace = await _workspaces.CreateOrLoadAsync(request.Name, request.Path);
 
@@ -29,10 +29,10 @@ public class Workspace : IServerMethods
 	}
 	
 	[ServerMethod("save")]
-	private Task Save(WorkspaceRequest request) => _workspaces.SaveAsync(request.Workspace);
+	public Task Save(WorkspaceRequest request) => _workspaces.SaveAsync(request.Workspace);
 	
 	[ServerMethod("list recent")]
-	private async Task<ISocketResponse> ListRecent()
+	public async Task<ISocketResponse> ListRecent()
 	{
 		var workspaces = await _workspaces.ListRecentAsync();
 
@@ -43,5 +43,5 @@ public class Workspace : IServerMethods
 	}
 
 	[ServerMethod("delete")]
-	private void Delete(WorkspaceRequest request) => _workspaces.Delete(request.Workspace);
+	public void Delete(WorkspaceRequest request) => _workspaces.Delete(request.Workspace);
 }

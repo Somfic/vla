@@ -10,10 +10,9 @@ namespace Vla.Workspace;
 
 public class WorkspaceService
 {
-	private static readonly string RecentPath =
-		Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces");
+	private static readonly string RecentPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces");
 
-	private static readonly Web DefaultWeb = new("Pythagorean theorem")
+	private static readonly Abstractions.Web DefaultWeb = new("Pythagorean theorem")
 	{
 		Instances =
 		[
@@ -58,12 +57,10 @@ public class WorkspaceService
 	private readonly AddonService _addons;
 
 	private readonly ILogger<WorkspaceService> _log;
-	private readonly NodeService _nodes;
 
-	public WorkspaceService(ILogger<WorkspaceService> log, NodeService nodes, AddonService addons)
+	public WorkspaceService(ILogger<WorkspaceService> log, AddonService addons)
 	{
 		_log = log;
-		_nodes = nodes;
 		_addons = addons;
 	}
 
@@ -71,17 +68,15 @@ public class WorkspaceService
 	{
 		return Result.TryAsync(async () =>
 		{
-			var file = new FileStream(RecentPath, FileMode.OpenOrCreate);
-
 			var workspaces = new List<Abstractions.Workspace>();
 
-			using var reader = new StreamReader(file);
-			while (await reader.ReadLineAsync() is { } path)
-				if (Exists(path))
-					(await LoadAsync(path)).On(workspaces.Add);
-
-			await file.FlushAsync();
-			file.Close();
+			var recents = await ReadRecent();
+			foreach (var recent in recents)
+			{
+				(await LoadAsync(recent))
+					.On(value => workspaces.Add(value))
+					.OnError(ex => _log.LogWarning(ex, "Could not load recent workspace '{Path}'", recent));
+			}
 
 			return workspaces.ToImmutableArray();
 		});
@@ -103,29 +98,36 @@ public class WorkspaceService
 		return CreateAsync(Path.GetFileNameWithoutExtension(path), path);
 	}
 
-	public async Task SaveAsync(Abstractions.Workspace workspace)
+	public async Task<Result<Abstractions.Workspace>> SaveAsync(Abstractions.Workspace workspace)
 	{
-		(await Result.TryAsync(async () =>
+		_log.LogDebug("Saving workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path);
+		
+		return (await Result.TryAsync(async () =>
 			{
 				workspace = workspace with { LastModified = DateTime.Now };
 				await File.WriteAllTextAsync(workspace.Path, EncodeWorkspace(workspace));
-				return true;
-			})).On(x => _log.LogInformation("Saved workspace {Name} at {Path}", workspace.Name, workspace.Path))
+				return workspace;
+			}))
+			.On(x => _log.LogInformation("Saved workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path))
 			.OnError(x =>
-				_log.LogWarning(x, "Could not save workspace {Name} at {Path}", workspace.Name, workspace.Path));
+				_log.LogWarning(x, "Could not save workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path));
 	}
 
 	public void Delete(Abstractions.Workspace workspace)
 	{
+		_log.LogDebug("Deleting workspace '{Name}' in '{Path}'", workspace.Name, workspace.Path);
+		
 		if (!Exists(workspace.Path))
 			return;
 
 		File.Delete(workspace.Path);
-		_log.LogInformation("Deleted workspace {Name} at {Path}", workspace.Name, workspace.Path);
+		_log.LogInformation("Deleted workspace '{Name}' in '{Path}'", workspace.Name, workspace.Path);
 	}
 
 	private async Task<Result<Abstractions.Workspace>> CreateAsync(string name, string path)
 	{
+		_log.LogDebug("Creating workspace '{Name}' in '{Path}'", name, path);
+		
 		if (Exists(path))
 			return new Exception($"A workspace already exists at {path}");
 
@@ -142,8 +144,8 @@ public class WorkspaceService
 				await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
 				return workspace;
 			}))
-			.On(x => _log.LogInformation("Created workspace {Name} at {Path}", x.Name, path))
-			.OnError(x => _log.LogWarning(x, "Could not create workspace {Name} at {Path}", name, path));
+			.On(x => _log.LogInformation("Created workspace '{Name}' in '{Path}'", x.Name, path))
+			.OnError(x => _log.LogWarning(x, "Could not create workspace '{Name}' in '{Path}'", name, path));
 
 		if (!result.IsError)
 			return await LoadAsync(name);
@@ -153,6 +155,8 @@ public class WorkspaceService
 
 	private async Task<Result<Abstractions.Workspace>> LoadAsync(string path)
 	{
+		_log.LogDebug("Loading workspace from '{Path}'", path);
+		
 		if (!Exists(path))
 			return new FileNotFoundException("Workspace file could not be found", path);
 
@@ -190,9 +194,9 @@ public class WorkspaceService
 
 				return workspace;
 			}))
-			.On(x => _log.LogInformation("Loaded workspace {Name} with {Webs} webs at {Path}", x.Name, x.Webs.Length,
+			.On(x => _log.LogInformation("Loaded workspace '{Name}' with {Webs} webs from '{Path}'", x.Name, x.Webs.Length,
 				path))
-			.OnError(x => _log.LogWarning(x, "Could not load workspace file at {Path}", path));
+			.OnError(x => _log.LogWarning(x, "Could not load workspace file from '{Path}'", path));
 	}
 
 	public bool Exists(string path)
@@ -202,20 +206,44 @@ public class WorkspaceService
 
 	private static async Task MarkRecent(Abstractions.Workspace workspace)
 	{
-		var recents = await File.ReadAllLinesAsync(RecentPath);
-		if (recents.Contains(workspace.Path))
-			return;
+		var recents = (await ReadRecent())
+			.Add(workspace.Path)
+			.Distinct()
+			.Take(10)
+			.ToImmutableArray();
 
-		await File.AppendAllTextAsync(RecentPath, $"{workspace.Path}\n");
-
-		// TODO: Add this to configuration
-		if (recents.Length > 10)
-		{
-			var toRemove = recents.Length - 10;
-			await File.WriteAllLinesAsync(RecentPath, recents.Skip(toRemove));
-		}
+		await WriteRecent(recents);
 	}
 
+	private static async Task WriteRecent(ImmutableArray<string> workspaces)
+	{
+		await using var fileStream = new FileStream(RecentPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+		
+		await using var writer = new StreamWriter(fileStream);
+		foreach (var workspace in workspaces)
+		{
+			await writer.WriteLineAsync(workspace);
+		}
+
+		await writer.FlushAsync();
+	}
+
+	private static async Task<ImmutableArray<string>> ReadRecent()
+	{
+		await using var fileStream = new FileStream(RecentPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+
+		using var reader = new StreamReader(fileStream);
+		var workspaces = new List<string>();
+		while (await reader.ReadLineAsync() is { } line)
+		{
+			workspaces.Add(line);
+		}
+		 
+		reader.Close();
+		return workspaces.ToImmutableArray();
+	}
+	
+	
 	private static string EncodeWorkspace(Abstractions.Workspace workspace)
 	{
 		//workspace = workspace with { Path = string.Empty, Structures = ImmutableArray<NodeStructure>.Empty, Types = ImmutableArray<NodeTypeDefinition>.Empty };

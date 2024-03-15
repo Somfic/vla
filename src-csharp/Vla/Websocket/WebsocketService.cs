@@ -39,14 +39,14 @@ public class WebsocketService : IWebsocketService
 		while (_server.IsListening) await Task.Delay(1);
 	}
 
-	public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
+	public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage
 	{
 		_log.LogDebug("Starting broadcast of '{Message}'", message);
 		foreach (var client in _server.ListClients()) await SendAsync(client, message);
 		_log.LogDebug("Broadcast of '{Message}' completed", message);
 	}
 
-	public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage
+	public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : class, ISocketMessage
 	{
 		var wrappedMessage = new ServerMessage<TMessage>(message);
 		var json = JsonConvert.SerializeObject(wrappedMessage);
@@ -68,15 +68,23 @@ public class WebsocketService : IWebsocketService
 	}
 
 
-	private readonly struct ServerMessage<TMessage>(TMessage message) where TMessage : ISocketMessage
+	private readonly struct ServerMessage<TMessage>(TMessage message)
+		where TMessage : ISocketMessage
 	{
+		// Place a space between camel case
+
 		public static implicit operator ServerMessage<TMessage>(TMessage message)
 		{
 			return new ServerMessage<TMessage>(message);
 		}
 
 		[JsonProperty("id")]
-		public static string Id => typeof(TMessage).Name.Replace("Message", string.Empty);
+		public string Id { get; init; } = message.GetType().Name
+			.Replace("Message", string.Empty)
+			.Replace("Request", string.Empty)
+			.Replace("Response", string.Empty)
+			.Replace("([a-z])([A-Z])", "$1 $2") // Place a space between camel case
+			.ToLower();
 
 		[JsonProperty("data")]
 		public TMessage Data { get; init; } = message;

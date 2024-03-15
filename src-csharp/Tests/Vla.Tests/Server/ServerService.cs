@@ -242,13 +242,13 @@ internal class MockWebSocketService : IWebsocketService
 		return Task.CompletedTask;
 	}
 
-	public Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
+	public Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage
 	{
 		Messages.Keys.ToList().ForEach(client => SendAsync(client, message));
 		return Task.CompletedTask;
 	}
 
-	public Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage
+	public Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : class, ISocketMessage
 	{
 		var json = JsonConvert.SerializeObject(message);
 		Messages[client].outgoing.Add(json);

@@ -24,6 +24,7 @@ var host = Host.CreateDefaultBuilder()
 		s.AddSingleton<WorkspaceService>();
 		s.AddSingleton<AddonService>();
 		s.AddSingleton<NodeEngine>();
+		s.AddSingleton<ServerService>();
 		s.UseAddon<CoreAddon>();
 		s.UseAddons(AddonService.Path);
 	}).ConfigureLogging(s => { s.SetMinimumLevel(LogLevel.Debug); })
@@ -35,7 +36,7 @@ addons.RegisterAddons();
 var server = host.Services.GetRequiredService<ServerService>();
 var engine = host.Services.GetRequiredService<NodeEngine>();
 
-server.AddMethods<Vla.Server.Methods.Workspace>();
+server.AddMethods<Vla.Server.Methods.WorkspaceMethods>();
 
 server.OnTick(async () =>
 {
@@ -43,3 +44,5 @@ server.OnTick(async () =>
 });
 
 await server.StartAsync();
+
+await Task.Delay(-1);

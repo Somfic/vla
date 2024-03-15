@@ -108,15 +108,16 @@ public class ServerService
 				_log.LogWarning("Incoming request did not have an ID, skipping");
 				return;
 			}
-
+			
+			
 			// TODO: Maybe cache the available methods, since they're constant at runtime
-			var allMethods = _serverMethods.SelectMany(x => x.GetType().GetMethods())
+			var allMethods = _serverMethods.SelectMany(x => x.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance))
 				.Select(x => (method: x, attribute: x.GetCustomAttribute(typeof(ServerMethodAttribute))))
 				.Where(x => x.attribute != null)
 				.Select(x => (x.method, methodId: (x.attribute as ServerMethodAttribute)!.Method))
 				.Select(x => (x.method, x.methodId, scopeId: x.method.DeclaringType!.GetCustomAttribute<ServerMethodsAttribute>()?.Scope))
 				.Select(x => (id: $"{x.scopeId} {x.methodId}".Trim(), x.method))
-				.ToImmutableArray();
+				 .ToImmutableArray();
 			
 			var methods = allMethods
 				.Where(x => x.id.Equals(id, StringComparison.CurrentCultureIgnoreCase))

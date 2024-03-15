@@ -11,6 +11,6 @@ public interface IWebsocketService
 	AsyncCallback<(ClientMetadata, string)> MessageReceived { get; }
 	Task StartAsync();
 	Task StopAsync();
-	Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage;
-	Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage;
+	Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage;
+	Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : class, ISocketMessage;
 }
