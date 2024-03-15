@@ -90,8 +90,7 @@ public class NodeEngine
 			.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
 			.ToArray());
 
-		Console.WriteLine(
-			$"Connections: {string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.NodeId).Name}.{x.Target.Id}"))}");
+		// _log.LogDebug("Connections: {Join}", string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.NodeId).Name}.{x.Target.Id}")));
 
 		var sortedInstances = sorter.Sort()
 			.Select(Guid.Parse)
@@ -101,8 +100,7 @@ public class NodeEngine
 
 		var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
 
-		Console.WriteLine(
-			$"Execution order: {string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name))}");
+		// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name)));
 
 		var results = new List<NodeExecutionResult>();
 
@@ -110,24 +108,23 @@ public class NodeEngine
 		{
 			var instance = Instances.First(x => x.Id == instanceId);
 
-			Console.WriteLine($"Executing node {instance.Name} ({instance.Id})");
+			_log.LogDebug("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
 
 			var result = await ExecuteNode(instance);
 
-			Console.WriteLine(
-				$"Node {instance.Name} ({instance.Id}) executed with result {JsonConvert.SerializeObject(result, Formatting.Indented)}");
+			_log.LogDebug("Node {InstanceName} ({InstanceId}) executed with result {SerializeObject}", instance.Name, instance.Id, JsonConvert.SerializeObject(result, Formatting.Indented));
 
 			// Loop over all the outputs of this node execution
 			foreach (var output in result.Outputs)
 			{
-				Console.WriteLine($"Searching for inputs {instance.Id}.{output.Id} connects to");
+				_log.LogDebug("Searching for inputs {InstanceId}.{OutputId} connects to", instance.Id, output.Id);
 
 				// Get all the inputs this output is connected to
 				var inputs = Connections
 					.Where(x => x.Source.NodeId == instance.Id && x.Source.Id == output.Id)
 					.Select(x => x.Target);
 
-				Console.WriteLine($"Found {JsonConvert.SerializeObject(inputs)}");
+				_log.LogDebug("Found {SerializeObject}", JsonConvert.SerializeObject(inputs));
 
 				// For each input, set the value to the original output, with conversion to the input type
 				foreach (var input in inputs)
@@ -137,7 +134,7 @@ public class NodeEngine
 
 					Instances[nodeIndex].SetInput(input.Id, output.Value);
 
-					Console.WriteLine($"Setting input {input.Id} on {node.Name} to {output.Value}");
+					_log.LogDebug("Setting input {InputId} on {NodeName} to {OutputValue}", input.Id, node.Name, (object)output.Value!);
 
 					Instances = Instances.SetItem(nodeIndex, node);
 				}

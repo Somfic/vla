@@ -146,7 +146,7 @@ public class ServerService
 
 	private async Task InvokeMethod(object instance, MethodInfo method, string message, ClientMetadata client)
 	{
-			_log.LogDebug("Invoking method '{Method}' with message '{Message}'", method.Name, message);
+			_log.LogDebug("Invoking method '{Namespace}{Method}' with message '{Message}'", method.DeclaringType!.FullName, method.Name, message);
 		
 			var methodParameters = method.GetParameters();
 			var invokingParameters = new dynamic[methodParameters.Length];

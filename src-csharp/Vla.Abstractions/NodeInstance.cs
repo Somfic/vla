@@ -8,9 +8,6 @@ public record struct NodeInstance()
 {
 	private NodeInstance(Node node) : this()
 	{
-		Console.WriteLine("Converting node to node instance");
-		Console.WriteLine(JsonConvert.SerializeObject(node, Formatting.Indented));
-
 		Type = node.GetType();
 		Guid = node.Id;
 		Properties = node.Properties.Select(x => new NamedValue(x.Key, x.Key, x.Value)).ToImmutableArray();

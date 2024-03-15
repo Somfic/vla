@@ -275,8 +275,6 @@ public class MathNode : Node
 
 		var result = System.Math.Pow(a, b);
 
-		Console.WriteLine(result);
-
 		Output("power.result", "Value", result);
 	}
 

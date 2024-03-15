@@ -261,11 +261,7 @@ public class NodeEngine
 			var a = Input("a", "Value", 1d);
 			var b = Input("b", "Value", 2d);
 
-			Console.WriteLine($"NODE: inputs {JsonConvert.SerializeObject(Inputs)}");
-
 			var result = a + b;
-
-			Console.WriteLine($"NODE: {result} = {a} + {b}");
 
 			Output("result", "Result", result);
 
