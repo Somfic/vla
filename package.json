@@ -12,7 +12,7 @@
         "test-packager": "cd src-tauri && cargo test --locked --all-features --all-targets && cargo llvm-cov --locked --lcov --output-path lcov.info",
         "test": "yarn test-client && yarn test-server && yarn test-packager",
         "dev-client": "cd src-client && yarn dev",
-        "dev-server": "yarn terminate && cd src-csharp && dotnet watch --project Vla",
+        "dev-server": "yarn terminate && cd src-csharp && dotnet watch --project Vla --non-interactive",
         "dev": "concurrently -r \"yarn dev-client\" \"yarn dev-server\"",
         "build-client": "cd src-client && yarn build",
         "prebuild-server": "yarn terminate",
