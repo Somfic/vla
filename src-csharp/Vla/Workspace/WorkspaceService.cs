@@ -10,8 +10,9 @@ namespace Vla.Workspace;
 
 public class WorkspaceService
 {
-	private static readonly string RecentPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces");
-
+	private readonly string _recentPath =
+		Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces"));
+	
 	private static readonly Abstractions.Web DefaultWeb = new("Pythagorean theorem")
 	{
 		Instances =
@@ -64,8 +65,13 @@ public class WorkspaceService
 		_addons = addons;
 	}
 	
+	public Task<Result<Abstractions.Workspace>> CreateAsync(string path) =>
+		CreateAsync(Path.GetFileNameWithoutExtension(path), path);
+	
 	public async Task<Result<Abstractions.Workspace>> CreateAsync(string name, string path)
 	{
+		path = Path.GetFullPath(path);
+		
 		if (Exists(path))
 			return new Exception($"A workspace already exists at {path}");
 
@@ -86,7 +92,7 @@ public class WorkspaceService
 			.OnError(x => _log.LogError(x, "Could not create workspace '{Name}' in '{Path}'", name, path));
 
 		if (!result.IsError)
-			return await LoadAsync(name);
+			return await LoadAsync(path);
 
 		return result;
 	}
@@ -102,6 +108,7 @@ public class WorkspaceService
 			{
 				(await LoadAsync(recent))
 					.On(value => workspaces.Add(value))
+					.OnError(_ => UnmarkRecent(recent).GetAwaiter().GetResult())
 					.OnError(ex => _log.LogError(ex, "Could not load recent workspace '{Path}'", recent));
 			}
 
@@ -119,10 +126,7 @@ public class WorkspaceService
 
 	public Task<Result<Abstractions.Workspace>> CreateOrLoadAsync(string path)
 	{
-		if (Exists(path))
-			return LoadAsync(path);
-
-		return CreateAsync(Path.GetFileNameWithoutExtension(path), path);
+		return CreateOrLoadAsync(Path.GetFileNameWithoutExtension(path), path);
 	}
 
 	public async Task<Result<Abstractions.Workspace>> SaveAsync(Abstractions.Workspace workspace)
@@ -138,12 +142,15 @@ public class WorkspaceService
 				_log.LogError(x, "Could not save workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path));
 	}
 
-	public void Delete(Abstractions.Workspace workspace)
+	public async Task DeleteAsync(Abstractions.Workspace workspace)
 	{
 		if (!Exists(workspace.Path))
 			return;
 
 		File.Delete(workspace.Path);
+
+		await UnmarkRecent(workspace.Path);
+		
 		_log.LogInformation("Deleted workspace '{Name}' in '{Path}'", workspace.Name, workspace.Path);
 	}
 	
@@ -181,8 +188,8 @@ public class WorkspaceService
 
 				foreach (var dependency in workspace.Addons)
 				{
-					var extension = _addons.Addons.First(x =>
-						x.Name == dependency.Name && x.Version >= dependency.MinVersion);
+					// var extension = _addons.Addons.First(x =>
+					// 	x.Name == dependency.Name && x.Version >= dependency.MinVersion);
 					// var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
 
 					//workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
@@ -214,8 +221,18 @@ public class WorkspaceService
 	{
 		return File.Exists(path);
 	}
+	
+	private async Task UnmarkRecent(string path)
+	{
+		var recents = (await ReadRecent()).Remove(path);
 
-	private static async Task MarkRecent(Abstractions.Workspace workspace)
+		await WriteRecent(recents);
+		
+		_log.LogDebug("Unmarked workspace '{Name}' as recent", path);
+
+	}
+
+	private async Task MarkRecent(Abstractions.Workspace workspace)
 	{
 		var recents = (await ReadRecent())
 			.Add(workspace.Path)
@@ -224,34 +241,30 @@ public class WorkspaceService
 			.ToImmutableArray();
 
 		await WriteRecent(recents);
-	}
-
-	private static async Task WriteRecent(ImmutableArray<string> workspaces)
-	{
-		await using var fileStream = new FileStream(RecentPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
 		
-		await using var writer = new StreamWriter(fileStream);
-		foreach (var workspace in workspaces)
-		{
-			await writer.WriteLineAsync(workspace);
-		}
-
-		await writer.FlushAsync();
+		_log.LogDebug("Marked workspace '{Name}' as recent", workspace.Name);
 	}
 
-	private static async Task<ImmutableArray<string>> ReadRecent()
+	private async Task WriteRecent(ImmutableArray<string> workspaces)
 	{
-		await using var fileStream = new FileStream(RecentPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-
-		using var reader = new StreamReader(fileStream);
-		var workspaces = new List<string>();
-		while (await reader.ReadLineAsync() is { } line)
+		await using (var fileStream = new FileStream(_recentPath, FileMode.Create, FileAccess.Write, FileShare.None))
+		await using (var streamWriter = new StreamWriter(fileStream))
 		{
-			workspaces.Add(line);
+			await streamWriter.WriteAsync(string.Join(Environment.NewLine, workspaces));
 		}
-		 
-		reader.Close();
-		return workspaces.ToImmutableArray();
+	}
+
+	private async Task<ImmutableArray<string>> ReadRecent()
+	{
+		string content;
+
+		await using (var fileStream = new FileStream(_recentPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+		using (var streamReader = new StreamReader(fileStream))
+		{
+			content = await streamReader.ReadToEndAsync();
+		}
+		
+		return content.Split(Environment.NewLine).ToImmutableArray();
 	}
 	
 	

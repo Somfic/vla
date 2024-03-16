@@ -43,5 +43,5 @@ public class WorkspaceMethods : IServerMethods
 	}
 
 	[ServerMethod("delete")]
-	public void Delete(WorkspaceRequest request) => _workspaces.Delete(request.Workspace);
+	public Task Delete(WorkspaceRequest request) => _workspaces.DeleteAsync(request.Workspace);
 }
