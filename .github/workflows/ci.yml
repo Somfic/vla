@@ -13,7 +13,50 @@ concurrency:
 
 name: test
 jobs:
+    check-needs-to-run:
+        runs-on: ubuntu-latest
+        outputs:
+            client_changes: ${{ steps.changed_files.outputs.any_changed }}
+            server_changes: ${{ steps.changed_files.outputs.any_changed }}
+            packager_changes: ${{ steps.changed_files.outputs.any_changed }}
+        steps:
+            - name: Checkout codebase
+              uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: Determine client file changes
+              id: changed_client_files
+              uses: tj-actions/changed-files@v43
+              with:
+                  files: src-client/
+
+            - name: Determine server file changes
+              id: changed_server_files
+              uses: tj-actions/changed-files@v43
+              with:
+                  files: src-csharp/
+
+            - name: Determine packager file changes
+              id: changed_packager_files
+              uses: tj-actions/changed-files@v43
+              with:
+                  files: src-tauri/
+
+            - name: Set output
+              run: echo "::set-output name=client_changes::${{ steps.changed_client_files.outputs.any_changed }}"
+              if: ${{ steps.changed_client_files.outputs.any_changed == 'true' }}
+
+            - name: Set output
+              run: echo "::set-output name=server_changes::${{ steps.changed_server_files.outputs.any_changed }}"
+              if: ${{ steps.changed_server_files.outputs.any_changed == 'true' }}
+
+            - name: Set output
+              run: echo "::set-output name=packager_changes::${{ steps.changed_packager_files.outputs.any_changed }}"
+              if: ${{ steps.changed_packager_files.outputs.any_changed == 'true' }}
+
     test:
+        needs: check-needs-to-run
         runs-on: ${{ matrix.os }}
         name: ${{ matrix.layer }} / ${{ matrix.os }}
         strategy:
@@ -21,6 +64,12 @@ jobs:
             matrix:
                 layer: [client, server, packager]
                 os: [macos-latest, windows-latest, ubuntu-latest]
+        env:
+            MATRIX_LAYER: ${{ matrix.layer }}
+            CLIENT_CHANGES: ${{ needs.check-needs-to-run.outputs.client_changes }}
+            SERVER_CHANGES: ${{ needs.check-needs-to-run.outputs.server_changes }}
+            PACKAGER_CHANGES: ${{ needs.check-needs-to-run.outputs.packager_changes }}
+        if: github.env.MATRIX_LAYER == 'client' && github.env.CLIENT_CHANGES == 'true' || github.env.MATRIX_LAYER == 'server' && github.env.SERVER_CHANGES == 'true' || github.env.MATRIX_LAYER == 'packager' && github.env.PACKAGER_CHANGES == 'true'
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
@@ -58,7 +107,7 @@ jobs:
               run: npm install --global yarn && yarn
 
             - name: Setup .NET 8
-              if: matrix.layer == 'server' || matrix.layer == 'packager'
+              if: (matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true') || (matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true')
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0.100
