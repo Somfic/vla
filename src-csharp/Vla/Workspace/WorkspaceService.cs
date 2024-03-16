@@ -63,8 +63,35 @@ public class WorkspaceService
 		_log = log;
 		_addons = addons;
 	}
+	
+	public async Task<Result<Abstractions.Workspace>> CreateAsync(string name, string path)
+	{
+		if (Exists(path))
+			return new Exception($"A workspace already exists at {path}");
 
-	public Task<Result<ImmutableArray<Abstractions.Workspace>>> ListRecentAsync()
+		var result = (await Result.TryAsync(async () =>
+			{
+				var workspace = new Abstractions.Workspace(name)
+				{
+					Name = name,
+					Path = path,
+					Created = DateTime.Now,
+					LastModified = DateTime.Now,
+					Addons = [("Core", new Version(0, 0, 0))]
+				};
+				await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
+				return workspace;
+			}))
+			.On(x => _log.LogInformation("Created workspace '{Name}' in '{Path}'", x.Name, path))
+			.OnError(x => _log.LogError(x, "Could not create workspace '{Name}' in '{Path}'", name, path));
+
+		if (!result.IsError)
+			return await LoadAsync(name);
+
+		return result;
+	}
+
+	public Task<Result<ImmutableArray<Abstractions.Workspace>>> ListAsync()
 	{
 		return Result.TryAsync(async () =>
 		{
@@ -75,7 +102,7 @@ public class WorkspaceService
 			{
 				(await LoadAsync(recent))
 					.On(value => workspaces.Add(value))
-					.OnError(ex => _log.LogWarning(ex, "Could not load recent workspace '{Path}'", recent));
+					.OnError(ex => _log.LogError(ex, "Could not load recent workspace '{Path}'", recent));
 			}
 
 			return workspaces.ToImmutableArray();
@@ -100,8 +127,6 @@ public class WorkspaceService
 
 	public async Task<Result<Abstractions.Workspace>> SaveAsync(Abstractions.Workspace workspace)
 	{
-		_log.LogDebug("Saving workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path);
-		
 		return (await Result.TryAsync(async () =>
 			{
 				workspace = workspace with { LastModified = DateTime.Now };
@@ -110,53 +135,38 @@ public class WorkspaceService
 			}))
 			.On(x => _log.LogInformation("Saved workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path))
 			.OnError(x =>
-				_log.LogWarning(x, "Could not save workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path));
+				_log.LogError(x, "Could not save workspace '{Name}' to '{Path}'", workspace.Name, workspace.Path));
 	}
 
 	public void Delete(Abstractions.Workspace workspace)
 	{
-		_log.LogDebug("Deleting workspace '{Name}' in '{Path}'", workspace.Name, workspace.Path);
-		
 		if (!Exists(workspace.Path))
 			return;
 
 		File.Delete(workspace.Path);
 		_log.LogInformation("Deleted workspace '{Name}' in '{Path}'", workspace.Name, workspace.Path);
 	}
-
-	private async Task<Result<Abstractions.Workspace>> CreateAsync(string name, string path)
+	
+	public async Task<Result<Abstractions.Web>> CreateWebAsync(Abstractions.Workspace workspace, string name)
 	{
-		_log.LogDebug("Creating workspace '{Name}' in '{Path}'", name, path);
+		name = name.Trim();
 		
-		if (Exists(path))
-			return new Exception($"A workspace already exists at {path}");
+		if(string.IsNullOrWhiteSpace(name))
+			return new Exception("Name cannot be empty.");
+		
+		if (workspace.Webs.Any(x => string.Equals(x.Name.Trim(), name, StringComparison.InvariantCultureIgnoreCase)))
+			return new Exception($"A web with the name '{name}' already exists.");
+		
+		workspace = workspace with { Webs = workspace.Webs.Add(new Abstractions.Web(name)) };
 
-		var result = (await Result.TryAsync(async () =>
-			{
-				var workspace = new Abstractions.Workspace(name)
-				{
-					Name = name,
-					Path = path,
-					Created = DateTime.Now,
-					LastModified = DateTime.Now,
-					Addons = [("Core", new Version(0, 0, 0))]
-				};
-				await File.WriteAllTextAsync(path, EncodeWorkspace(workspace));
-				return workspace;
-			}))
-			.On(x => _log.LogInformation("Created workspace '{Name}' in '{Path}'", x.Name, path))
-			.OnError(x => _log.LogWarning(x, "Could not create workspace '{Name}' in '{Path}'", name, path));
-
-		if (!result.IsError)
-			return await LoadAsync(name);
-
-		return result;
+		return (await SaveAsync(workspace))
+			.On(_ => _log.LogInformation("Created web '{Web}' in '{Workspace}'", name, workspace.Name))
+			.OnError(ex => _log.LogError(ex, "Could not create web '{Web}' in '{Workspace}'", name, workspace.Name))
+			.Pipe(x => x.Webs.First(y => y.Name == name));
 	}
 
-	private async Task<Result<Abstractions.Workspace>> LoadAsync(string path)
+	public async Task<Result<Abstractions.Workspace>> LoadAsync(string path)
 	{
-		_log.LogDebug("Loading workspace from '{Path}'", path);
-		
 		if (!Exists(path))
 			return new FileNotFoundException("Workspace file could not be found", path);
 
@@ -194,9 +204,10 @@ public class WorkspaceService
 
 				return workspace;
 			}))
-			.On(x => _log.LogInformation("Loaded workspace '{Name}' with {Webs} webs from '{Path}'", x.Name, x.Webs.Length,
+			.On(x => _log.LogInformation("Loaded workspace '{Name}' with {Webs} webs from '{Path}'", x.Name,
+				x.Webs.Length,
 				path))
-			.OnError(x => _log.LogWarning(x, "Could not load workspace file from '{Path}'", path));
+			.OnError(x => _log.LogError(x, "Could not load workspace file from '{Path}'", path));
 	}
 
 	public bool Exists(string path)

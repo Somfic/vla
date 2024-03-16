@@ -31,10 +31,10 @@ public class WorkspaceMethods : IServerMethods
 	[ServerMethod("save")]
 	public Task Save(WorkspaceRequest request) => _workspaces.SaveAsync(request.Workspace);
 	
-	[ServerMethod("list recent")]
-	public async Task<ISocketResponse> ListRecent()
+	[ServerMethod("list")]
+	public async Task<ISocketResponse> List()
 	{
-		var workspaces = await _workspaces.ListRecentAsync();
+		var workspaces = await _workspaces.ListAsync();
 
 		return workspaces
 			.Map<ISocketResponse, ImmutableArray<Abstractions.Workspace>>(
