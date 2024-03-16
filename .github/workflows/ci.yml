@@ -19,13 +19,34 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
+                layer: [client, server, packager]
                 os: [macos-latest, windows-latest, ubuntu-latest]
-                layer: [client, server]
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
               with:
                   submodules: true
+
+            - name: Determine changed files
+              id: client_changes
+              uses: tj-actions/changed-files@v43
+              if: ${{ matrix.layer == 'client' }}
+              with:
+                  files: src-client/
+
+            - name: Determine changed files
+              id: server_changes
+              uses: tj-actions/changed-files@v43
+              if: ${{ matrix.layer == 'server' }}
+              with:
+                  files: src-csharp/
+
+            - name: Determine changed files
+              id: packager_changes
+              uses: tj-actions/changed-files@v43
+              if: ${{ matrix.layer == 'packager' }}
+              with:
+                  files: src-tauri/
 
             - name: Setup Node
               uses: actions/setup-node@v4
@@ -37,106 +58,63 @@ jobs:
               run: npm install --global yarn && yarn
 
             - name: Setup .NET 8
-              if: matrix.layer == 'server'
+              if: matrix.layer == 'server' || matrix.layer == 'packager'
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0.100
 
+            - name: Setup Rust
+              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  components: llvm-tools-preview
+
+            - name: Setup cargo-llvm-cov
+              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              uses: taiki-e/install-action@cargo-llvm-cov
+
+            - name: Generate Cargo.lock
+              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              run: cargo generate-lockfile
+              working-directory: ./src-tauri
+
+            - name: Install system dependencies
+              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              run: |
+                  chmod +x ./scripts/deps.sh
+                  ./scripts/deps.sh
+
             - name: Install client dependencies
-              if: matrix.layer == 'client'
+              if: matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true'
               run: yarn
               working-directory: ./src-client
 
             - name: Install server dependencies
-              if: matrix.layer == 'server'
+              if: matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true'
               run: dotnet restore
               working-directory: ./src-csharp
 
             - name: Build client
-              if: matrix.layer == 'client'
+              if: matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true'
               run: yarn run build-client
 
             - name: Build server
-              if: matrix.layer == 'server'
+              if: matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true'
               run: dotnet build --configuration Release
               working-directory: ./src-csharp
 
             - name: Test client
-              if: matrix.layer == 'client'
+              if: matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true'
               run: yarn run test-client
 
             - name: Test server
-              if: matrix.layer == 'server'
+              if: matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true'
               run: yarn run test-server
 
-    coverage:
-        runs-on: ubuntu-latest
-        name: code coverage
-        steps:
-            - name: Checkout codebase
-              uses: actions/checkout@v4
-              with:
-                  submodules: true
+            - name: Configure sidecar
+              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              run: yarn run build-server
 
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 21
-                  cache: "yarn"
-
-            - name: Setup Yarn
-              run: npm install --global yarn && yarn
-
-            - name: Setup .NET 8
-              uses: actions/setup-dotnet@v4
-              with:
-                  dotnet-version: 8.0.100
-
-            # - name: Setup Rust
-            #   uses: dtolnay/rust-toolchain@stable
-            #   with:
-            #       components: llvm-tools-preview
-
-            # - name: Setup cargo-llvm-cov
-            #   uses: taiki-e/install-action@cargo-llvm-cov
-
-            # - name: Generate Cargo.lock
-            #   run: cargo generate-lockfile
-            #   working-directory: ./src-tauri
-
-            # - name: Install system dependencies
-            #   run: |
-            #       chmod +x ./scripts/deps.sh
-            #       ./scripts/deps.sh
-
-            - name: Install client dependencies
-              run: yarn
-              working-directory: ./src-client
-
-            - name: Install server dependencies
-              run: dotnet restore
-              working-directory: ./src-csharp
-
-            - name: Build client
-              run: yarn run build-client
-
-            - name: Build server
-              run: dotnet build --configuration Release
-              working-directory: ./src-csharp
-
-            - name: Test client
-              run: yarn run test-client
-
-            - name: Test server
-              run: yarn run test-server
-
-            # - name: Configure sidecar
-            #   run: yarn run build-server
-
-            # - name: Test packager
-            #   run: yarn run test-packager
-
-            - name: Upload coverage
-              uses: codecov/codecov-action@v4
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
+            - name: Test packager
+              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              run: yarn run test-packager
