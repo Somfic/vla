@@ -11,7 +11,7 @@ namespace Vla.Workspace;
 public class WorkspaceService
 {
 	private readonly string _recentPath =
-		Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces"));
+		Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces.txt"));
 	
 	private static readonly Abstractions.Web DefaultWeb = new("Pythagorean theorem")
 	{
@@ -63,6 +63,11 @@ public class WorkspaceService
 	{
 		_log = log;
 		_addons = addons;
+		
+		var appPath = Path.GetDirectoryName(_recentPath);
+		
+		if (!string.IsNullOrEmpty(appPath) && !Directory.Exists(appPath))
+			Directory.CreateDirectory(appPath);
 	}
 	
 	public Task<Result<Abstractions.Workspace>> CreateAsync(string path) =>
