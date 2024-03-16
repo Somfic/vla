@@ -2,7 +2,7 @@
 	import { isReady, hasConnected } from '$lib/ws';
 	import { progress } from '$lib/ws';
 
-	let show = true;
+	let show = true; // test
 
 	isReady.subscribe((r) => {
 		if (r) {
