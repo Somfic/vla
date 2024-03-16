@@ -13,50 +13,7 @@ concurrency:
 
 name: test
 jobs:
-    check-needs-to-run:
-        runs-on: ubuntu-latest
-        outputs:
-            client_changes: ${{ steps.set_output.outputs.client_changes }}
-            server_changes: ${{ steps.set_output.outputs.server_changes }}
-            packager_changes: ${{ steps.set_output.outputs.packager_changes }}
-        steps:
-            - name: Checkout codebase
-              uses: actions/checkout@v4
-              with:
-                  submodules: true
-
-            - name: Determine client file changes
-              id: changed_client_files
-              uses: tj-actions/changed-files@v43
-              with:
-                  files: src-client/
-
-            - name: Determine server file changes
-              id: changed_server_files
-              uses: tj-actions/changed-files@v43
-              with:
-                  files: src-csharp/
-
-            - name: Determine packager file changes
-              id: changed_packager_files
-              uses: tj-actions/changed-files@v43
-              with:
-                  files: src-tauri/
-
-            - name: Set output
-              run: echo "::set-output name=client_changes::${{ steps.changed_client_files.outputs.any_changed }}"
-              if: ${{ steps.changed_client_files.outputs.any_changed == 'true' }}
-
-            - name: Set output
-              run: echo "::set-output name=server_changes::${{ steps.changed_server_files.outputs.any_changed }}"
-              if: ${{ steps.changed_server_files.outputs.any_changed == 'true' }}
-
-            - name: Set output
-              run: echo "::set-output name=packager_changes::${{ steps.changed_packager_files.outputs.any_changed }}"
-              if: ${{ steps.changed_packager_files.outputs.any_changed == 'true' }}
-
     test:
-        needs: check-needs-to-run
         runs-on: ${{ matrix.os }}
         name: ${{ matrix.layer }} / ${{ matrix.os }}
         strategy:
@@ -64,38 +21,11 @@ jobs:
             matrix:
                 layer: [client, server, packager]
                 os: [macos-latest, windows-latest, ubuntu-latest]
-        env:
-            MATRIX_LAYER: ${{ matrix.layer }}
-            CLIENT_CHANGES: ${{ needs.check-needs-to-run.outputs.client_changes }}
-            SERVER_CHANGES: ${{ needs.check-needs-to-run.outputs.server_changes }}
-            PACKAGER_CHANGES: ${{ needs.check-needs-to-run.outputs.packager_changes }}
-        if: ${{ env.MATRIX_LAYER == 'client' && env.CLIENT_CHANGES == 'true' }} || ${{ env.MATRIX_LAYER == 'server' && env.SERVER_CHANGES == 'true' }} || ${{ env.MATRIX_LAYER == 'packager' && env.PACKAGER_CHANGES == 'true' }}
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
               with:
                   submodules: true
-
-            - name: Determine changed files
-              id: client_changes
-              uses: tj-actions/changed-files@v43
-              if: ${{ matrix.layer == 'client' }}
-              with:
-                  files: src-client/
-
-            - name: Determine changed files
-              id: server_changes
-              uses: tj-actions/changed-files@v43
-              if: ${{ matrix.layer == 'server' }}
-              with:
-                  files: src-csharp/
-
-            - name: Determine changed files
-              id: packager_changes
-              uses: tj-actions/changed-files@v43
-              if: ${{ matrix.layer == 'packager' }}
-              with:
-                  files: src-tauri/
 
             - name: Setup Node
               uses: actions/setup-node@v4
@@ -107,69 +37,69 @@ jobs:
               run: npm install --global yarn && yarn
 
             - name: Setup .NET 8
-              if: (matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true') || (matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true')
+              if: matrix.layer == 'server' || matrix.layer == 'packager'
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0.100
 
             - name: Setup Rust
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               uses: dtolnay/rust-toolchain@stable
               with:
                   components: llvm-tools-preview
 
             - name: Setup cargo-llvm-cov
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               uses: taiki-e/install-action@cargo-llvm-cov
 
             - name: Generate Cargo.lock
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               run: cargo generate-lockfile
               working-directory: ./src-tauri
 
             - name: Install system dependencies
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               run: |
                   chmod +x ./scripts/deps.sh
                   ./scripts/deps.sh
 
             - name: Rust cache
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               uses: swatinem/rust-cache@v2
               with:
                   workspaces: "./src-tauri -> target"
 
             - name: Install client dependencies
-              if: (matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true') || (matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true')
+              if: (matrix.layer == 'client') || (matrix.layer == 'packager')
               run: yarn
               working-directory: ./src-client
 
             - name: Install server dependencies
-              if: matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'server'
               run: dotnet restore
               working-directory: ./src-csharp
 
             - name: Build client
-              if: (matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true') || (matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true')
+              if: (matrix.layer == 'client') || (matrix.layer == 'packager')
               run: yarn run build-client
 
             - name: Build server
-              if: matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'server'
               run: dotnet build --configuration Release
               working-directory: ./src-csharp
 
             - name: Test client
-              if: matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'client'
               run: yarn run test-client
 
             - name: Test server
-              if: matrix.layer == 'server' && steps.server_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'server'
               run: yarn run test-server
 
             - name: Configure sidecar
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               run: yarn run build-server
 
             - name: Test packager
-              if: matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true'
+              if: matrix.layer == 'packager'
               run: yarn run test-packager
