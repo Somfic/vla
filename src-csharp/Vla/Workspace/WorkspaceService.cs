@@ -11,7 +11,7 @@ namespace Vla.Workspace;
 public class WorkspaceService
 {
 	private readonly string _recentPath =
-		Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vla", "recent workspaces.txt"));
+		Path.GetFullPath(Path.Combine("Vla", "recent workspaces.txt"));
 	
 	private static readonly Abstractions.Web DefaultWeb = new("Pythagorean theorem")
 	{
