@@ -15,6 +15,7 @@
         <PackageTags>macros</PackageTags>
         <Copyright>Copyright (c) 2023 Lucas de Jong</Copyright>
         <PackageLicenseUrl>https://raw.githubusercontent.com/Somfic/vla/main/LICENSE</PackageLicenseUrl>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
