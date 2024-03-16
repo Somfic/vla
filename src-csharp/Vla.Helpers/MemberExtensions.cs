@@ -13,7 +13,7 @@ public static class DocumentationExtensions
 		{
 			return Reader.GetTypeComments(type).Summary.Trim();
 		}
-		catch (Exception e)
+		catch (Exception)
 		{
 			return string.Empty;
 		}
@@ -27,7 +27,7 @@ public static class DocumentationExtensions
 				.First(x => x.Name == parameter.Name).Text
 				.Trim();
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
 			return string.Empty;
 		}
@@ -35,15 +35,14 @@ public static class DocumentationExtensions
 
 	public static string GetDocumentation(this PropertyInfo parameter)
 	{
-		try 
+		try
 		{
 			return Reader.GetMemberComments(parameter).Summary
 				.Trim();
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
 			return string.Empty;
 		}
 	}
-
 }

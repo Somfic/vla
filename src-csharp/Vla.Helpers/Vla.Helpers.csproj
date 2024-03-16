@@ -6,10 +6,11 @@
         <Nullable>enable</Nullable>
         <WarningsAsErrors>true</WarningsAsErrors>
         <IsPackable>false</IsPackable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="LoxSmoke.DocXml" Version="3.6.0" />
+        <PackageReference Include="LoxSmoke.DocXml" Version="3.6.0"/>
     </ItemGroup>
 
 </Project>

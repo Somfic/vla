@@ -2602,10 +2602,10 @@ svelte@^4.2.8:
     magic-string "^0.30.4"
     periscopic "^3.1.0"
 
-svelvet@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/svelvet/-/svelvet-9.0.0.tgz#f4bd0b71791ed9c00f1a7e8932061ac32ee054eb"
-  integrity sha512-M7EwbLNXlhh45zfqcRP2bUP3gTGyurIPgibjrqyhmMdrE8YMIGqbGJW1SsnJ1BVRd4JPd8rNAuz5PWV6mf3ftg==
+svelvet@^10.0.0:
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/svelvet/-/svelvet-10.0.2.tgz#24e4bef12aaad60c010a444437b5a22f35e3e5f5"
+  integrity sha512-CSxAyQ9xF/Qq3K0xsL/gy9u9UpC4DVFUUbq3awpQ9Dic4EGJ40qAhlcCKBBAb3Kul6hlks2bzlyBmNby8CfpDg==
 
 test-exclude@^6.0.0:
   version "6.0.0"

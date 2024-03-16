@@ -3,289 +3,197 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Vla.Abstractions.Connection;
-using Vla.Abstractions.Instance;
-using Vla.Abstractions.Structure;
-using Vla.Helpers;
+using Vla.Abstractions;
+using Vla.Addon;
 
 namespace Vla.Engine;
 
 public class NodeEngine
 {
-	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<NodeEngine> _log;
-	
+	private readonly IServiceProvider _serviceProvider;
+
+	private string _name = "Untitled";
+
 	public NodeEngine(ILogger<NodeEngine> log, IServiceProvider serviceProvider)
 	{
 		_serviceProvider = serviceProvider;
-		_log = log;	
-	}
-	
-	public NodeEngine SetStructures(ImmutableArray<NodeStructure> structures)
-	{
-		Structures = structures;
-		return this;
-	}
-	
-	public NodeEngine SetGraph(ImmutableArray<NodeInstance> instances,
-		ImmutableArray<NodeConnection> connections)
-	{
-		var sorter = new TopologicalSorter(connections.Select(x => (x.Source.InstanceId.ToString(), x.Target.InstanceId.ToString())).ToArray());
-		Instances = sorter.Sort().Select(x => instances.First(y => y.Id == Guid.Parse(x.value))).ToImmutableArray();
-		Connections = connections;
-		
-		// Clear all implicit and explicit values that do not have a connection attached to them
-		// ImplicitValues = ImplicitValues.Where(v => !connections.Any(c => c.Source.Id == v.Key || c.Target.Id == v.Key)).ToImmutableDictionary();
-		// ExplicitValues = ExplicitValues.Where(v => !connections.Any(c => c.Source.Id == v.Key || c.Target.Id == v.Key)).ToImmutableDictionary();
-		
-		ImplicitValues = ImmutableDictionary<string, object>.Empty;
-		ExplicitValues = ImmutableDictionary<string, object>.Empty;
-		
-		return this;
+		_log = log;
 	}
 
-	public ImmutableArray<NodeStructure> Structures { get; private set; } = ImmutableArray<NodeStructure>.Empty;
+	public ImmutableArray<Node> Instances { get; private set; } = ImmutableArray<Node>.Empty;
+
 	public ImmutableArray<NodeConnection> Connections { get; private set; } = ImmutableArray<NodeConnection>.Empty;
-	public ImmutableArray<NodeInstance> Instances { get; private set; } = ImmutableArray<NodeInstance>.Empty;
 
-	public ImmutableDictionary<string, object> Values => ExplicitValues
-		.Concat(ImplicitValues.Where(x => !ExplicitValues.ContainsKey(x.Key)))
-		.ToImmutableDictionary(x => x.Key, x => x.Value);
-	
-	public ImmutableDictionary<string, object> ImplicitValues { get; private set; } = ImmutableDictionary<string, object>.Empty;
-	public ImmutableDictionary<string, object> ExplicitValues { get; private set; } = ImmutableDictionary<string, object>.Empty;
+	public ImmutableDictionary<string, dynamic?> CachedOutputs { get; private set; } =
+		ImmutableDictionary<string, dynamic?>.Empty;
 
-	
-	private ImmutableDictionary<Guid, object> _instances = ImmutableDictionary<Guid, object>.Empty;
-
-	public ImmutableArray<NodeExecutionResult> Tick()
+	public void CreateConnection(Node source, string outputId, Node target, string inputId)
 	{
-		var results = ImmutableArray<NodeExecutionResult>.Empty;
-		
-		foreach (var instance in Instances)
-		{
-			var result = ExecuteNode(instance);
-			results = results.Add(result);
-		}
-
-		return results;
+		CreateConnection(new NodeConnection(source.Id, outputId, target.Id, inputId));
 	}
 
-	private NodeExecutionResult ExecuteNode(NodeInstance instance)
+	public void CreateConnection(NodeConnection connection)
 	{
-		var structure = Structures.First(x => x.NodeType == instance.NodeType);
+		Connections = Connections.Add(connection);
+	}
 
-		try
+	public T CreateInstance<T>(NodeInstance? options = null) where T : Node
+	{
+		if (!options.HasValue)
+			return (T)CreateInstance(new NodeInstance { Type = typeof(T) });
+		return (T)CreateInstance(options.Value with { Type = typeof(T) });
+	}
+
+	public Node CreateInstance(NodeInstance options)
+	{
+		_log.LogInformation("Creating instance of {Type}", options.Type.Name);
+		_log.LogInformation("{Json}", JsonConvert.SerializeObject(options, Formatting.Indented));
+
+		// Check if the type is a node
+		if (!options.Type.IsSubclassOf(typeof(Node)))
 		{
-			if (!_instances.ContainsKey(instance.Id))
-				_instances = _instances.Add(instance.Id,
-					ActivatorUtilities.CreateInstance(_serviceProvider, instance.NodeType));
-		}
-		catch (Exception ex)
-		{
-			_log.LogError(ex, "Could not create instance of {NodeType}", structure.NodeType);
-			throw;
-		}
-
-		var nodeInstance = _instances[instance.Id];
-
-		// Properties
-		foreach (var property in structure.Properties)
-		{
-			var propInfo = structure.NodeType.GetProperty(property.Name);
-			var propType = propInfo?.PropertyType;
-
-			if (propType == null)
-				continue;
-
-			var castedDefaultValue = JsonConvert.DeserializeObject(property.DefaultValue, propType);
-			propInfo?.SetValue(nodeInstance, castedDefaultValue);
+			_log.LogWarning("Type {Type} is not a node", options.Type.Name);
+			throw new InvalidOperationException($"{options.Type.Name} does not inherit from {nameof(Node)}");
 		}
 
-		foreach (var property in instance.Properties)
+		var nodeInstance = ActivatorUtilities.CreateInstance(_serviceProvider, options.Type) as Node ??
+		                   throw new InvalidOperationException("Could not create node instance");
+
+		nodeInstance.Purity = options.Type.GetCustomAttribute<NodeAttribute>()?.Purity ?? NodePurity.Deterministic;
+		nodeInstance.Id = options.Guid ?? Guid.NewGuid();
+		nodeInstance.Inputs = options.Inputs.ToDictionary(x => x.Id, x => x.Value).ToImmutableDictionary();
+		nodeInstance.InputLabels = options.Inputs.ToDictionary(x => x.Id, x => x.Label).ToImmutableDictionary();
+		nodeInstance.Outputs = options.Outputs.ToDictionary(x => x.Id, x => x.Value).ToImmutableDictionary();
+		nodeInstance.OutputLabels = options.Outputs.ToDictionary(x => x.Id, x => x.Label).ToImmutableDictionary();
+
+		foreach (var property in options.Properties)
 		{
-			var propInfo = structure.NodeType.GetProperty(property.Id);
-			var propType = propInfo?.PropertyType;
-
-			if (propType == null)
-				continue;
-
-			var castedValue = JsonConvert.DeserializeObject(property.Value, propType);
-			propInfo?.SetValue(nodeInstance, castedValue);
-		}
-
-		// Invocation
-		var invokeMethod = structure.NodeType.GetMethod(structure.ExecuteMethod);
-
-		if (invokeMethod == null)
-			throw new ArgumentException(
-				$"Could not find execute method {structure.ExecuteMethod} on type {structure.NodeType.Name}");
-
-		var parameters = ConstructInvocationParameters(invokeMethod, instance, structure);
-
-		// TODO: There must be a better way to do this...
-		try
-		{
-			invokeMethod.Invoke(nodeInstance, parameters);
-
-			var inputs = new List<ParameterResult>();
-			var outputs = new List<ParameterResult>();
-
-			for (var i = 0; i < parameters.Length; i++)
+			var propertyInfo = options.Type.GetProperty(property.Id, BindingFlags.Public | BindingFlags.Instance);
+			if (propertyInfo == null)
 			{
-				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
+				_log.LogWarning("Property {Property} not found on node {Node}", property.Id, options.Type.Name);
+				continue;
+			}
 
-				if (parameter is OutputParameterStructure outputParameter)
+			propertyInfo.SetValue(nodeInstance, property.Value);
+		}
+
+		Instances = Instances.Add(nodeInstance);
+
+		return nodeInstance;
+	}
+
+	public async Task<ImmutableArray<NodeExecutionResult>> Tick()
+	{
+		var sorter = new TopologicalSorter(Connections
+			.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
+			.ToArray());
+
+		// _log.LogDebug("Connections: {Join}", string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.NodeId).Name}.{x.Target.Id}")));
+
+		var sortedInstances = sorter.Sort()
+			.Select(Guid.Parse)
+			.ToArray();
+
+		var unsortedInstances = Instances.Select(x => x.Id).Except(sortedInstances);
+
+		var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
+
+		// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name)));
+
+		var results = new List<NodeExecutionResult>();
+
+		foreach (var instanceId in instances)
+		{
+			var instance = Instances.First(x => x.Id == instanceId);
+
+			_log.LogDebug("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
+
+			var result = await ExecuteNode(instance);
+
+			_log.LogDebug("Node {InstanceName} ({InstanceId}) executed with result {SerializeObject}", instance.Name, instance.Id, JsonConvert.SerializeObject(result, Formatting.Indented));
+
+			// Loop over all the outputs of this node execution
+			foreach (var output in result.Outputs)
+			{
+				_log.LogDebug("Searching for inputs {InstanceId}.{OutputId} connects to", instance.Id, output.Id);
+
+				// Get all the inputs this output is connected to
+				var inputs = Connections
+					.Where(x => x.Source.NodeId == instance.Id && x.Source.Id == output.Id)
+					.Select(x => x.Target);
+
+				_log.LogDebug("Found {SerializeObject}", JsonConvert.SerializeObject(inputs));
+
+				// For each input, set the value to the original output, with conversion to the input type
+				foreach (var input in inputs)
 				{
-					SetValue(instance, outputParameter, parameters[i]);
-					outputs.Add(new ParameterResult(parameter.Id, parameters[i]));
-				}
-				else
-				{
-					inputs.Add(new ParameterResult(parameter.Id, parameters[i]));
+					var node = Instances.First(x => x.Id == input.NodeId);
+					var nodeIndex = Instances.IndexOf(node);
+
+					Instances[nodeIndex].SetInput(input.Id, output.Value);
+
+					_log.LogDebug("Setting input {InputId} on {NodeName} to {OutputValue}", input.Id, node.Name, (object)output.Value!);
+
+					Instances = Instances.SetItem(nodeIndex, node);
 				}
 			}
 
-			return new NodeExecutionResult
-			{
-				InstanceId = instance.Id,
-				Inputs = inputs.ToImmutableArray(),
-				Outputs = outputs.ToImmutableArray(),
-				Exception = null,
-			};
+			results.Add(result);
 		}
-		catch (Exception e)
+
+		return results.ToImmutableArray();
+	}
+
+	public Web SaveWeb()
+	{
+		return new Web(_name)
 		{
-			var inputs = new List<ParameterResult>();
-			var outputs = new List<ParameterResult>();
-
-			for (var i = 0; i < parameters.Length; i++)
-			{
-				var parameter = GetParameterStructureFromMethod(invokeMethod, structure, i);
-
-				if (parameter is OutputParameterStructure outputParameter)
-				{
-					var fallback = parameter.Type.GetDefaultValueForType()!;
-					SetValue(instance, outputParameter, fallback);
-					outputs.Add(new ParameterResult(parameter.Id, fallback));
-				}
-				else
-				{
-					inputs.Add(new ParameterResult(parameter.Id, parameters[i]));
-				}
-			}
-
-			return new NodeExecutionResult
-			{
-				InstanceId = instance.Id,
-				Inputs = inputs.ToImmutableArray(),
-				Outputs = outputs.ToImmutableArray(),
-				Exception = e
-			};
-		}
+			Instances = Instances.Select<Node, NodeInstance>(x => x).ToImmutableArray(),
+			Connections = Connections
+		};
 	}
 
-	private void SetValue(NodeInstance instance, OutputParameterStructure parameter, object value)
+	public void LoadWeb(Web state)
 	{
-		var outputId = $"{instance.Id}.{parameter.Id}";
-		SetValue(outputId, value);
+		_name = state.Name;
 
-		// Set the casted value on all the connected inputs
-		var connections = Connections.Where(x => x.Source.InstanceId == instance.Id && x.Source.PropertyId == parameter.Id).ToArray();
-		
-		foreach (var connection in connections)
+		Instances = state.Instances.Select(x =>
 		{
-			var targetInstance = Instances.First(x => x.Id == connection.Target.InstanceId);
-			var targetParameter = Structures.First(x => x.NodeType == targetInstance.NodeType).Inputs.First(x => x.Id == connection.Target.PropertyId);
-			
-			var inputId = $"{targetInstance.Id}.{targetParameter.Id}";
-			var castedValue = Convert.ChangeType(value, targetParameter.Type);
-			SetValue(inputId, castedValue);
-		}
+			var instance = CreateInstance(x);
+
+			foreach (var input in x.Inputs) instance.SetInput(input.Id, input.Value);
+
+			return instance;
+		}).ToImmutableArray();
+
+		Connections = state.Connections;
 	}
 
-	private void SetValue(string id, object value)
-	{
-		if (ExplicitValues.ContainsKey(id))
-			ExplicitValues = ExplicitValues.SetItem(id, value);
-		else
-			ExplicitValues = ExplicitValues.Add(id, value);
-	}
-	
-	private object GetValue(NodeInstance instance, InputParameterStructure parameter)
-	{
-		var id = $"{instance.Id}.{parameter.Id}";
-		
-		if(ExplicitValues.TryGetValue(id, out var value))
-			return value;
-
-		return GetImplicitValue(id, instance, parameter);
-	}
-
-	private object GetImplicitValue(string id, NodeInstance instance, InputParameterStructure parameter)
+	private async Task<NodeExecutionResult> ExecuteNode(Node node)
 	{
 		try
 		{
-			// Default values might be changed by the user while the graph is running
-			// if (ImplicitValues.TryGetValue(id, out var value))
-			// 	return value;
-			var instanceParameter = GetParameterInstanceFromMethod(instance, parameter);
+			await node.Execute();
 
-			var defaultValue = JsonConvert.DeserializeObject(parameter.DefaultValue, parameter.Type);
+			var inputs = node
+				.Inputs
+				.Select(x => new NodeInput(x.Key, node.InputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key,
+					x.Value))
+				.ToImmutableArray();
 
-			if (instanceParameter?.Id == parameter.Id)
-				defaultValue = JsonConvert.DeserializeObject(instanceParameter.Value.DefaultValue, parameter.Type);
+			var outputs = node
+				.Outputs
+				.Select(x => new NodeOutput(x.Key, node.OutputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key,
+					x.Value))
+				.ToImmutableArray();
 
-			if (ImplicitValues.ContainsKey(id))
-				ImplicitValues = ImplicitValues.SetItem(id, defaultValue);
-			else
-				ImplicitValues = ImplicitValues.Add(id, defaultValue);
-
-			return defaultValue;
+			return new NodeExecutionResult(inputs, outputs, node.Id, true);
 		}
 		catch (Exception ex)
 		{
-			_log.LogWarning(ex, "Could not get implicit value for {Id}", id);
-			throw;
+			return new NodeExecutionResult(ex, node.Id, true);
 		}
-	}
-
-	private dynamic[] ConstructInvocationParameters(MethodBase method, NodeInstance instance, NodeStructure structure)
-	{
-		var methodParameters = method.GetParameters();
-		var parameters = new dynamic[methodParameters.Length];
-		
-		for (var i = 0; i < methodParameters.Length; i++)
-		{
-			var structureParameter = GetParameterStructureFromMethod(method, structure, i);
-			
-			dynamic value = null;
-			
-			// If the parameter is an input, get the default value from the structure/instance
-			if (structureParameter is InputParameterStructure inputParameter)
-				value = GetValue(instance, inputParameter);
-			
-			parameters[i] = value;
-		}
-
-		return parameters;
-	}
-
-	private IParameterStructure GetParameterStructureFromMethod(MethodBase method, NodeStructure structure, int parameterIndex)
-	{
-		var structureParameters = structure
-			.Inputs
-			.Select(x => x as IParameterStructure)
-			.Concat(structure.Outputs
-				.Select(x => x as IParameterStructure));
-		
-		var parameter = method.GetParameters()[parameterIndex];
-		
-		return structureParameters.First(x => x.Id == parameter.Name);
-	}
-	
-	private ParameterInstance? GetParameterInstanceFromMethod(NodeInstance instance, IParameterStructure parameterStructure)
-	{
-		return instance.Inputs.FirstOrDefault(x => x.Id == parameterStructure.Id);
 	}
 }
