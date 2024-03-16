@@ -91,7 +91,7 @@ jobs:
                   workspaces: "./src-tauri -> target"
 
             - name: Install client dependencies
-              if: matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true'
+              if: (matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true') || (matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true')
               run: yarn
               working-directory: ./src-client
 
@@ -101,7 +101,7 @@ jobs:
               working-directory: ./src-csharp
 
             - name: Build client
-              if: matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true'
+              if: (matrix.layer == 'client' && steps.client_changes.outputs.any_changed == 'true') || (matrix.layer == 'packager' && steps.packager_changes.outputs.any_changed == 'true')
               run: yarn run build-client
 
             - name: Build server
