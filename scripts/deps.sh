@@ -24,4 +24,4 @@ case "$os" in
 esac
 
 # Create dist folder
-mkdir -p dist
+mkdir -p ../src-client/build
