@@ -69,7 +69,7 @@ jobs:
             CLIENT_CHANGES: ${{ needs.check-needs-to-run.outputs.client_changes }}
             SERVER_CHANGES: ${{ needs.check-needs-to-run.outputs.server_changes }}
             PACKAGER_CHANGES: ${{ needs.check-needs-to-run.outputs.packager_changes }}
-        if: github.env.MATRIX_LAYER == 'client' && github.env.CLIENT_CHANGES == 'true' || github.env.MATRIX_LAYER == 'server' && github.env.SERVER_CHANGES == 'true' || github.env.MATRIX_LAYER == 'packager' && github.env.PACKAGER_CHANGES == 'true'
+        if: ${{ env.MATRIX_LAYER == 'client' && env.CLIENT_CHANGES == 'true' }} || ${{ env.MATRIX_LAYER == 'server' && env.SERVER_CHANGES == 'true' }} || ${{ env.MATRIX_LAYER == 'packager' && env.PACKAGER_CHANGES == 'true' }}
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
