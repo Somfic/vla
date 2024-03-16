@@ -211,7 +211,7 @@ public class NodeEngine
 			.ConfigureLogging(l =>
 			{
 				l.AddConsole();
-				l.SetMinimumLevel(LogLevel.Trace);
+				l.SetMinimumLevel(LogLevel.Warning);
 			})
 			.Build()
 			.Services;
