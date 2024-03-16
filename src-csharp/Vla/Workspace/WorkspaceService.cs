@@ -11,7 +11,7 @@ namespace Vla.Workspace;
 public class WorkspaceService
 {
 	private readonly string _recentPath =
-		Path.GetFullPath(Path.Combine("Vla", "recent workspaces.txt"));
+		Path.GetFullPath(Path.Combine("Vla-appdata", "recent workspaces.txt"));
 	
 	private static readonly Abstractions.Web DefaultWeb = new("Pythagorean theorem")
 	{
@@ -65,8 +65,8 @@ public class WorkspaceService
 		_addons = addons;
 		
 		var appPath = Path.GetDirectoryName(_recentPath);
-		
-		if (!string.IsNullOrEmpty(appPath) && !Directory.Exists(appPath))
+
+		if (!string.IsNullOrEmpty(appPath))
 			Directory.CreateDirectory(appPath);
 	}
 	
@@ -252,7 +252,7 @@ public class WorkspaceService
 
 	private async Task WriteRecent(ImmutableArray<string> workspaces)
 	{
-		await using (var fileStream = new FileStream(_recentPath, FileMode.Create, FileAccess.Write, FileShare.None))
+		await using (var fileStream = new FileStream(_recentPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
 		await using (var streamWriter = new StreamWriter(fileStream))
 		{
 			await streamWriter.WriteAsync(string.Join(Environment.NewLine, workspaces));
@@ -263,7 +263,7 @@ public class WorkspaceService
 	{
 		string content;
 
-		await using (var fileStream = new FileStream(_recentPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+		await using (var fileStream = new FileStream(_recentPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
 		using (var streamReader = new StreamReader(fileStream))
 		{
 			content = await streamReader.ReadToEndAsync();
