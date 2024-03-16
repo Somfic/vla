@@ -16,9 +16,9 @@ jobs:
     check-needs-to-run:
         runs-on: ubuntu-latest
         outputs:
-            client_changes: ${{ steps.changed_files.outputs.any_changed }}
-            server_changes: ${{ steps.changed_files.outputs.any_changed }}
-            packager_changes: ${{ steps.changed_files.outputs.any_changed }}
+            client_changes: ${{ steps.set_output.outputs.client_changes }}
+            server_changes: ${{ steps.set_output.outputs.server_changes }}
+            packager_changes: ${{ steps.set_output.outputs.packager_changes }}
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
