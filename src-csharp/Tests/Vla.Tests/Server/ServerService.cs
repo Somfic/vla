@@ -95,12 +95,13 @@ public class ServerService
 	public async Task ServerService_Methods_PopulatesRequest()
 	{
 		var client = new ClientMetadata() { Guid = Guid.NewGuid() };
-		await TestServerMethod("test request", client);
+		await TestServerMethod("test request", client, new TestRequestData(42));
 		Assert.That(TestMethod.TestRequestCalled, Is.True);
-		Assert.That(TestMethod.TestRequestRequest, Is.Not.Null);
+		Assert.That(TestMethod.TestRequestData, Is.Not.Null);
+		Assert.That(TestMethod.TestRequestData.Value, Is.EqualTo(42));
 	}
-
-	private async Task TestServerMethod(string id, ClientMetadata client)
+	
+	private async Task TestServerMethod(string id, ClientMetadata client, TestRequestData? data = null)
 	{
 		var (server, websocket) = CreateServerService();
 		
@@ -109,9 +110,9 @@ public class ServerService
 		await server.StartAsync();
 		
 		websocket.SimulateClientConnected(client);
-		websocket.SimulateMessageReceived(client, JsonConvert.SerializeObject(new RequestMessage(id)));
+		websocket.SimulateMessageReceived(client, JsonConvert.SerializeObject(new RequestMessage<TestRequestData>(id, data)));
 
-		await Task.Delay(10);
+		await Task.Delay(1);
 	}
 
 	[ServerMethods("test")]
@@ -163,13 +164,13 @@ public class ServerService
 		}
 		
 		public static bool TestRequestCalled { get; set; }
-		public static RequestMessage? TestRequestRequest { get; set; }
+		public static TestRequestData TestRequestData { get; set; }
 		
 		[ServerMethod("request")]
-		public void TestRequest(RequestMessage request)
+		public void TestRequest(TestRequestData data)
 		{
 			TestRequestCalled = true;
-			TestRequestRequest = request;
+			TestRequestData = data;
 		}
 	}
 
@@ -185,22 +186,31 @@ public class ServerService
 		public T Value { get; init; }
 	}
 	
-	record RequestMessage : ISocketRequest
+	record RequestMessage<T> : ISocketRequest
 	{
-		public RequestMessage(string Id)
+		public RequestMessage(string id, T data)
 		{
-			this.Id = Id;
+			Id = id;
+			Data = data;
 		}
 
 		[JsonProperty("id")]
 		public string Id { get; init; }
 
-		public void Deconstruct(out string Id)
-		{
-			Id = this.Id;
-		}
+		[JsonProperty("data")]
+		public T Data { get; init; }
 	}
 
+	record TestRequestData : ISocketRequest
+	{
+		public TestRequestData(int value)
+		{
+			Value = value;
+		}
+		
+		[JsonProperty("value")]
+		public int Value { get; init; }
+	}
 
 	private (Vla.Server.ServerService server, MockWebSocketService websocket) CreateServerService()
 	{
@@ -209,7 +219,7 @@ public class ServerService
 			.ConfigureLogging(l =>
 			{
 				l.AddConsole();
-				l.SetMinimumLevel(LogLevel.Warning);
+				l.SetMinimumLevel(LogLevel.Trace);
 			})
 			.Build()
 			.Services;
