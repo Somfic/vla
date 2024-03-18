@@ -37,6 +37,7 @@ var server = host.Services.GetRequiredService<ServerService>();
 var engine = host.Services.GetRequiredService<NodeEngine>();
 
 server.AddMethods<Vla.Server.Methods.WorkspaceMethods>();
+server.AddMethods<Vla.Server.Methods.WebMethods>();
 
 server.OnTick(async () =>
 {
