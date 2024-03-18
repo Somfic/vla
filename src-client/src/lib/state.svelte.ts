@@ -6,7 +6,7 @@ import type { NodeExecutionResult } from './models/result';
 // State
 export const workspaces = writable([] as Workspace[]);
 export const workspaceName = writable('');
-export const webId = writable('');
+export const webName = writable('');
 export const result = writable([] as NodeExecutionResult[]);
 
 // Derived
@@ -15,8 +15,8 @@ export const web: Writable<Web | undefined> = writable();
 
 export function reset() {
 	workspaces.set([]);
-	workspaceName.set('Workspace');
-	webId.set('');
+	workspaceName.set('Untitled');
+	webName.set('');
 
 	workspaces.subscribe(() => setWorkspace());
 	workspaces.subscribe(() => setWeb());
@@ -24,8 +24,8 @@ export function reset() {
 	workspaceName.subscribe(() => setWorkspace());
 	workspaceName.subscribe(() => setWeb());
 
-	webId.subscribe(() => setWorkspace());
-	webId.subscribe(() => setWeb());
+	webName.subscribe(() => setWorkspace());
+	webName.subscribe(() => setWeb());
 }
 
 function setWorkspace() {
@@ -33,5 +33,5 @@ function setWorkspace() {
 }
 
 function setWeb() {
-	web.set(get(workspace)?.webs.find((w) => w.id == get(webId)));
+	web.set(get(workspace)?.webs.find((w) => w.name == get(webName)));
 }

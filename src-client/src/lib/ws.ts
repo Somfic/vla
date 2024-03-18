@@ -1,5 +1,6 @@
 import { get, writable, type Writable } from 'svelte/store';
 import { reset, workspaces } from './state.svelte';
+import { listWorkspaces } from './methods';
 
 let ws: WebSocket = null as any;
 
@@ -16,7 +17,7 @@ export function startListening() {
 		console.info('Websocket connected');
 		isConnected.set(true);
 
-		sendMessage(new SocketMessage('workspace list'));
+		listWorkspaces();
 	};
 
 	ws.onmessage = (e) => {
