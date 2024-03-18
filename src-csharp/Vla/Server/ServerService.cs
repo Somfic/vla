@@ -159,12 +159,14 @@ public class ServerService
 				if (methodParameter.ParameterType == typeof(ClientMetadata))
 					invokingParameters[index] = client;
 
-				if (methodParameter.ParameterType.IsAssignableTo(typeof(ISocketRequest)))
+				else if (methodParameter.ParameterType.IsAssignableTo(typeof(ISocketRequest)))
 					try
 					{
 						_log.LogDebug("Converting request body to type {Type}", methodParameter.ParameterType);
-						
-						var request = JsonConvert.DeserializeObject(message, methodParameter.ParameterType);
+						_log.LogDebug("Request body: {Body}", message);
+
+						var jObject = JObject.Parse(message);
+						var request = jObject["data"]?.ToObject(methodParameter.ParameterType);
 
 						if (request == null)
 						{
@@ -180,9 +182,16 @@ public class ServerService
 						_log.LogWarning(ex, "Could not convert request body to type {Type}",
 							methodParameter.ParameterType);
 						return;
+
 					}
+				else
+				{
+					_log.LogWarning("Method '{Method}' has an unexpected parameter type '{Type}', skipping",
+						method.Name, methodParameter.ParameterType);
+					return;
+				}
 			}
-			
+
 			// If the method returns nothing, just invoke it
 			if (method.ReturnType == typeof(Task))
 			{

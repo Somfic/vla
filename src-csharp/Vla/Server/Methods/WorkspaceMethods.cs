@@ -36,6 +36,12 @@ public class WorkspaceMethods : IServerMethods
 	{
 		var workspaces = await _workspaces.ListAsync();
 
+		if (workspaces.IsValue && workspaces.Expect().Length == 0)
+		{
+			await Create(new CreateWorkspaceRequest { Name = "Untitled", Path = "Untitled.vla" });
+			return await List();
+		}
+
 		return workspaces
 			.Map<ISocketResponse, ImmutableArray<Abstractions.Workspace>>(
 				w => new WorkspacesResponse(w),
