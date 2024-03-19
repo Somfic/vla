@@ -47,9 +47,11 @@ export function startListening() {
 	};
 }
 
-export function sendMessage<T>(message: SocketMessage<T>) {
+export function sendMessage<T>(id: string, data: T = null as any) {
 	if (!ws) return;
 	if (ws.readyState !== ws.OPEN) return console.log('Not open');
+
+	let message: SocketMessage<T> = new SocketMessage(id, data);
 
 	console.trace('>', message);
 

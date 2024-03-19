@@ -27,91 +27,91 @@ public class WorkspaceService
 	
 	
     [Test]
-	public async Task WorkspaceService_Create_ThrowsErrorIfAlreadyExists()
+	public void WorkspaceService_Create_ThrowsErrorIfAlreadyExists()
 	{
 		var workspaces = CreateWorkspaceService();
 
 		var (id, path) = RandomIdAndPath();
 
-		var workspace = (await workspaces.CreateAsync(id, path)).Expect();
+		var workspace = workspaces.Create(id, path).Expect();
 		
-		var workspaceResult = await workspaces.CreateAsync(id, path);
+		var workspaceResult =  workspaces.Create(id, path);
 		
 		Assert.That(workspaceResult.IsError, Is.True);
 	}
 	
 	[Test]
-	public async Task WorkspaceService_List_ReturnsWorkspaces()
+	public void WorkspaceService_List_ReturnsWorkspaces()
 	{
 		var workspaces = CreateWorkspaceService();
 
 		var (id, path) = RandomIdAndPath();
 		
-		var workspace = (await workspaces.CreateAsync(id, path)).Expect();
+		var workspace = workspaces.Create(id, path).Expect();
 
-		var recents = (await workspaces.ListAsync()).Expect();
+		var recents = workspaces.List().Expect();
 		
 		Assert.That(recents.Any(x => x.Name == id), Is.True);
 	}
 	
 	[Test]
-	public async Task WorkSpaceService_Load_LoadsWorkspace()
+	public void WorkSpaceService_Load_LoadsWorkspace()
 	{
 		var workspaces = CreateWorkspaceService();
 
 		var (id, path) = RandomIdAndPath();
 
-		(await workspaces.CreateAsync(id, path)).Expect();
-		var workspace = (await workspaces.LoadAsync(path)).Expect();
+		workspaces.Create(id, path).Expect();
+		var workspace = workspaces.Load(path).Expect();
 		
 		Assert.That(workspace.Name, Is.EqualTo(id));
 	}
 	
 	[Test]
-	public async Task WorkspaceService_CreateWeb_AddsWeb()
+	public void WorkspaceService_CreateWeb_AddsWeb()
 	{
 		var workspaces = CreateWorkspaceService();
 
 		var (id, path) = RandomIdAndPath();
 
-		var workspace = (await workspaces.CreateAsync(id, path)).Expect();
-		var web = (await workspaces.CreateWebAsync(workspace, "test web")).Expect();
+		var workspace = workspaces.Create(id, path).Expect();
+		var web = workspaces.CreateWeb(workspace, "test web").Expect();
 		
 		Assert.That(web.Name, Is.EqualTo("test web"));
 
-		workspace = (await workspaces.LoadAsync(path)).Expect();
+		workspace = workspaces.Load(path).Expect();
 		Assert.That(workspace.Webs.Any(x => x.Name == "test web"), Is.True);
 	}
 	
 	[Test]
-	public async Task WorkspaceService_CreateOrLoad_CreatesOnNonExistent()
+	public void WorkspaceService_CreateOrLoad_CreatesOnNonExistent()
 	{
 		var workspaces = CreateWorkspaceService();
 
 		var (id, path) = RandomIdAndPath();
 
-		var oldList = (await workspaces.ListAsync()).Expect();
+		var oldList = workspaces.List().Expect();
 
-		var workspace = (await workspaces.CreateOrLoadAsync(id, path)).Expect();
+		var workspace = workspaces.CreateOrLoad(id, path).Expect();
 		
-		var newList = (await workspaces.ListAsync()).Expect();
+		var newList = workspaces.List().Expect();
 
 		Assert.That(oldList.Any(x => x.Name == workspace.Name), Is.False);
 		Assert.That(newList.Any(x => x.Name == workspace.Name), Is.True);
 	}
 	
 	[Test]
-	public async Task WorkspaceService_CreateOrLoad_LoadsOnExistent()
+	public void WorkspaceService_CreateOrLoad_LoadsOnExistent()
 	{
 		var workspaces = CreateWorkspaceService();
 
 		var (id, path) = RandomIdAndPath();
 
-		var workspace1 = (await workspaces.CreateAsync(path)).Expect();
+		var workspace1 = workspaces.Create(path).Expect();
 		
-		var oldList = (await workspaces.ListAsync()).Expect();
+		var oldList = workspaces.List().Expect();
 
-		var workspace2 = (await workspaces.CreateOrLoadAsync(id, path)).Expect();
+		var workspace2 = workspaces.CreateOrLoad(id, path).Expect();
 		
 		Assert.That(workspace1.Name, Is.EqualTo(workspace2.Name));
 	}
