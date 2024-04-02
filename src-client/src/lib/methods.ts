@@ -1,24 +1,28 @@
-import type { Workspace } from './models/workspace';
+import type { Web, Workspace } from './models/workspace';
 import { sendMessage } from './ws';
 
 export function createWorkspace(name: string, path: string) {
-	sendMessage({ id: 'workspace create', data: { name, path } });
+	sendMessage('workspace create', { name, path });
 }
 
 export function saveWorkspace(workspace: Workspace) {
-	sendMessage({ id: 'workspace save', data: { workspace } });
+	sendMessage('workspace save', { workspace });
 }
 
 export function listWorkspaces() {
-	sendMessage({ id: 'workspace list', data: null });
-	await waitForResponse('workspace list');
+	sendMessage('workspace list');
+	// await waitForResponse('workspace list');
 	// TODO: await a response from the server and return it in a promise
 }
 
 export function deleteWorkspace(workspace: Workspace) {
-	sendMessage({ id: 'workspace delete', data: { workspace } });
+	sendMessage('workspace delete', { workspace });
 }
 
 export function createWeb(workspace: Workspace, name: string) {
-	sendMessage({ id: 'web create', data: { workspacePath: workspace.path, name } });
+	sendMessage('web create', { workspacePath: workspace.path, name });
+}
+
+export function updateWeb(workspace: Workspace, web: Web) {
+	sendMessage('web update', { workspacePath: workspace.path, web });
 }

@@ -35,5 +35,8 @@
 		"vitest": "^0.32.2",
 		"wait-on": "^7.2.0"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@xyflow/svelte": "^0.0.39"
+	}
 }

@@ -1,12 +1,20 @@
 <script lang="ts">
-	import { startListening } from '$lib/ws';
+	import { sendMessage, startListening } from '$lib/ws';
 	import { onMount } from 'svelte';
 	import { web, webName, workspace } from '$lib/state.svelte';
-	import { createWeb } from '$lib/methods';
+	import { createWeb, updateWeb } from '$lib/methods';
+	import NodeEditor from '$lib/components/NodeEditor.svelte';
+	import type { Web } from '$lib/models/workspace';
+	import { get } from 'svelte/store';
 
 	onMount(() => {
 		startListening();
 	});
+
+	function changed(updatedWeb: Web) {
+		console.log('web changed', updatedWeb);
+		updateWeb(get(workspace)!, updatedWeb);
+	}
 </script>
 
 <main>
@@ -15,13 +23,17 @@
 			{$workspace?.name}
 		</div>
 		<div class="webs">
-			<div class="web create" on:click={() => createWeb($workspace, 'new')}>New web</div>
-			{#if $workspace?.webs}
-				{#each $workspace?.webs as web}
-					<div class="web" on:click={(w) => webName.set(web.name)}>
-						{web.name}
-					</div>
-				{/each}
+			{#if $workspace}
+				<button class="web create" on:click={() => createWeb($workspace, 'new')}>New web</button>
+				{#if $workspace?.webs}
+					{#each $workspace?.webs as web}
+						<button class="web" on:click={(w) => webName.set(web.name)}>
+							{web.name}
+						</button>
+					{/each}
+				{/if}
+			{:else}
+				<p class="not-selected">No workspace selected</p>
 			{/if}
 		</div>
 	</div>
@@ -30,9 +42,13 @@
 			<div class="top-bar-sections">
 				<div class="left"></div>
 				<div class="centre">
-					<span class="workspace-name">{$workspace?.name}</span>
-					<span class="divider">/</span>
-					<span class="web-name">{$web?.name}</span>
+					{#if $workspace?.name && $web?.name}
+						<span class="workspace-name">{$workspace?.name}</span>
+						<span class="divider">/</span>
+						<span class="web-name">{$web?.name}</span>
+					{:else}
+						<p class="not-selected">No workspace or web selected</p>
+					{/if}
 				</div>
 				<div class="right"></div>
 			</div>
@@ -42,15 +58,23 @@
 				<div class="closy">x</div>
 			</div>
 		</div>
+		<div class="canvas">
+			{#if $web}
+				<NodeEditor web={$web} on:changed={(w) => changed(w.detail)} />
+			{:else}
+				<p class="not-selected">No web selected</p>
+			{/if}
+		</div>
 	</div>
 </main>
 
 <style lang="scss">
+	@import '../styles/theme';
+
 	main {
 		display: flex;
 		flex-direction: row;
 		flex-grow: 1;
-		gap: 20px;
 	}
 
 	.sidebar {
@@ -60,8 +84,8 @@
 		gap: 20px;
 
 		.active-workspace {
-			border-radius: 10px;
-			border: 2px solid rgba(255, 255, 255, 0.25);
+			border: $border;
+			border-radius: $border-radius;
 			font-weight: 800;
 			background-color: rgba(48, 116, 254, 0.25);
 			padding: 10px;
@@ -70,13 +94,14 @@
 
 		.webs {
 			display: flex;
+			flex-grow: 1;
 			flex-direction: column;
 			margin: 10px;
 			gap: 10px;
 
 			.web {
-				border-radius: 10px;
-				border: 2px solid rgba(255, 255, 255, 0.25);
+				border: $border;
+				border-radius: $border-radius;
 				background-color: rgba(255, 255, 255, 0.1);
 				padding: 10px 20px;
 				text-align: left;
@@ -96,6 +121,8 @@
 	}
 
 	.content {
+		display: flex;
+		flex-direction: column;
 		flex-grow: 1;
 
 		.top-bar {
@@ -110,24 +137,41 @@
 				margin: 0 10px;
 				color: rgba(255, 255, 255, 0.5);
 			}
+
+			.top-bar-sections {
+				display: flex;
+				flex-direction: row;
+				flex-grow: 1;
+				gap: 20px;
+				padding: 10px;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.windows-controls {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-evenly;
+				gap: 10px;
+			}
 		}
 
-		.top-bar-sections {
+		.canvas {
 			display: flex;
-			flex-direction: row;
 			flex-grow: 1;
-			gap: 20px;
-			padding: 10px;
-			align-items: center;
-			justify-content: space-between;
+			background-color: rgba(0, 0, 0, 0.9);
+			border-radius: $border-radius;
+			margin: 10px;
 		}
+	}
 
-		.windows-controls {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: space-evenly;
-			gap: 10px;
-		}
+	.not-selected {
+		display: flex;
+		flex-grow: 1;
+		align-items: center;
+		justify-content: center;
+		color: rgba(255, 255, 255, 0.5);
+		text-align: center;
 	}
 </style>

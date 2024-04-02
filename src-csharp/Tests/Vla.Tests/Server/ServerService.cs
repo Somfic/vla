@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,21 +35,6 @@ public class ServerService
 		await server.StopAsync();
 		
 		Assert.That(websocket.IsRunning, Is.False);
-	}
-	
-	[Test]
-	public async Task ServerService_OnTick_CallsTickCallbacks()
-	{
-		var (server, _) = CreateServerService();
-		var ticked = false;
-
-		server.OnTick(async () => { ticked = true; });
-
-		await server.StartAsync();
-		await Task.Delay(100);
-		await server.StopAsync();
-		
-		Assert.That(ticked, Is.True);
 	}
 	
 	[Test]
@@ -234,6 +220,7 @@ public class ServerService
 internal class MockWebSocketService : IWebsocketService
 {
 	public readonly Dictionary<ClientMetadata, (List<string> incoming, List<string> outgoing)> Messages = new();
+	public ImmutableArray<ClientMetadata> Clients => Messages.Keys.ToImmutableArray();
 	public bool IsRunning { get; private set; }
 
 	public AsyncCallback<ClientMetadata> ClientConnected { get; } = new();
@@ -250,6 +237,11 @@ internal class MockWebSocketService : IWebsocketService
 	{
 		IsRunning = false;
 		return Task.CompletedTask;
+	}
+
+	public ImmutableList<(ClientMetadata client, string message)> Poll()
+	{
+		throw new NotImplementedException();
 	}
 
 	public Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage

@@ -10,8 +10,9 @@ $foreground-muted: #999999;
 $accent: #AD50A3;
 
 $border-width: 1px;
-$border-color: rgba(255, 255, 255, 0.3);
-$border-radius: 0.5rem;
+$border-color: rgba(255, 255, 255, 0.25);
+$border-radius: 1rem;
+$border: $border-width solid $border-color;
 
 $gap: 1rem;
 
