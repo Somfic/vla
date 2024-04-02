@@ -1,13 +1,39 @@
-import type { Dependency } from './addon';
-import type { ColorDefinition, TypeDefinition } from './definition';
-import type { NodeStructure } from './structure';
-import type { Web } from './web';
-
 export interface Workspace {
 	name: string;
 	path: string;
 	created: Date;
 	lastModified: Date;
-	color: ColorDefinition;
 	webs: Web[];
+}
+
+export interface Web {
+	name: string;
+	instances: NodeInstance[];
+	connections: NodeConnection[];
+}
+
+export interface NodeInstance {
+	id: string;
+	name: string;
+	type: string;
+	position: { x: number; y: number };
+	properties: NamedValue[];
+	inputs: NamedValue[];
+	outputs: NamedValue[];
+}
+
+export interface NodeConnection {
+	from: ConnectedProperty;
+	to: ConnectedProperty;
+}
+
+export interface NamedValue {
+	id: string;
+	label: string;
+	value: unknown;
+}
+
+export interface ConnectedProperty {
+	node: string;
+	id: string;
 }

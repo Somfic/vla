@@ -13,7 +13,7 @@ public class NodeEngine
 	private readonly ILogger<NodeEngine> _log;
 	private readonly IServiceProvider _serviceProvider;
 
-	private string _name = "Untitled";
+	private Web _web;
 
 	public NodeEngine(ILogger<NodeEngine> log, IServiceProvider serviceProvider)
 	{
@@ -25,12 +25,9 @@ public class NodeEngine
 
 	public ImmutableArray<NodeConnection> Connections { get; private set; } = ImmutableArray<NodeConnection>.Empty;
 
-	public ImmutableDictionary<string, dynamic?> CachedOutputs { get; private set; } =
-		ImmutableDictionary<string, dynamic?>.Empty;
-
 	public void CreateConnection(Node source, string outputId, Node target, string inputId)
 	{
-		CreateConnection(new NodeConnection(source.Id, outputId, target.Id, inputId));
+		CreateConnection(new NodeConnection(source.Id.ToString(), outputId, target.Id.ToString(), inputId));
 	}
 
 	public void CreateConnection(NodeConnection connection)
@@ -47,8 +44,8 @@ public class NodeEngine
 
 	public Node CreateInstance(NodeInstance options)
 	{
-		_log.LogInformation("Creating instance of {Type}", options.Type.Name);
-		_log.LogInformation("{Json}", JsonConvert.SerializeObject(options, Formatting.Indented));
+		//_log.LogInformation("Creating instance of {Type}", options.Type.Name);
+		//_log.LogInformation("{Json}", JsonConvert.SerializeObject(options, Formatting.Indented));
 
 		// Check if the type is a node
 		if (!options.Type.IsSubclassOf(typeof(Node)))
@@ -76,7 +73,12 @@ public class NodeEngine
 				continue;
 			}
 
-			propertyInfo.SetValue(nodeInstance, property.Value);
+			var value = property.Value;
+
+			if (propertyInfo.PropertyType.IsEnum)
+				value = Convert.ChangeType(value, TypeCode.Int32);
+			
+			propertyInfo.SetValue(nodeInstance, value);
 		}
 
 		Instances = Instances.Add(nodeInstance);
@@ -90,7 +92,7 @@ public class NodeEngine
 			.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
 			.ToArray());
 
-		// _log.LogDebug("Connections: {Join}", string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id == x.Target.NodeId).Name}.{x.Target.Id}")));
+		_log.LogDebug("Connections: {Join}", string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id.ToString() == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id.ToString() == x.Target.NodeId).Name}.{x.Target.Id}")));
 
 		var sortedInstances = sorter.Sort()
 			.Select(Guid.Parse)
@@ -108,7 +110,7 @@ public class NodeEngine
 		{
 			var instance = Instances.First(x => x.Id == instanceId);
 
-			_log.LogDebug("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
+			_log.LogInformation("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
 
 			var result = await ExecuteNode(instance);
 
@@ -121,7 +123,7 @@ public class NodeEngine
 
 				// Get all the inputs this output is connected to
 				var inputs = Connections
-					.Where(x => x.Source.NodeId == instance.Id && x.Source.Id == output.Id)
+					.Where(x => x.Source.NodeId == instance.Id.ToString() && x.Source.Id == output.Id)
 					.Select(x => x.Target);
 
 				_log.LogDebug("Found {SerializeObject}", JsonConvert.SerializeObject(inputs));
@@ -129,7 +131,7 @@ public class NodeEngine
 				// For each input, set the value to the original output, with conversion to the input type
 				foreach (var input in inputs)
 				{
-					var node = Instances.First(x => x.Id == input.NodeId);
+					var node = Instances.First(x => x.Id.ToString() == input.NodeId);
 					var nodeIndex = Instances.IndexOf(node);
 
 					Instances[nodeIndex].SetInput(input.Id, output.Value);
@@ -148,27 +150,33 @@ public class NodeEngine
 
 	public Web SaveWeb()
 	{
-		return new Web(_name)
+		return _web with
 		{
 			Instances = Instances.Select<Node, NodeInstance>(x => x).ToImmutableArray(),
 			Connections = Connections
 		};
 	}
 
-	public void LoadWeb(Web state)
+	public void LoadWeb(Web web)
 	{
-		_name = state.Name;
-
-		Instances = state.Instances.Select(x =>
+		try
 		{
-			var instance = CreateInstance(x);
+			_web = web;
 
-			foreach (var input in x.Inputs) instance.SetInput(input.Id, input.Value);
+			Instances = _web.Instances.Select(x =>
+			{
+				var instance = CreateInstance(x);
 
-			return instance;
-		}).ToImmutableArray();
+				foreach (var input in x.Inputs) instance.SetInput(input.Id, input.Value);
 
-		Connections = state.Connections;
+				return instance;
+			}).ToImmutableArray();
+
+			Connections = _web.Connections;
+		} catch (Exception ex)
+		{
+			_log.LogError(ex, "Could not load web");
+		}
 	}
 
 	private async Task<NodeExecutionResult> ExecuteNode(Node node)

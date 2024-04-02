@@ -1,13 +1,10 @@
 import { writable, get, type Writable } from 'svelte/store';
-import type { Workspace } from './models/workspace';
-import type { Web } from './models/web';
-import type { NodeExecutionResult } from './models/result';
+import type { Web, Workspace } from './models/workspace';
 
 // State
 export const workspaces = writable([] as Workspace[]);
 export const workspaceName = writable('');
 export const webName = writable('');
-export const result = writable([] as NodeExecutionResult[]);
 
 // Derived
 export const workspace: Writable<Workspace | undefined> = writable();
