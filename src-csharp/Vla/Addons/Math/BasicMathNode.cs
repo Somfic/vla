@@ -220,6 +220,8 @@ public class MathNode : Node
 
 	private void Add()
 	{
+		Console.WriteLine("MATH ADD EXECUTED");
+		
 		var a = Input<double>("add.a", "Value", 0);
 		var b = Input<double>("add.b", "Value", 0);
 

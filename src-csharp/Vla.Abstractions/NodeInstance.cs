@@ -19,11 +19,14 @@ public record struct NodeInstance()
 			.ToImmutableArray();
 	}
 
-	[JsonProperty("node")]
+	[JsonProperty("type")]
 	public Type Type { get; init; }
 
 	[JsonProperty("id")]
 	public Guid? Guid { get; init; } = null;
+	
+	[JsonProperty("position")]
+	public Position Position { get; init; } = new(0, 0);
 
 	[JsonProperty("properties")]
 	public ImmutableArray<NamedValue> Properties { get; init; } = ImmutableArray<NamedValue>.Empty;
@@ -42,11 +45,12 @@ public record struct NodeInstance()
 
 public record struct NamedValue
 {
-	public NamedValue(string id, string label, dynamic? value)
+	public NamedValue(string id, string label, dynamic value)
 	{
 		Id = id;
 		Label = label;
 		Value = value;
+		Type = value.GetType();
 	}
 
 	[JsonProperty("id")]
@@ -56,5 +60,23 @@ public record struct NamedValue
 	public string Label { get; init; }
 
 	[JsonProperty("value")]
-	public dynamic? Value { get; init; }
+	public dynamic Value { get; init; }
+	
+	[JsonProperty("type")]
+	public Type Type { get; init; }
+}
+
+public record struct Position 
+{
+	public Position(int x, int y)
+	{
+		X = x;
+		Y = y;
+	}
+
+	[JsonProperty("x")]
+	public int X { get; init; }
+
+	[JsonProperty("y")]
+	public int Y { get; init; }
 }
