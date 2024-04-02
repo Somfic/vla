@@ -18,9 +18,9 @@ public class WorkspaceMethods : IServerMethods
 	}
 
 	[ServerMethod("create")]
-	public async Task<ISocketResponse> Create(CreateWorkspaceRequest request)
+	public ISocketResponse Create(CreateWorkspaceRequest request)
 	{
-		var workspace = await _workspaces.CreateOrLoadAsync(request.Name, request.Path);
+		var workspace = _workspaces.CreateOrLoad(request.Name, request.Path);
 
 		return workspace
 			.Map<ISocketResponse, Abstractions.Workspace>(
@@ -29,19 +29,24 @@ public class WorkspaceMethods : IServerMethods
 	}
 	
 	[ServerMethod("save")]
-	public Task Save(WorkspaceRequest request) => _workspaces.SaveAsync(request.Workspace);
+	public void Save(WorkspaceRequest request) => _workspaces.Save(request.Workspace);
 	
 	[ServerMethod("list")]
-	public async Task<ISocketResponse> List()
-	{
-		var workspaces = await _workspaces.ListAsync();
+	public ISocketResponse List()
+	{ 
+		var workspaces = _workspaces.List();
 
-		return workspaces
+		if (workspaces.IsValue && workspaces.Expect().Length == 0)
+		{
+			Create(new CreateWorkspaceRequest { Name = "Untitled", Path = "Untitled.vla" });
+		}
+
+		return _workspaces.List()
 			.Map<ISocketResponse, ImmutableArray<Abstractions.Workspace>>(
 				w => new WorkspacesResponse(w),
 				e => new ExceptionResponse(e));
 	}
 
 	[ServerMethod("delete")]
-	public Task Delete(WorkspaceRequest request) => _workspaces.DeleteAsync(request.Workspace);
+	public void Delete(WorkspaceRequest request) => _workspaces.Delete(request.Workspace);
 }

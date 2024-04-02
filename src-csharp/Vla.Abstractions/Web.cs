@@ -5,12 +5,16 @@ namespace Vla.Abstractions;
 
 public readonly record struct Web
 {
-	public Web(string name)
+	public Web(string workspacePath, string name)
 	{
 		Name = name;
+		WorkspacePath = workspacePath;
 		Instances = ImmutableArray<NodeInstance>.Empty;
 		Connections = ImmutableArray<NodeConnection>.Empty;
 	}
+	
+	[JsonProperty("workspacePath")]
+	public string WorkspacePath { get; init; }
 	
 	[JsonProperty("name")]
 	public string Name { get; init; }

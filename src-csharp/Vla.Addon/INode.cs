@@ -35,8 +35,8 @@ public abstract class Node
 	/// <summary>
 	///     A dictionary of all inputs. This value is automatically set by the engine when executing the node.
 	/// </summary>
-	public ImmutableDictionary<string, dynamic?> Inputs { get; internal set; } =
-		ImmutableDictionary<string, dynamic?>.Empty;
+	public ImmutableDictionary<string, dynamic> Inputs { get; internal set; } =
+		ImmutableDictionary<string, dynamic>.Empty;
 
 	/// <summary>
 	///     A dictionary of all input labels. This value is automatically set by the engine when executing the node.
@@ -47,8 +47,8 @@ public abstract class Node
 	/// <summary>
 	///     A dictionary of all outputs. This value is automatically set by the engine when executing the node.
 	/// </summary>
-	public ImmutableDictionary<string, dynamic?> Outputs { get; internal set; } =
-		ImmutableDictionary<string, dynamic?>.Empty;
+	public ImmutableDictionary<string, dynamic> Outputs { get; internal set; } =
+		ImmutableDictionary<string, dynamic>.Empty;
 
 	/// <summary>
 	///     A dictionary of all output labels. This value is automatically set by the engine when executing the node.
@@ -108,15 +108,15 @@ public abstract class Node
 	/// <param name="label">The label of the output.</param>
 	/// <param name="value">The value to output.</param>
 	/// <typeparam name="T">The type of the output.</typeparam>
-	protected void Output<T>(string id, string label, T? value)
+	protected void Output<T>(string id, string label, T value)
 	{
 		OutputLabels = OutputLabels.SetItem(id, label);
-		Outputs = Outputs.SetItem(id, value);
+		Outputs = Outputs.SetItem(id, value!);
 	}
 
 	internal T SetInput<T>(string id, T value)
 	{
-		Inputs = Inputs.SetItem(id, value);
+		Inputs = Inputs.SetItem(id, value!);
 		return value;
 	}
 }

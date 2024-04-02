@@ -1,60 +1,45 @@
 import { get, writable, type Writable } from 'svelte/store';
-import type { Workspace } from './models/workspace';
-import { reset, result, workspaces } from './state.svelte';
+import { reset, workspaces } from './state.svelte';
+import { listWorkspaces } from './methods';
 
 let ws: WebSocket = null as any;
 
-export let hasConnected = writable(false);
+export let isConnected = writable(false);
 export let messages: Writable<string[]> = writable([]);
-export let partialRecognition: Writable<string> = writable('');
-export let recognition: Writable<string> = writable('');
-export let progress: Writable<Progress> = writable({ percentage: 0, label: 'Initialising' });
-export let isReady: Writable<boolean> = writable(false);
 
 export function startListening() {
 	reset();
-	progress.set({ percentage: 0, label: 'Initialising' });
-	isReady.set(false);
 
-	console.log('Connecting to websocket...');
+	console.debug('Websocket is connecting ...');
 	ws = new WebSocket('ws://127.0.0.1:55155');
 
 	ws.onopen = () => {
-		console.log('Connected');
-		hasConnected.set(true);
+		console.info('Websocket connected');
+		isConnected.set(true);
+
+		listWorkspaces();
 	};
 
 	ws.onmessage = (e) => {
-		messages.update((old) => [...old, e.data]);
+		messages.update((m) => [...m, e.data]);
 
-		const message = JSON.parse(e.data) as SocketMessage;
-		console.log('<', message);
+		const message = JSON.parse(e.data) as ISocketMessage;
+		console.trace('<', message);
 
-		switch (message.type) {
-			case 'Progress':
-				progress.set(message.data);
-				break;
-
-			case 'ReadyState':
-				isReady.set(message.data['ready']);
-				break;
-
-			case 'Workspaces':
+		switch (message.id.toLowerCase()) {
+			case 'workspaces':
 				workspaces.set(message.data['workspaces']);
 				break;
-
-			case 'ExecutionResult':
-				result.set(message.data['results']);
 		}
 	};
 
 	ws.onerror = (e) => {
-		console.log('Error', e);
+		console.error('Websocket error', e);
 	};
 
 	ws.onclose = (e) => {
-		console.log('Closed', e);
-		hasConnected.set(false);
+		console.info('Websocket closed', e);
+		isConnected.set(false);
 
 		setTimeout(() => {
 			startListening();
@@ -62,21 +47,28 @@ export function startListening() {
 	};
 }
 
-export function sendMessage(message: any) {
+export function sendMessage<T>(id: string, data: T = null as any) {
 	if (!ws) return;
 	if (ws.readyState !== ws.OPEN) return console.log('Not open');
 
-	console.log('>', message);
+	let message: SocketMessage<T> = new SocketMessage(id, data);
+
+	console.trace('>', message);
 
 	ws.send(JSON.stringify(message));
 }
 
-export interface SocketMessage {
-	type: string;
+interface ISocketMessage {
+	id: string;
 	data: any;
 }
 
-export interface Progress {
-	percentage: number;
-	label: string;
+class SocketMessage<T> implements ISocketMessage {
+	id: string;
+	data: T;
+
+	constructor(id: string, data: T = null as any) {
+		this.id = id;
+		this.data = data;
+	}
 }

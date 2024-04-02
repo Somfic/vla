@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Immutable;
+using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -13,14 +14,17 @@ public class WebsocketService : IWebsocketService
 	private readonly ILogger<WebsocketService> _log;
 	private readonly WatsonWsServer _server;
 
+	private ImmutableList<(ClientMetadata client, string message)> _backlog = ImmutableList<(ClientMetadata client, string message)>.Empty;
+	
 	public WebsocketService(ILogger<WebsocketService> log)
 	{
 		_log = log;
 		_server = new WatsonWsServer(IPAddress.Loopback.ToString(), 55155);
 		_server.ClientConnected += async (_, e) => await OnClientConnected(e);
-		_server.MessageReceived += async (_, e) => await OnMessageReceived(e);
+		_server.MessageReceived += (_,e)=> _backlog = _backlog.Add((e.Client, Encoding.UTF8.GetString(e.Data.ToArray())));
 	}
 
+	public ImmutableArray<ClientMetadata> Clients => _server.ListClients().ToImmutableArray();
 	public bool IsRunning => _server.IsListening;
 
 	public AsyncCallback<ClientMetadata> ClientConnected { get; } = new();
@@ -37,6 +41,13 @@ public class WebsocketService : IWebsocketService
 		_server.Stop();
 
 		while (_server.IsListening) await Task.Delay(1);
+	}
+
+	public ImmutableList<(ClientMetadata client, string message)> Poll()
+	{
+		var backlog = _backlog;
+		_backlog = ImmutableList<(ClientMetadata client, string message)>.Empty;
+		return backlog;
 	}
 
 	public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage
@@ -58,13 +69,6 @@ public class WebsocketService : IWebsocketService
 	{
 		_log.LogInformation("Client connected: {Guid}", e.Client.Guid);
 		await ClientConnected.Set(e.Client);
-	}
-
-	private async Task OnMessageReceived(MessageReceivedEventArgs e)
-	{
-		var message = Encoding.UTF8.GetString(e.Data.ToArray());
-		_log.LogDebug("Message received from {Guid}: '{Message}'", e.Client.Guid, message);
-		await MessageReceived.Set((e.Client, message));
 	}
 
 

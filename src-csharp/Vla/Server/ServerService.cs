@@ -19,8 +19,6 @@ public class ServerService
 	private readonly IServiceProvider _provider;
 
 	private ImmutableArray<IServerMethods> _serverMethods = ImmutableArray<IServerMethods>.Empty;
-	private ImmutableArray<Func<Task>> _tickCallbacks = ImmutableArray<Func<Task>>.Empty;
-	private Task? _serverTask;
 
 	public ServerService(ILogger<ServerService> log, IServiceProvider provider, IWebsocketService server)
 	{
@@ -58,27 +56,19 @@ public class ServerService
 		});
 	}
 
-	public async Task StartAsync()
+	public async Task Tick()
 	{
-		await _server.StartAsync();
+		var messages = _server.Poll();
 
-		_serverTask = Task.Run(async () =>
+		foreach (var (client, message) in messages)
 		{
-			while (_server.IsRunning)
-			{
-				foreach (var callback in _tickCallbacks) await callback();
-
-				await Task.Delay(100);
-			}
-		});
+			await OnIncomingMessage(client, message);
+		}
 	}
+
+	public Task StartAsync() => _server.StartAsync();
 
 	public Task StopAsync() => _server.StopAsync();
-	
-	public void OnTick(Func<Task> callback)
-	{
-		_tickCallbacks = _tickCallbacks.Add(callback);
-	}
 
 	public void AddMethods(params Type[] methods) => methods.ToList().ForEach(AddMethods);
 	
@@ -147,8 +137,11 @@ public class ServerService
 
 	private async Task InvokeMethod(object instance, MethodInfo method, string message, ClientMetadata client)
 	{
-			_log.LogDebug("Invoking method '{Namespace}{Method}' with message '{Message}'", method.DeclaringType!.FullName, method.Name, message);
-		
+		try
+		{
+			_log.LogDebug("Invoking method '{Namespace}{Method}' with message '{Message}'",
+				method.DeclaringType!.FullName, method.Name, message);
+
 			var methodParameters = method.GetParameters();
 			var invokingParameters = new dynamic[methodParameters.Length];
 
@@ -159,12 +152,14 @@ public class ServerService
 				if (methodParameter.ParameterType == typeof(ClientMetadata))
 					invokingParameters[index] = client;
 
-				if (methodParameter.ParameterType.IsAssignableTo(typeof(ISocketRequest)))
+				else if (methodParameter.ParameterType.IsAssignableTo(typeof(ISocketRequest)))
 					try
 					{
 						_log.LogDebug("Converting request body to type {Type}", methodParameter.ParameterType);
-						
-						var request = JsonConvert.DeserializeObject(message, methodParameter.ParameterType);
+						_log.LogDebug("Request body: {Body}", message);
+
+						var jObject = JObject.Parse(message);
+						var request = jObject["data"]?.ToObject(methodParameter.ParameterType);
 
 						if (request == null)
 						{
@@ -180,9 +175,16 @@ public class ServerService
 						_log.LogWarning(ex, "Could not convert request body to type {Type}",
 							methodParameter.ParameterType);
 						return;
+
 					}
+				else
+				{
+					_log.LogWarning("Method '{Method}' has an unexpected parameter type '{Type}', skipping",
+						method.Name, methodParameter.ParameterType);
+					return;
+				}
 			}
-			
+
 			// If the method returns nothing, just invoke it
 			if (method.ReturnType == typeof(Task))
 			{
@@ -192,7 +194,7 @@ public class ServerService
 			{
 				method.Invoke(instance, invokingParameters);
 			}
-			
+
 			// If the method returns a type that inherits from ISocketResponse, invoke it and send the result
 			else if (method.ReturnType.IsGenericType &&
 			         method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>) &&
@@ -202,12 +204,12 @@ public class ServerService
 				var task = (Task)method.Invoke(instance, invokingParameters)!;
 				await task;
 				var result = task.GetType().GetProperty("Result")!.GetValue(task);
-				
-				 if (result is ISocketMessage resultMessage)
-					 await _server.SendAsync(client, resultMessage);
-				 else 
-					 _log.LogWarning("Method '{Method}' returned an unexpected type '{Type}', skipping",
-						 method.Name, method.ReturnType);
+
+				if (result is ISocketMessage resultMessage)
+					await _server.SendAsync(client, resultMessage);
+				else
+					_log.LogWarning("Method '{Method}' returned an unexpected type '{Type}', skipping",
+						method.Name, method.ReturnType);
 			}
 			else if (method.ReturnType.IsAssignableTo(typeof(ISocketMessage)))
 			{
@@ -219,11 +221,26 @@ public class ServerService
 				_log.LogWarning("Method '{Method}' returned an unexpected type '{Type}', skipping",
 					method.Name, method.ReturnType);
 			}
+		} 
+		catch (Exception ex)
+		{
+			ex.Data.Add("Client", client);
+			ex.Data.Add("Message", message);
+			_log.LogError(ex, "Could not process incoming message");
+			await _server.SendAsync(client, new ExceptionResponse(ex));
+		}
 	}
 
 	private Task OnNewClient(ClientMetadata client)
 	{
 		return Task.CompletedTask;
 	}
-	
+
+	public async Task SendToAll(string id)
+	{
+		foreach (var client in _server.Clients)
+		{
+			await OnIncomingMessage(client, $"{{'id': '{id}'}}");
+		}
+	}
 }

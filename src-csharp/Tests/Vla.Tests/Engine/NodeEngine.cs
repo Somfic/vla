@@ -86,7 +86,7 @@ public class NodeEngine
 
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
 
-		engine.CreateConnection(new NodeConnection(mathAddInstance.Id, "result", mathAddInstance.Id, "a"));
+		engine.CreateConnection(new NodeConnection(mathAddInstance.Id.ToString(), "result", mathAddInstance.Id.ToString(), "a"));
 
 		for (var i = 0; i < 10000; i++)
 		{

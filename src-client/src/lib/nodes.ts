@@ -1,38 +1,59 @@
-import type { NodeInstance } from './models/instance';
-import type { NodeStructure } from './models/structure';
-import type { Web } from './models/web';
-import type { Workspace } from './models/workspace';
-import { workspaces } from './state.svelte';
-import { sendMessage } from './ws';
-import { get } from 'svelte/store';
+import type { Edge, Node } from '@xyflow/svelte';
+import type { NamedValue, NodeConnection, NodeInstance } from './models/workspace';
 
-export function runWeb(web: Web) {
-	setTimeout(() => {
-		let message = {
-			Web: web,
-			Id: 'RunWeb'
-		};
+export function edgeToConnection(edge: Edge): NodeConnection {
+	if (!edge.id.includes('->')) {
+		console.log('edgeToConnection: invalid edge', edge);
+		return null as any;
+	}
 
-		sendMessage(message);
-	}, 1);
-}
+	let from = edge.id.split('->')[0];
+	let to = edge.id.split('->')[1];
 
-export function instanceFromId(id: string): NodeInstance {
-	return (
-		get(workspaces)
-			.map((w) => w.webs)
-			.flat()
-			.map((w) => w.instances)
-			.flat()
-			.find((i) => i.id == id) ?? ({} as NodeInstance)
-	);
-}
-
-export function saveWorkspace(workspace: Workspace) {
-	let message = {
-		workspace: workspace,
-		id: 'save-workspace'
+	return {
+		from: {
+			node: from.split('~')[0],
+			id: from.split('~')[1]
+		},
+		to: {
+			node: to.split('~')[0],
+			id: to.split('~')[1]
+		}
 	};
+}
 
-	sendMessage(message);
+export function connectionToEdge(connection: NodeConnection): Edge {
+	return {
+		id: `${connection.from.node}~${connection.from.id}->${connection.to.node}~${connection.to.id}`,
+		source: `${connection.from.node}`,
+		target: `${connection.to.node}`
+	};
+}
+
+export function nodeToInstance(node: Node): NodeInstance {
+	return {
+		id: node.id,
+		name: node.data['name'] as string,
+		type: node.data['type'] as string,
+		position: node.position,
+		properties: node.data['properties'] as NamedValue[],
+		inputs: node.data['inputs'] as NamedValue[],
+		outputs: node.data['outputs'] as NamedValue[]
+	};
+}
+
+export function instanceToNode(instance: NodeInstance): Node {
+	return {
+		id: instance.id,
+		position: instance.position,
+		type: 'vla',
+		data: {
+			label: instance.type.split('Node')[0],
+			name: instance.name,
+			type: instance.type,
+			properties: instance.properties,
+			inputs: instance.inputs,
+			outputs: instance.outputs
+		}
+	};
 }

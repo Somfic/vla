@@ -3,21 +3,22 @@
 :global(html,
   body,
   main) {
-  all: unset;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   font-family: $font;
-  background-color: transparent;
+  background-color: rgb(21, 22, 31);
   color: $foreground;
   height: 100vh;
   overflow: hidden;
 }
 
-:global(*) {
-  font-family: $font;
-  margin: 0;
-  padding: 0;
+:global(style) {
+  display: none;
+}
+
+:global(button, p) {
+  all: unset;
 }
 
 :global(::-webkit-scrollbar) {
