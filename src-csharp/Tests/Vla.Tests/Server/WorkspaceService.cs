@@ -3,8 +3,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
-using Vla.Nodes;
 using Vla.Server.Messages.Requests;
+using Vla.Services;
 using Vla.Websocket;
 
 namespace Vla.Tests.Server;
@@ -124,12 +124,12 @@ public class WorkspaceService
 		return (id, path);
 	}
     
-	private Workspace.WorkspaceService CreateWorkspaceService()
+	private Services.WorkspaceService CreateWorkspaceService()
 	{
 		var services = Host.CreateDefaultBuilder()
 			.ConfigureServices(s =>
 			{
-				s.AddSingleton<Workspace.WorkspaceService>();
+				s.AddSingleton<Services.WorkspaceService>();
 				s.AddSingleton<AddonService>();
 			})
 			.ConfigureLogging(l =>
@@ -140,6 +140,6 @@ public class WorkspaceService
 			.Build()
 			.Services;
 
-		return services.GetRequiredService<Workspace.WorkspaceService>();
+		return services.GetRequiredService<Services.WorkspaceService>();
 	}
 }

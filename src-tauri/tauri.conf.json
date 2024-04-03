@@ -40,7 +40,7 @@
                 "binaries/csharp"
             ],
             "resources": [
-                "uiohook.dll"
+                "libuiohook.dylib"
             ]
         },
         "security": {
@@ -55,7 +55,20 @@
                 "resizable": true,
                 "fullscreen": false,
                 "transparent": true,
-                "decorations": true
+                "decorations": true,
+                "visible": false
+            },
+            {
+                "width": 400,
+                "height": 400,
+                "decorations": false,
+                "center": true,
+                "alwaysOnTop": false,
+                "resizable": false,
+                "transparent": true,
+                "visible": false,
+                "url": "splashscreen",
+                "label": "splashscreen"
             }
         ]
     }

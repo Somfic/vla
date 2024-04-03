@@ -1,6 +1,7 @@
 import { get, writable, type Writable } from 'svelte/store';
 import { reset, workspaces } from './state.svelte';
 import { listWorkspaces } from './methods';
+import { invoke } from '@tauri-apps/api/tauri';
 
 let ws: WebSocket = null as any;
 
@@ -16,7 +17,6 @@ export function startListening() {
 	ws.onopen = () => {
 		console.info('Websocket connected');
 		isConnected.set(true);
-
 		listWorkspaces();
 	};
 
@@ -24,7 +24,7 @@ export function startListening() {
 		messages.update((m) => [...m, e.data]);
 
 		const message = JSON.parse(e.data) as ISocketMessage;
-		console.trace('<', message);
+		// console.trace('<', message);
 
 		switch (message.id.toLowerCase()) {
 			case 'workspaces':
@@ -53,7 +53,7 @@ export function sendMessage<T>(id: string, data: T = null as any) {
 
 	let message: SocketMessage<T> = new SocketMessage(id, data);
 
-	console.trace('>', message);
+	// console.trace('>', message);
 
 	ws.send(JSON.stringify(message));
 }

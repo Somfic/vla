@@ -4,6 +4,7 @@ using Somfic.Common;
 using Vla.Server.Messages;
 using Vla.Server.Messages.Requests;
 using Vla.Server.Messages.Response;
+using Vla.Services;
 using Vla.Workspace;
 
 namespace Vla.Server.Methods;

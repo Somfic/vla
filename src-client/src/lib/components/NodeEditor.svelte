@@ -30,7 +30,6 @@
 	edges.subscribe((_) => queueUpdateWeb());
 
 	$: setNodesAndEdgesFromWeb(web);
-	$: console.log('web updated', web);
 
 	function setNodesAndEdgesFromWeb(web: Web) {
 		let newNodes = web.instances.map<Node>(instanceToNode);
@@ -47,7 +46,7 @@
 
 	function queueUpdateWeb() {
 		clearTimeout(timeout);
-		timeout = setTimeout(updateWeb, 100);
+		timeout = setTimeout(updateWeb, 1000);
 	}
 
 	function updateWeb() {
@@ -126,5 +125,14 @@
 
 	:global(.svelte-flow__handle-left, .svelte-flow__handle-right) {
 		top: unset;
+		transform: unset;
+	}
+
+	:global(.svelte-flow__handle-left) {
+		left: -3px;
+	}
+
+	:global(.svelte-flow__handle-right) {
+		right: -3px;
 	}
 </style>

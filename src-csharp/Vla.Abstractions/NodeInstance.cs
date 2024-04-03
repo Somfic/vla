@@ -8,6 +8,7 @@ public record struct NodeInstance()
 {
 	private NodeInstance(Node node) : this()
 	{
+		Name = node.Name;
 		Type = node.GetType();
 		Guid = node.Id;
 		Properties = node.Properties.Select(x => new NamedValue(x.Key, x.Key, x.Value)).ToImmutableArray();
@@ -24,6 +25,9 @@ public record struct NodeInstance()
 
 	[JsonProperty("id")]
 	public Guid? Guid { get; init; } = null;
+	
+	[JsonProperty("name")]
+	public string Name { get; init; } = string.Empty;
 	
 	[JsonProperty("position")]
 	public Position Position { get; init; } = new(0, 0);

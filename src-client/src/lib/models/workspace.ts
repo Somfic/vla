@@ -31,6 +31,7 @@ export interface NamedValue {
 	id: string;
 	label: string;
 	value: unknown;
+	type: string;
 }
 
 export interface ConnectedProperty {

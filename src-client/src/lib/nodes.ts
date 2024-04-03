@@ -3,7 +3,6 @@ import type { NamedValue, NodeConnection, NodeInstance } from './models/workspac
 
 export function edgeToConnection(edge: Edge): NodeConnection {
 	if (!edge.id.includes('->')) {
-		console.log('edgeToConnection: invalid edge', edge);
 		return null as any;
 	}
 

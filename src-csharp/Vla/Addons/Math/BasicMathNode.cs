@@ -227,7 +227,7 @@ public class MathNode : Node
 
 		var result = a + b;
 
-		Output("add.result", "Value", result);
+		Output("add.result", "Result", result);
 	}
 
 	private void Subtract()
@@ -237,7 +237,7 @@ public class MathNode : Node
 
 		var result = a - b;
 
-		Output("subtract.result", "Value", result);
+		Output("subtract.result", "Result", result);
 	}
 
 	private void Multiply()
@@ -247,7 +247,7 @@ public class MathNode : Node
 
 		var result = a * b;
 
-		Output("multiply.result", "Value", result);
+		Output("multiply.result", "Result", result);
 	}
 
 	private void Divide()
@@ -257,7 +257,7 @@ public class MathNode : Node
 
 		var result = a / b;
 
-		Output("divide.result", "Value", result);
+		Output("divide.result", "Result", result);
 	}
 
 	private void Modulo()
@@ -267,7 +267,7 @@ public class MathNode : Node
 
 		var result = a % b;
 
-		Output("modulo.result", "Value", result);
+		Output("modulo.result", "Result", result);
 	}
 
 	private void Power()
@@ -277,7 +277,7 @@ public class MathNode : Node
 
 		var result = System.Math.Pow(a, b);
 
-		Output("power.result", "Value", result);
+		Output("power.result", "Result", result);
 	}
 
 	private void Logarithm()
@@ -287,7 +287,7 @@ public class MathNode : Node
 
 		var result = System.Math.Log(a, b);
 
-		Output("logarithm.result", "Value", result);
+		Output("logarithm.result", "Result", result);
 	}
 
 	private void SquareRoot()
@@ -296,7 +296,7 @@ public class MathNode : Node
 
 		var result = System.Math.Sqrt(a);
 
-		Output("squareRoot.result", "Value", result);
+		Output("squareRoot.result", "Result", result);
 	}
 
 	private void InverseSquareRoot()
@@ -305,7 +305,7 @@ public class MathNode : Node
 
 		var result = 1 / System.Math.Sqrt(a);
 
-		Output("inverseSquareRoot.result", "Value", result);
+		Output("inverseSquareRoot.result", "Result", result);
 	}
 
 	private void Absolute()
@@ -314,7 +314,7 @@ public class MathNode : Node
 
 		var result = System.Math.Abs(a);
 
-		Output("absolute.result", "Value", result);
+		Output("absolute.result", "Result", result);
 	}
 
 	private void Exponent()
@@ -323,7 +323,7 @@ public class MathNode : Node
 
 		var result = System.Math.Exp(a);
 
-		Output("exponent.result", "Value", result);
+		Output("exponent.result", "Result", result);
 	}
 
 	private void Minimum()
@@ -333,7 +333,7 @@ public class MathNode : Node
 
 		var result = System.Math.Min(a, b);
 
-		Output("minimum.result", "Value", result);
+		Output("minimum.result", "Result", result);
 	}
 
 	private void Maximum()
@@ -343,7 +343,7 @@ public class MathNode : Node
 
 		var result = System.Math.Max(a, b);
 
-		Output("maximum.result", "Value", result);
+		Output("maximum.result", "Result", result);
 	}
 
 	private void LessThan()
@@ -353,7 +353,7 @@ public class MathNode : Node
 
 		var result = a < b;
 
-		Output("lessThan.result", "Value", result);
+		Output("lessThan.result", "Result", result);
 	}
 
 	private void GreaterThan()
@@ -363,7 +363,7 @@ public class MathNode : Node
 
 		var result = a > b;
 
-		Output("greaterThan.result", "Value", result);
+		Output("greaterThan.result", "Result", result);
 	}
 
 	private void Sign()
@@ -372,7 +372,7 @@ public class MathNode : Node
 
 		var result = System.Math.Sign(a);
 
-		Output("sign.result", "Value", result);
+		Output("sign.result", "Result", result);
 	}
 
 	private void Compare()
@@ -383,7 +383,7 @@ public class MathNode : Node
 
 		var result = System.Math.Abs(a - b) < epsilon;
 
-		Output("compare.result", "Value", result);
+		Output("compare.result", "Result", result);
 	}
 
 	private void SmoothMinimum()
@@ -394,7 +394,7 @@ public class MathNode : Node
 
 		var result = System.Math.Min(a, b) - k * System.Math.Pow(a - b, 2);
 
-		Output("smoothMinimum.result", "Value", result);
+		Output("smoothMinimum.result", "Result", result);
 	}
 
 	private void SmoothMaximum()
@@ -405,7 +405,7 @@ public class MathNode : Node
 
 		var result = System.Math.Max(a, b) + k * System.Math.Pow(a - b, 2);
 
-		Output("smoothMaximum.result", "Value", result);
+		Output("smoothMaximum.result", "Result", result);
 	}
 
 	private void Round()
@@ -414,7 +414,7 @@ public class MathNode : Node
 
 		var result = System.Math.Round(a);
 
-		Output("round.result", "Value", result);
+		Output("round.result", "Result", result);
 	}
 
 	private void Floor()
@@ -423,7 +423,7 @@ public class MathNode : Node
 
 		var result = System.Math.Floor(a);
 
-		Output("floor.result", "Value", result);
+		Output("floor.result", "Result", result);
 	}
 
 	private void Ceil()
@@ -432,7 +432,7 @@ public class MathNode : Node
 
 		var result = System.Math.Ceiling(a);
 
-		Output("ceil.result", "Value", result);
+		Output("ceil.result", "Result", result);
 	}
 
 	private void Truncate()
@@ -441,7 +441,7 @@ public class MathNode : Node
 
 		var result = System.Math.Truncate(a);
 
-		Output("truncate.result", "Value", result);
+		Output("truncate.result", "Result", result);
 	}
 
 	private void Fraction()
@@ -450,7 +450,7 @@ public class MathNode : Node
 
 		var result = a - System.Math.Floor(a);
 
-		Output("fraction.result", "Value", result);
+		Output("fraction.result", "Result", result);
 	}
 
 	private void Wrap()
@@ -461,7 +461,7 @@ public class MathNode : Node
 
 		var result = System.Math.Min(max, System.Math.Max(min, a));
 
-		Output("wrap.result", "Value", result);
+		Output("wrap.result", "Result", result);
 	}
 
 	private void Snap()
@@ -471,7 +471,7 @@ public class MathNode : Node
 
 		var result = System.Math.Round(a / step) * step;
 
-		Output("snap.result", "Value", result);
+		Output("snap.result", "Result", result);
 	}
 
 	private void PingPong()
@@ -481,7 +481,7 @@ public class MathNode : Node
 
 		var result = length - System.Math.Abs(System.Math.IEEERemainder(a, length * 2) - length);
 
-		Output("pingPong.result", "Value", result);
+		Output("pingPong.result", "Result", result);
 	}
 
 	private void Sine()
@@ -490,7 +490,7 @@ public class MathNode : Node
 
 		var result = System.Math.Sin(a);
 
-		Output("sine.result", "Value", result);
+		Output("sine.result", "Result", result);
 	}
 
 	private void Cosine()
@@ -499,7 +499,7 @@ public class MathNode : Node
 
 		var result = System.Math.Cos(a);
 
-		Output("cosine.result", "Value", result);
+		Output("cosine.result", "Result", result);
 	}
 
 	private void Tangent()
@@ -508,7 +508,7 @@ public class MathNode : Node
 
 		var result = System.Math.Tan(a);
 
-		Output("tangent.result", "Value", result);
+		Output("tangent.result", "Result", result);
 	}
 
 	private void ArcSine()
@@ -517,7 +517,7 @@ public class MathNode : Node
 
 		var result = System.Math.Asin(a);
 
-		Output("arcSine.result", "Value", result);
+		Output("arcSine.result", "Result", result);
 	}
 
 	private void ArcCosine()
@@ -526,7 +526,7 @@ public class MathNode : Node
 
 		var result = System.Math.Acos(a);
 
-		Output("arcCosine.result", "Value", result);
+		Output("arcCosine.result", "Result", result);
 	}
 
 	private void ArcTangent()
@@ -535,7 +535,7 @@ public class MathNode : Node
 
 		var result = System.Math.Atan(a);
 
-		Output("arcTangent.result", "Value", result);
+		Output("arcTangent.result", "Result", result);
 	}
 
 	private void ArcTangent2()
@@ -545,7 +545,7 @@ public class MathNode : Node
 
 		var result = System.Math.Atan2(a, b);
 
-		Output("arcTangent2.result", "Value", result);
+		Output("arcTangent2.result", "Result", result);
 	}
 
 	private void HyperbolicSine()
@@ -554,7 +554,7 @@ public class MathNode : Node
 
 		var result = System.Math.Sinh(a);
 
-		Output("hyperbolicSine.result", "Value", result);
+		Output("hyperbolicSine.result", "Result", result);
 	}
 
 	private void HyperbolicCosine()
@@ -563,7 +563,7 @@ public class MathNode : Node
 
 		var result = System.Math.Cosh(a);
 
-		Output("hyperbolicCosine.result", "Value", result);
+		Output("hyperbolicCosine.result", "Result", result);
 	}
 
 	private void HyperbolicTangent()
@@ -572,7 +572,7 @@ public class MathNode : Node
 
 		var result = System.Math.Tanh(a);
 
-		Output("hyperbolicTangent.result", "Value", result);
+		Output("hyperbolicTangent.result", "Result", result);
 	}
 
 	private void ToRadians()

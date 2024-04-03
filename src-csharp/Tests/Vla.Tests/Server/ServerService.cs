@@ -198,7 +198,7 @@ public class ServerService
 		public int Value { get; init; }
 	}
 
-	private (Vla.Server.ServerService server, MockWebSocketService websocket) CreateServerService()
+	private (Services.ServerService server, MockWebSocketService websocket) CreateServerService()
 	{
 		var services = Host.CreateDefaultBuilder()
 			.ConfigureServices(s => { s.AddSingleton<IWebsocketService, MockWebSocketService>(); })
@@ -210,7 +210,7 @@ public class ServerService
 			.Build()
 			.Services;
 
-		var server = ActivatorUtilities.CreateInstance<Vla.Server.ServerService>(services);
+		var server = ActivatorUtilities.CreateInstance<Services.ServerService>(services);
 		var websocket = services.GetRequiredService<IWebsocketService>() as MockWebSocketService;
 		
 		return (server, websocket);

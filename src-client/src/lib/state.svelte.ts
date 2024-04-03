@@ -1,5 +1,6 @@
 import { writable, get, type Writable } from 'svelte/store';
 import type { Web, Workspace } from './models/workspace';
+import { invoke } from '@tauri-apps/api/tauri';
 
 // State
 export const workspaces = writable([] as Workspace[]);
@@ -10,9 +11,17 @@ export const webName = writable('');
 export const workspace: Writable<Workspace | undefined> = writable();
 export const web: Writable<Web | undefined> = writable();
 
+let hasReceivedWorkspaces = false;
+workspaces.subscribe((w) => {
+	if (!hasReceivedWorkspaces && w.length > 0) {
+		hasReceivedWorkspaces = true;
+		workspaceName.set(get(workspaces)[0]?.name);
+		invoke('close_splashscreen');
+	}
+});
+
 export function reset() {
 	workspaces.set([]);
-	workspaceName.set('Untitled');
 	webName.set('');
 
 	workspaces.subscribe(() => setWorkspace());

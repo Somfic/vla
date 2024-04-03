@@ -37,6 +37,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@tauri-apps/api": "^1.5.3",
 		"@xyflow/svelte": "^0.0.39"
 	}
 }

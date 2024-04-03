@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Vla.Nodes;
+namespace Vla.Services;
 
 public class AddonService
 {

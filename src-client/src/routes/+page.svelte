@@ -12,7 +12,6 @@
 	});
 
 	function changed(updatedWeb: Web) {
-		console.log('web changed', updatedWeb);
 		updateWeb(get(workspace)!, updatedWeb);
 	}
 </script>
@@ -20,7 +19,7 @@
 <main>
 	<div class="sidebar">
 		<div class="active-workspace">
-			{$workspace?.name}
+			{$workspace?.name ?? 'No workspace selected'}
 		</div>
 		<div class="webs">
 			{#if $workspace}

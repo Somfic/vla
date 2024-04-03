@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Abstractions;
 using Vla.Addons.Math;
-using Vla.Nodes;
+using Vla.Workspace;
 
-namespace Vla.Workspace;
+namespace Vla.Services;
 
 public class WorkspaceService
 {
@@ -72,13 +72,16 @@ public class WorkspaceService
 
 	private readonly AddonService _addons;
 
+	private readonly TypeService _types;
+
 	private readonly ILogger<WorkspaceService> _log;
 
-	public WorkspaceService(ILogger<WorkspaceService> log, AddonService addons)
+	public WorkspaceService(ILogger<WorkspaceService> log, AddonService addons, TypeService types)
 	{
 		_log = log;
 		_addons = addons;
-		
+		_types = types;
+
 		var appPath = Path.GetDirectoryName(_recentPath);
 
 		if (!string.IsNullOrEmpty(appPath))
@@ -229,11 +232,11 @@ public class WorkspaceService
 
 				foreach (var dependency in workspace.Addons)
 				{
-					// var extension = _addons.Addons.First(x =>
-					// 	x.Name == dependency.Name && x.Version >= dependency.MinVersion);
-					// var structures = _nodes.ExtractStructures(extension.GetType().Assembly);
+					 var extension = _addons.Addons.First(x =>
+					 	x.Name == dependency.Name && x.Version == dependency.Version);
+					 var types = _types.GenerateDefinition()
 
-					//workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
+					workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
 				}
 
 				//workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };

@@ -8,9 +8,8 @@ using Vla.Abstractions;
 using Vla.Addon.Services;
 using Vla.Addons;
 using Vla.Engine;
-using Vla.Input;
-using Vla.Nodes;
 using Vla.Server;
+using Vla.Services;
 using Vla.Websocket;
 using Vla.Workspace;
 
@@ -21,7 +20,7 @@ var host = Host.CreateDefaultBuilder()
 	{
 		s.AddHttpClient();
 		s.AddSingleton<IWebsocketService, WebsocketService>();
-		s.AddSingleton<NodeService>();
+		//s.AddSingleton<NodeService>();
 		s.AddSingleton<InputService>();
 		s.AddSingleton<IVariableManager, VariableManager>();
 		s.AddSingleton<WorkspaceService>();
@@ -70,6 +69,6 @@ while (true)
 	
 	await server.Tick();
 	
-	await Task.Delay(100);
+	await Task.Delay(250);
 }
 

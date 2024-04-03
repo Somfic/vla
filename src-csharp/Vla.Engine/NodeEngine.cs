@@ -197,11 +197,11 @@ public class NodeEngine
 					x.Value))
 				.ToImmutableArray();
 
-			return new NodeExecutionResult(inputs, outputs, node.Id, true);
+			return new NodeExecutionResult(node.Name, inputs, outputs, node.Id, true);
 		}
 		catch (Exception ex)
 		{
-			return new NodeExecutionResult(ex, node.Id, true);
+			return new NodeExecutionResult(node.Name, ex, node.Id, true);
 		}
 	}
 }

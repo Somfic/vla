@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharpHook.Native;
 
-namespace Vla.Input;
+namespace Vla.Services;
 
 public class InputService
 {

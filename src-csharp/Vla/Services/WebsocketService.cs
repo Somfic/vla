@@ -5,9 +5,10 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Somfic.Common;
 using Vla.Server.Messages;
+using Vla.Websocket;
 using WatsonWebsocket;
 
-namespace Vla.Websocket;
+namespace Vla.Services;
 
 public class WebsocketService : IWebsocketService
 {

@@ -8,6 +8,8 @@ public readonly struct NodeExecutionResult
 	public Guid Id { get; }
 
 	public bool Executed { get; }
+	
+	public string Name { get; }
 
 	public ImmutableArray<NodeInput> Inputs { get; } = ImmutableArray<NodeInput>.Empty;
 
@@ -15,9 +17,10 @@ public readonly struct NodeExecutionResult
 
 	public Exception? Exception { get; } = null;
 
-	public NodeExecutionResult(ImmutableArray<NodeInput> inputs, ImmutableArray<NodeOutput> outputs, Guid id,
+	public NodeExecutionResult(string name, ImmutableArray<NodeInput> inputs, ImmutableArray<NodeOutput> outputs, Guid id,
 		bool executed)
 	{
+		Name = name;
 		Inputs = inputs;
 		Outputs = outputs;
 		Exception = null;
@@ -25,8 +28,9 @@ public readonly struct NodeExecutionResult
 		Executed = executed;
 	}
 
-	public NodeExecutionResult(Exception exception, Guid id, bool executed)
+	public NodeExecutionResult(string name, Exception exception, Guid id, bool executed)
 	{
+		Name = name;
 		Exception = exception;
 		Outputs = ImmutableArray<NodeOutput>.Empty;
 		Id = id;

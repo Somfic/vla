@@ -2,15 +2,15 @@ using System.Collections.Immutable;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Vla.Server;
 using Vla.Server.Messages;
 using Vla.Server.Messages.Response;
 using Vla.Server.Methods;
 using Vla.Websocket;
 using WatsonWebsocket;
 
-namespace Vla.Server;
+namespace Vla.Services;
 
 public class ServerService
 {

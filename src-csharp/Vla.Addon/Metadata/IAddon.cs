@@ -77,15 +77,14 @@ public enum ReleaseStatus
 {
 	Alpha,
 	Beta,
-	ReleaseCandidate,
 	Stable
 }
 
 public struct Uris()
 {
-	public Uri? LicenseUri { get; set; } = null;
-
 	public Uri? ReadmeUri { get; set; } = null;
+	
+	public Uri? LicenseUri { get; set; } = null;
 
 	public Uri? HomePageUri { get; set; } = null;
 
@@ -106,8 +105,8 @@ public readonly struct Dependency(string name, Version minVersion)
 	[JsonProperty("name")]
 	public string Name { get; } = name;
 
-	[JsonProperty("minVersion")]
-	public Version MinVersion { get; } = minVersion;
+	[JsonProperty("version")]
+	public Version Version { get; } = minVersion;
 }
 
 public readonly struct Recommendation(string name)
