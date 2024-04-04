@@ -232,11 +232,10 @@ public class WorkspaceService
 
 				foreach (var dependency in workspace.Addons)
 				{
-					 var extension = _addons.Addons.First(x =>
+					 var addon = _addons.Addons.First(x =>
 					 	x.Name == dependency.Name && x.Version == dependency.Version);
-					 var types = _types.GenerateDefinition()
-
-					workspace = workspace with { Structures = workspace.Structures.AddRange(structures) };
+					
+					 // Get all the nodes that are registered to the addon.
 				}
 
 				//workspace = workspace with { Types = _nodes.GenerateTypeDefinitions(workspace.Structures) };
