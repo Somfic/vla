@@ -88,61 +88,75 @@ public class NodeEngine
 
 	public async Task<ImmutableArray<NodeExecutionResult>> Tick()
 	{
-		var sorter = new TopologicalSorter(Connections
-			.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
-			.ToArray());
-
-		_log.LogDebug("Connections: {Join}", string.Join(", ", Connections.Select(x => $"{Instances.First(y => y.Id.ToString() == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id.ToString() == x.Target.NodeId).Name}.{x.Target.Id}")));
-
-		var sortedInstances = sorter.Sort()
-			.Select(Guid.Parse)
-			.ToArray();
-
-		var unsortedInstances = Instances.Select(x => x.Id).Except(sortedInstances);
-
-		var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
-
-		// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name)));
-
 		var results = new List<NodeExecutionResult>();
-
-		foreach (var instanceId in instances)
+		var connections = Connections;
+		
+		while (true)
 		{
-			var instance = Instances.First(x => x.Id == instanceId);
+			var sorter = new TopologicalSorter(connections
+				.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
+				.ToArray());
 
-			_log.LogInformation("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
+			_log.LogDebug("Connections: {Join}",
+				string.Join(", ",
+					Connections.Select(x =>
+						$"{Instances.First(y => y.Id.ToString() == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id.ToString() == x.Target.NodeId).Name}.{x.Target.Id}")));
 
-			var result = await ExecuteNode(instance);
+			var sortedInstances = sorter.Sort()
+				.Select(Guid.Parse)
+				.ToArray();
 
-			_log.LogDebug("Node {InstanceName} ({InstanceId}) executed with result {SerializeObject}", instance.Name, instance.Id, JsonConvert.SerializeObject(result, Formatting.Indented));
+			var unsortedInstances = Instances.Select(x => x.Id).Except(sortedInstances);
 
-			// Loop over all the outputs of this node execution
-			foreach (var output in result.Outputs)
+			var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
+
+			// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name)));
+
+			foreach (var instanceId in instances)
 			{
-				_log.LogDebug("Searching for inputs {InstanceId}.{OutputId} connects to", instance.Id, output.Id);
+				var instance = Instances.First(x => x.Id == instanceId);
 
-				// Get all the inputs this output is connected to
-				var inputs = Connections
-					.Where(x => x.Source.NodeId == instance.Id.ToString() && x.Source.Id == output.Id)
-					.Select(x => x.Target);
+				_log.LogInformation("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
 
-				_log.LogDebug("Found {SerializeObject}", JsonConvert.SerializeObject(inputs));
+				var result = await ExecuteNode(instance);
 
-				// For each input, set the value to the original output, with conversion to the input type
-				foreach (var input in inputs)
+				if (!result.Executed)
 				{
-					var node = Instances.First(x => x.Id.ToString() == input.NodeId);
-					var nodeIndex = Instances.IndexOf(node);
-
-					Instances[nodeIndex].SetInput(input.Id, output.Value);
-
-					_log.LogDebug("Setting input {InputId} on {NodeName} to {OutputValue}", input.Id, node.Name, (object)output.Value!);
-
-					Instances = Instances.SetItem(nodeIndex, node);
+					// Remove any dependants on this node from the 
 				}
-			}
 
-			results.Add(result);
+				_log.LogDebug("Node {InstanceName} ({InstanceId}) executed with result {SerializeObject}",
+					instance.Name, instance.Id, JsonConvert.SerializeObject(result, Formatting.Indented));
+
+				// Loop over all the outputs of this node execution
+				foreach (var output in result.Outputs)
+				{
+					_log.LogDebug("Searching for inputs {InstanceId}.{OutputId} connects to", instance.Id, output.Id);
+
+					// Get all the inputs this output is connected to
+					var inputs = Connections
+						.Where(x => x.Source.NodeId == instance.Id.ToString() && x.Source.Id == output.Id)
+						.Select(x => x.Target);
+
+					_log.LogDebug("Found {SerializeObject}", JsonConvert.SerializeObject(inputs));
+
+					// For each input, set the value to the original output, with conversion to the input type
+					foreach (var input in inputs)
+					{
+						var node = Instances.First(x => x.Id.ToString() == input.NodeId);
+						var nodeIndex = Instances.IndexOf(node);
+
+						Instances[nodeIndex].SetInput(input.Id, output.Value);
+
+						_log.LogDebug("Setting input {InputId} on {NodeName} to {OutputValue}", input.Id, node.Name,
+							(object)output.Value!);
+
+						Instances = Instances.SetItem(nodeIndex, node);
+					}
+				}
+
+				results.Add(result);
+			}
 		}
 
 		return results.ToImmutableArray();
@@ -183,8 +197,28 @@ public class NodeEngine
 	{
 		try
 		{
-			await node.Execute();
+			Console.WriteLine($"Seeing if {node.Name} ({node.Id}) should be executed");
 
+			// Get all the input branches
+			var inputBranches = node
+				.Inputs
+				.Count(x => x.Value is Branch);
+
+			var hitInputBranches = node
+				.Inputs
+				.Count(x => x.Value is Branch { Hit: true });
+
+			if (inputBranches != 0)
+			{
+				Console.WriteLine($"{node.Name} is a branch node with {inputBranches} input branches and {hitInputBranches} hit branches");
+			}
+			
+			if (inputBranches == 0 || hitInputBranches > 0)
+			{
+				Console.WriteLine($"Executing {node.Name} ({node.Id})");
+				await node.Execute();
+			}
+			
 			var inputs = node
 				.Inputs
 				.Select(x => new NodeInput(x.Key, node.InputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key,
@@ -196,8 +230,8 @@ public class NodeEngine
 				.Select(x => new NodeOutput(x.Key, node.OutputLabels.FirstOrDefault(y => y.Key == x.Key).Value ?? x.Key,
 					x.Value))
 				.ToImmutableArray();
-
-			return new NodeExecutionResult(node.Name, inputs, outputs, node.Id, true);
+			
+			return new NodeExecutionResult(node.Name, inputs, outputs, node.Id, inputBranches == 0 || hitInputBranches > 0);
 		}
 		catch (Exception ex)
 		{

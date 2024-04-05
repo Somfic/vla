@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Vla.Abstractions;
 using Vla.Addon;
 using Vla.Addon.Services;
+using Vla.Services;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -86,7 +87,8 @@ public class NodeEngine
 
 		var mathAddInstance = engine.CreateInstance<MathAddNode>();
 
-		engine.CreateConnection(new NodeConnection(mathAddInstance.Id.ToString(), "result", mathAddInstance.Id.ToString(), "a"));
+		engine.CreateConnection(new NodeConnection(mathAddInstance.Id.ToString(), "result",
+			mathAddInstance.Id.ToString(), "a"));
 
 		for (var i = 0; i < 10000; i++)
 		{
@@ -203,11 +205,64 @@ public class NodeEngine
 		Assert.That(results[0].GetInput("b").Label, Is.EqualTo("Value"));
 		Assert.That(results[0].GetOutput("result").Label, Is.EqualTo("Result"));
 	}
+	
+	[Test]
+	public async Task NodeEngine_Tick_RespectsBranches()
+	{
+		var engine = CreateEngine();
+
+		var booleanNode = engine.CreateInstance<BooleanNode>();
+		var ifElseNode = engine.CreateInstance<IfElse>();
+		
+		var truthyBranch = engine.CreateInstance<DummyBranchNode>();
+		truthyBranch.CustomName = "Truthy branch #1";
+		
+		var truthyExtendedBranch = engine.CreateInstance<DummyBranchNode>();
+		truthyExtendedBranch.CustomName = "Truthy branch #2";
+		
+		var falsyBranch = engine.CreateInstance<DummyBranchNode>();
+		falsyBranch.CustomName = "Falsy branch #1";
+		
+		var falsyExtendedBranch = engine.CreateInstance<DummyBranchNode>();
+		falsyExtendedBranch.CustomName = "Falsy branch #2";
+		
+		engine.CreateConnection(booleanNode, "value", ifElseNode, "condition");
+		engine.CreateConnection(ifElseNode, "true", truthyBranch, "branch");
+		engine.CreateConnection(ifElseNode, "false", falsyBranch, "branch");
+		engine.CreateConnection(truthyBranch, "branch", truthyExtendedBranch, "branch");
+		engine.CreateConnection(falsyBranch, "branch", falsyExtendedBranch, "branch");
+		
+		BooleanNode.Value = true;
+		
+		var results = await engine.Tick();
+		results = await engine.Tick();
+
+		
+		
+		Assert.That(results.First(x => x.Id == truthyBranch.Id).Executed, Is.True);
+		Assert.That(results.First(x => x.Id == truthyExtendedBranch.Id).Executed, Is.True);
+		Assert.That(results.First(x => x.Id == falsyBranch.Id).Executed, Is.False);
+		Assert.That(results.First(x => x.Id == falsyExtendedBranch.Id).Executed, Is.False);
+		
+		BooleanNode.Value = false;
+		
+		results = await engine.Tick();
+		results = await engine.Tick();
+		
+		Assert.That(results.First(x => x.Id == truthyBranch.Id).Executed, Is.False);
+		Assert.That(results.First(x => x.Id == truthyExtendedBranch.Id).Executed, Is.False);
+		Assert.That(results.First(x => x.Id == falsyBranch.Id).Executed, Is.True);
+		Assert.That(results.First(x => x.Id == falsyExtendedBranch.Id).Executed, Is.True);
+	}
 
 	private static Vla.Engine.NodeEngine CreateEngine()
 	{
 		var services = Host.CreateDefaultBuilder()
-			.ConfigureServices(s => { s.AddSingleton<IVariableManager, VariableManager>(); })
+			.ConfigureServices(s =>
+			{
+				s.AddSingleton<IVariableManager, VariableManager>();
+				s.AddSingleton<AddonService>();
+			})
 			.ConfigureLogging(l =>
 			{
 				l.AddConsole();
@@ -269,6 +324,20 @@ public class NodeEngine
 		}
 	}
 
+	[Node]
+	public class BooleanNode : Node
+	{
+		public override string Name => "Boolean";
+		
+		public static bool Value { get; set; } = false;
+		
+		public override Task Execute()
+		{
+			Output("value", "Value", Value);
+			return Task.CompletedTask;
+		}
+	}
+
 	[Node(NodePurity.Probabilistic)]
 	public class CurrentTimeNode : Node
 	{
@@ -276,7 +345,43 @@ public class NodeEngine
 
 		public override Task Execute()
 		{
-			Output("time", "Time", DateTime.Now.ToLongTimeString());
+			OutputBranch("branch", "", true);
+			Output("hour", "Hour", DateTime.Now.Hour);
+			Output("minute", "Minute", DateTime.Now.Minute);
+			Output("second", "Second", DateTime.Now.Second);
+			return Task.CompletedTask;
+		}
+	}
+
+	[Node]
+	public class DummyBranchNode : Node
+	{
+		public string CustomName { get; set; } = "Boolean";
+		
+		public override string Name => CustomName;
+		
+		public override Task Execute()
+		{
+			var branch = InputBranch("branch", "Branch");
+			OutputBranch("branch", "Branch", branch);
+			return Task.CompletedTask;
+		}
+	
+	}
+
+	[Node]
+	public class IfElse : Node
+	{
+		public override string Name => "If else";
+		
+		public override Task Execute()
+		{
+			var branch = InputBranch("branch", "Branch");
+			var condition = Input("condition", "Condition", false);
+		
+			OutputBranch("false", "On false", branch && !condition);
+			OutputBranch("true", "On true", branch && condition);
+		
 			return Task.CompletedTask;
 		}
 	}

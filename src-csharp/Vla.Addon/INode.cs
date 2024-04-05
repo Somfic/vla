@@ -15,7 +15,6 @@ public abstract class Node
 	/// <summary>
 	///     The name of the node. This value can be modified mid-execution.
 	/// </summary>
-	[JsonProperty("name")]
 	public abstract string Name { get; }
 
 	/// <summary>
@@ -69,6 +68,11 @@ public abstract class Node
 	/// </summary>
 	public abstract Task Execute();
 
+	protected bool InputBranch(string id, string label)
+	{
+		return Input(id, label, new Branch(false)).Hit;
+	}
+
 	/// <summary>
 	///     Pulls a value as input by name.
 	///     If the input is not connected, the default value is used.
@@ -113,10 +117,20 @@ public abstract class Node
 		OutputLabels = OutputLabels.SetItem(id, label);
 		Outputs = Outputs.SetItem(id, value!);
 	}
+	
+	protected void OutputBranch(string id, string label, bool hit)
+	{
+		Output(id, label, new Branch(hit));
+	}
 
 	internal T SetInput<T>(string id, T value)
 	{
 		Inputs = Inputs.SetItem(id, value!);
 		return value;
 	}
+}
+
+public readonly struct Branch(bool hit)
+{
+	public bool Hit { get; } = hit;
 }

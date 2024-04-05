@@ -131,6 +131,7 @@ public class WorkspaceService
 			{
 				s.AddSingleton<Services.WorkspaceService>();
 				s.AddSingleton<AddonService>();
+				s.AddSingleton<TypeService>();
 			})
 			.ConfigureLogging(l =>
 			{
