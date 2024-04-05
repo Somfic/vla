@@ -40,7 +40,7 @@ jobs:
               if: matrix.layer == 'server' || matrix.layer == 'packager'
               uses: actions/setup-dotnet@v4
               with:
-                  dotnet-version: 8.0.100
+                  dotnet-version: 8
 
             - name: Setup Rust
               if: matrix.layer == 'packager'
@@ -63,16 +63,19 @@ jobs:
                   chmod +x ./scripts/deps.sh
                   ./scripts/deps.sh
 
-            - name: Rust cache
-              if: matrix.layer == 'packager'
-              uses: swatinem/rust-cache@v2
-              with:
-                  workspaces: "./src-tauri -> target"
-
             - name: Install client dependencies
               if: (matrix.layer == 'client') || (matrix.layer == 'packager')
               run: yarn
               working-directory: ./src-client
+
+            - name: Server cache
+              uses: actions/cache@v4
+              with:
+                  path: ${{ github.workspace }}\.nuget\packages
+                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }} #hash of project files
+                  restore-keys: |
+                    ${{ runner.os }}-nuget-
+
 
             - name: Install server dependencies
               if: matrix.layer == 'server'
@@ -99,6 +102,12 @@ jobs:
             - name: Configure sidecar
               if: matrix.layer == 'packager'
               run: yarn run build-server
+
+            - name: Packager cache
+              if: matrix.layer == 'packager'
+              uses: swatinem/rust-cache@v2
+              with:
+                  workspaces: "./src-tauri -> target"
 
             - name: Test packager
               if: matrix.layer == 'packager'
