@@ -158,8 +158,6 @@ public class NodeEngine
 				results.Add(result);
 			}
 		}
-
-		return results.ToImmutableArray();
 	}
 
 	public Web SaveWeb()
