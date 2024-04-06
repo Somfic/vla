@@ -9,8 +9,8 @@ public class TypeService
 	{
 		var definitions = ImmutableArray.CreateBuilder<TypeDefinition>();
 		
-		foreach (var type in addon.)
-			definitions.Add(GenerateDefinition(type));
+		// foreach (var type in addon)
+		// 	definitions.Add(GenerateDefinition(type));
 		
 		return definitions.ToImmutable();
 	}

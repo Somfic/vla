@@ -88,76 +88,21 @@ public class NodeEngine
 
 	public async Task<ImmutableArray<NodeExecutionResult>> Tick()
 	{
-		var results = new List<NodeExecutionResult>();
-		var connections = Connections;
+		var nodes = Instances
+			.Where(x => x.Purity == NodePurity.Probabilistic)
+			.Where(x => x.IncomingBranches.Count == 0)
+			.Where(x => x.OutgoingBranches.Count > 0)
+			.ToArray();
+
+		if (nodes.Length == 0)
+			_log.LogWarning("No entry points were found. Could not find probabilistic nodes with no incoming branches and one or more outgoing branches. This tick will have no effect");
+
+		var results = ImmutableArray.CreateBuilder<NodeExecutionResult>();
 		
-		while (true)
-		{
-			var sorter = new TopologicalSorter(connections
-				.Select(x => (x.Source.NodeId.ToString(), x.Target.NodeId.ToString()))
-				.ToArray());
+		foreach (var node in nodes)
+			results.AddRange(await ExecuteNode(node));
 
-			_log.LogDebug("Connections: {Join}",
-				string.Join(", ",
-					Connections.Select(x =>
-						$"{Instances.First(y => y.Id.ToString() == x.Source.NodeId).Name}.{x.Source.Id} -> {Instances.First(y => y.Id.ToString() == x.Target.NodeId).Name}.{x.Target.Id}")));
-
-			var sortedInstances = sorter.Sort()
-				.Select(Guid.Parse)
-				.ToArray();
-
-			var unsortedInstances = Instances.Select(x => x.Id).Except(sortedInstances);
-
-			var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
-
-			// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name)));
-
-			foreach (var instanceId in instances)
-			{
-				var instance = Instances.First(x => x.Id == instanceId);
-
-				_log.LogInformation("Executing node {InstanceName} ({InstanceId})", instance.Name, instance.Id);
-
-				var result = await ExecuteNode(instance);
-
-				if (!result.Executed)
-				{
-					// Remove any dependants on this node from the 
-				}
-
-				_log.LogDebug("Node {InstanceName} ({InstanceId}) executed with result {SerializeObject}",
-					instance.Name, instance.Id, JsonConvert.SerializeObject(result, Formatting.Indented));
-
-				// Loop over all the outputs of this node execution
-				foreach (var output in result.Outputs)
-				{
-					_log.LogDebug("Searching for inputs {InstanceId}.{OutputId} connects to", instance.Id, output.Id);
-
-					// Get all the inputs this output is connected to
-					var inputs = Connections
-						.Where(x => x.Source.NodeId == instance.Id.ToString() && x.Source.Id == output.Id)
-						.Select(x => x.Target);
-
-					_log.LogDebug("Found {SerializeObject}", JsonConvert.SerializeObject(inputs));
-
-					// For each input, set the value to the original output, with conversion to the input type
-					foreach (var input in inputs)
-					{
-						var node = Instances.First(x => x.Id.ToString() == input.NodeId);
-						var nodeIndex = Instances.IndexOf(node);
-
-						Instances[nodeIndex].SetInput(input.Id, output.Value);
-
-						_log.LogDebug("Setting input {InputId} on {NodeName} to {OutputValue}", input.Id, node.Name,
-							(object)output.Value!);
-
-						Instances = Instances.SetItem(nodeIndex, node);
-					}
-				}
-
-				results.Add(result);
-			}
-		}
+		return results.ToImmutableArray();
 	}
 
 	public Web SaveWeb()
@@ -195,27 +140,10 @@ public class NodeEngine
 	{
 		try
 		{
-			Console.WriteLine($"Seeing if {node.Name} ({node.Id}) should be executed");
-
-			// Get all the input branches
-			var inputBranches = node
-				.Inputs
-				.Count(x => x.Value is Branch);
-
-			var hitInputBranches = node
-				.Inputs
-				.Count(x => x.Value is Branch { Hit: true });
-
-			if (inputBranches != 0)
-			{
-				Console.WriteLine($"{node.Name} is a branch node with {inputBranches} input branches and {hitInputBranches} hit branches");
-			}
+			// Check 
 			
-			if (inputBranches == 0 || hitInputBranches > 0)
-			{
-				Console.WriteLine($"Executing {node.Name} ({node.Id})");
-				await node.Execute();
-			}
+			
+			await node.Execute();
 			
 			var inputs = node
 				.Inputs

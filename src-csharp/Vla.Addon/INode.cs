@@ -61,17 +61,26 @@ public abstract class Node
 	public ImmutableDictionary<string, dynamic?> Properties => GetType().GetProperties()
 		.Where(x => x.GetCustomAttribute<NodePropertyAttribute>() != null)
 		.ToImmutableDictionary(p => p.Name, p => p.GetValue(this));
+	
+	/// <summary>
+	///		A dictionary of all incoming branches marked with <see cref="IncomingBranchAttribute" />. This value is computed at runtime.
+	/// </summary>
+	public ImmutableDictionary<string, Branch> IncomingBranches => GetType().GetProperties()
+		.Where(x => x.PropertyType == typeof(Branch) && x.GetCustomAttribute<IncomingBranchAttribute>() != null)
+		.ToImmutableDictionary(p => p.Name, p => (Branch)p.GetValue(this)!);
+	
+	/// <summary>
+	///		 A dictionary of all outgoing branches marked with <see cref="OutgoingBranchAttribute" />. This value is computed at runtime.
+	/// </summary>
+	public ImmutableDictionary<string, Branch> OutgoingBranches => GetType().GetProperties()
+		.Where(x => x.PropertyType == typeof(Branch) && x.GetCustomAttribute<OutgoingBranchAttribute>() != null)
+		.ToImmutableDictionary(p => p.Name, p => (Branch)p.GetValue(this)!);
 
 	/// <summary>
 	///     The asynchronous execution method of the node.
 	///     This method is called when the node is executed.
 	/// </summary>
 	public abstract Task Execute();
-
-	protected bool InputBranch(string id, string label)
-	{
-		return Input(id, label, new Branch(false)).Hit;
-	}
 
 	/// <summary>
 	///     Pulls a value as input by name.
@@ -82,8 +91,11 @@ public abstract class Node
 	/// <param name="label">The label of the input.</param>
 	/// <param name="defaultValue">The default value to use if the input is not connected.</param>
 	/// <typeparam name="T">The target input type</typeparam>
-	protected T? Input<T>(string id, string label, T defaultValue)
+	protected T? Input<T>(string id, string label, T defaultValue) 
 	{
+		if (typeof(T) == typeof(Branch))
+			throw new InvalidOperationException("Cannot have a branch as an input. Branches should be registered as properties.");
+		
 		InputLabels = InputLabels.SetItem(id, label);
 
 		// Check if the input is already set
@@ -114,13 +126,11 @@ public abstract class Node
 	/// <typeparam name="T">The type of the output.</typeparam>
 	protected void Output<T>(string id, string label, T value)
 	{
+		if (typeof(T) == typeof(Branch))
+			throw new InvalidOperationException("Cannot have a branch as an output. Branches should be registered as properties.");
+        
 		OutputLabels = OutputLabels.SetItem(id, label);
 		Outputs = Outputs.SetItem(id, value!);
-	}
-	
-	protected void OutputBranch(string id, string label, bool hit)
-	{
-		Output(id, label, new Branch(hit));
 	}
 
 	internal T SetInput<T>(string id, T value)
@@ -130,7 +140,17 @@ public abstract class Node
 	}
 }
 
-public readonly struct Branch(bool hit)
-{
-	public bool Hit { get; } = hit;
+public struct Branch
+{ 
+	public bool Hit { get; private set; }
+	
+	public void Hits()
+	{
+		Hit = true;
+	}
+
+	internal void UnHit()
+	{
+		Hit = false;
+	}
 }

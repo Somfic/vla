@@ -28,10 +28,4 @@
     </ItemGroup>
 
 
-    <ItemGroup>
-      <Folder Include="Input\" />
-      <Folder Include="Nodes\" />
-    </ItemGroup>
-
-
 </Project>
