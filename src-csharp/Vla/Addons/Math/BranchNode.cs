@@ -25,21 +25,3 @@ public class IfElseNode : Node
 		return Task.CompletedTask;
 	}
 }
-
-[Node]
-public class PrintNode : Node
-{
-	public override string Name => "Print";
-
-	public override Task Execute()
-	{
-		var branch = InputBranch("branch", "Branch");
-		var message = Input("message", "Message", string.Empty);
-		
-		if(branch)
-			Console.WriteLine(message);
-
-		return Task.CompletedTask;
-	}
-}
-

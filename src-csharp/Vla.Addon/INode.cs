@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 
-[assembly: InternalsVisibleTo("Vla.Engine")]
+[assembly: InternalsVisibleTo("Vla")]
 
 namespace Vla.Addon;
 
