@@ -14,7 +14,7 @@
 		border: $border;
 		border-radius: $border-radius;
 		background-color: $background-light;
-		padding: $gap / 4 $gap / 2;
+		padding: calc($gap / 4) calc($gap / 2);
 		min-width: 50px;
 		text-align: right;
 		font-family: $font-monospace;

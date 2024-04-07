@@ -1,3 +1,5 @@
+export interface ExecutionResult {}
+
 export interface Workspace {
 	name: string;
 	path: string;

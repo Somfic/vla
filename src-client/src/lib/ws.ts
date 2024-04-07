@@ -1,5 +1,5 @@
 import { get, writable, type Writable } from 'svelte/store';
-import { reset, workspaces } from './state.svelte';
+import { reset, workspaces, executionResults } from './state.svelte';
 import { listWorkspaces } from './methods';
 import { invoke } from '@tauri-apps/api/tauri';
 
@@ -24,11 +24,16 @@ export function startListening() {
 		messages.update((m) => [...m, e.data]);
 
 		const message = JSON.parse(e.data) as ISocketMessage;
-		// console.trace('<', message);
+		//console.trace('<', message);
 
 		switch (message.id.toLowerCase()) {
 			case 'workspaces':
 				workspaces.set(message.data['workspaces']);
+				break;
+
+			case 'execution':
+				executionResults.set(message.data['results']);
+				console.log(message.data['results']);
 				break;
 		}
 	};

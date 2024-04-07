@@ -1,0 +1,27 @@
+// vite.config.ts
+import { sveltekit } from "file:///c:/dev/vla/src-client/node_modules/@sveltejs/kit/src/exports/vite/index.js";
+import { defineConfig } from "file:///c:/dev/vla/src-client/node_modules/vitest/dist/config.js";
+var vite_config_default = defineConfig({
+  plugins: [sveltekit()],
+  test: {
+    include: ["src/**/*.{test,spec}.{js,ts}"]
+  },
+  clearScreen: false,
+  server: {
+    port: 1420,
+    strictPort: true
+  },
+  envPrefix: ["VITE_", "TAURI_PLATFORM", "TAURI_ARCH", "TAURI_FAMILY", "TAURI_PLATFORM_VERSION", "TAURI_PLATFORM_TYPE", "TAURI_DEBUG"],
+  build: {
+    // Tauri uses Chromium on Windows and WebKit on macOS and Linux
+    target: process.env.TAURI_PLATFORM == "windows" ? "chrome105" : "safari13",
+    // don't minify for debug builds
+    minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
+    // produce sourcemaps for debug builds
+    sourcemap: !!process.env.TAURI_DEBUG
+  }
+});
+export {
+  vite_config_default as default
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidml0ZS5jb25maWcudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9kaXJuYW1lID0gXCJjOlxcXFxkZXZcXFxcdmxhXFxcXHNyYy1jbGllbnRcIjtjb25zdCBfX3ZpdGVfaW5qZWN0ZWRfb3JpZ2luYWxfZmlsZW5hbWUgPSBcImM6XFxcXGRldlxcXFx2bGFcXFxcc3JjLWNsaWVudFxcXFx2aXRlLmNvbmZpZy50c1wiO2NvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9pbXBvcnRfbWV0YV91cmwgPSBcImZpbGU6Ly8vYzovZGV2L3ZsYS9zcmMtY2xpZW50L3ZpdGUuY29uZmlnLnRzXCI7aW1wb3J0IHsgc3ZlbHRla2l0IH0gZnJvbSAnQHN2ZWx0ZWpzL2tpdC92aXRlJztcbmltcG9ydCB7IGRlZmluZUNvbmZpZyB9IGZyb20gJ3ZpdGVzdC9jb25maWcnO1xuXG5leHBvcnQgZGVmYXVsdCBkZWZpbmVDb25maWcoe1xuXHRwbHVnaW5zOiBbc3ZlbHRla2l0KCldLFxuXHR0ZXN0OiB7XG5cdFx0aW5jbHVkZTogWydzcmMvKiovKi57dGVzdCxzcGVjfS57anMsdHN9J11cblx0fSxcblx0Y2xlYXJTY3JlZW46IGZhbHNlLFxuXHRzZXJ2ZXI6IHtcbiAgICAgICAgcG9ydDogMTQyMCxcbiAgICAgICAgc3RyaWN0UG9ydDogdHJ1ZSxcbiAgICB9LFxuXHRlbnZQcmVmaXg6IFsnVklURV8nLCAnVEFVUklfUExBVEZPUk0nLCAnVEFVUklfQVJDSCcsICdUQVVSSV9GQU1JTFknLCAnVEFVUklfUExBVEZPUk1fVkVSU0lPTicsICdUQVVSSV9QTEFURk9STV9UWVBFJywgJ1RBVVJJX0RFQlVHJ10sXG4gIFx0YnVpbGQ6IHtcblx0XHQvLyBUYXVyaSB1c2VzIENocm9taXVtIG9uIFdpbmRvd3MgYW5kIFdlYktpdCBvbiBtYWNPUyBhbmQgTGludXhcblx0XHR0YXJnZXQ6IHByb2Nlc3MuZW52LlRBVVJJX1BMQVRGT1JNID09ICd3aW5kb3dzJyA/ICdjaHJvbWUxMDUnIDogJ3NhZmFyaTEzJyxcblx0XHQvLyBkb24ndCBtaW5pZnkgZm9yIGRlYnVnIGJ1aWxkc1xuXHRcdG1pbmlmeTogIXByb2Nlc3MuZW52LlRBVVJJX0RFQlVHID8gJ2VzYnVpbGQnIDogZmFsc2UsXG5cdFx0Ly8gcHJvZHVjZSBzb3VyY2VtYXBzIGZvciBkZWJ1ZyBidWlsZHNcblx0XHRzb3VyY2VtYXA6ICEhcHJvY2Vzcy5lbnYuVEFVUklfREVCVUcsXG4gIFx0fSxcbn0pO1xuIl0sCiAgIm1hcHBpbmdzIjogIjtBQUF5UCxTQUFTLGlCQUFpQjtBQUNuUixTQUFTLG9CQUFvQjtBQUU3QixJQUFPLHNCQUFRLGFBQWE7QUFBQSxFQUMzQixTQUFTLENBQUMsVUFBVSxDQUFDO0FBQUEsRUFDckIsTUFBTTtBQUFBLElBQ0wsU0FBUyxDQUFDLDhCQUE4QjtBQUFBLEVBQ3pDO0FBQUEsRUFDQSxhQUFhO0FBQUEsRUFDYixRQUFRO0FBQUEsSUFDRCxNQUFNO0FBQUEsSUFDTixZQUFZO0FBQUEsRUFDaEI7QUFBQSxFQUNILFdBQVcsQ0FBQyxTQUFTLGtCQUFrQixjQUFjLGdCQUFnQiwwQkFBMEIsdUJBQXVCLGFBQWE7QUFBQSxFQUNqSSxPQUFPO0FBQUE7QUFBQSxJQUVSLFFBQVEsUUFBUSxJQUFJLGtCQUFrQixZQUFZLGNBQWM7QUFBQTtBQUFBLElBRWhFLFFBQVEsQ0FBQyxRQUFRLElBQUksY0FBYyxZQUFZO0FBQUE7QUFBQSxJQUUvQyxXQUFXLENBQUMsQ0FBQyxRQUFRLElBQUk7QUFBQSxFQUN4QjtBQUNILENBQUM7IiwKICAibmFtZXMiOiBbXQp9Cg==

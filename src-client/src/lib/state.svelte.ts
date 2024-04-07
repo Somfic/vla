@@ -1,9 +1,10 @@
 import { writable, get, type Writable } from 'svelte/store';
-import type { Web, Workspace } from './models/workspace';
+import type { ExecutionResult, Web, Workspace } from './models/workspace';
 import { invoke } from '@tauri-apps/api/tauri';
 
 // State
 export const workspaces = writable([] as Workspace[]);
+export const executionResults = writable([] as ExecutionResult[]);
 export const workspaceName = writable('');
 export const webName = writable('');
 

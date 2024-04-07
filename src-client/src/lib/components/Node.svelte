@@ -8,14 +8,16 @@
 
 	export let data: {
 		name: string;
+		id: string;
 		inputs: NamedValue[];
 		outputs: NamedValue[];
 		properties: NamedValue[];
+		executed: boolean;
 	};
 </script>
 
 <div class="node">
-	<div class="title">{data.name}</div>
+	<div class="title">{data.id}</div>
 	<div class="properties">
 		{#each data.properties as property}
 			<div class="property">
@@ -58,7 +60,7 @@
 	.title {
 		font-weight: 800;
 		border-bottom: $border;
-		padding: $gap / 2 $gap;
+		padding: calc($gap / 2) $gap;
 	}
 
 	.properties {
@@ -91,6 +93,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin: $gap / 5;
+		margin: calc($gap / 5);
 	}
 </style>
