@@ -75,7 +75,7 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].Executed, Is.False);
 		Assert.That(results[0].Exception, Is.Not.Null);
 		Assert.That(results[0].Exception!.Message, Is.EqualTo("Value cannot be negative"));
 	}

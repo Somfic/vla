@@ -189,7 +189,7 @@ public class NodeEngine
 			{
 				var hash = ComputeHash(node, node.Inputs);
 
-				if (ExecutionCache.TryGetValue(hash, out var cachedResult))
+				if (ExecutionCache.TryGetValue(hash, out var cachedResult) && cachedResult.Executed)
 				{
 					_log.LogDebug("Used cached value for {NodeName} ({Hash})", node.Name, hash);
 					return cachedResult with { Executed = false };
@@ -214,7 +214,7 @@ public class NodeEngine
 
 			if (node.Purity == NodePurity.Deterministic)
 			{
-				ExecutionCache = ExecutionCache.Add(ComputeHash(node, node.Inputs), result);
+				ExecutionCache = ExecutionCache.SetItem(ComputeHash(node, node.Inputs), result);
 				_log.LogDebug("Setting cached value for {NodeName} ({Hash})", node.Name, ComputeHash(node, node.Inputs));
 			}
 
@@ -222,7 +222,7 @@ public class NodeEngine
 		}
 		catch (Exception ex)
 		{
-			return new NodeExecutionResult(node.Name, ex, node.Id, true);
+			return new NodeExecutionResult(node.Name, ex, node.Id, false);
 		}
 	}
 

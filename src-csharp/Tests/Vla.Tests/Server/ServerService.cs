@@ -244,13 +244,13 @@ internal class MockWebSocketService : IWebsocketService
 		throw new NotImplementedException();
 	}
 
-	public Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage
+	public Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
 	{
 		Messages.Keys.ToList().ForEach(client => SendAsync(client, message));
 		return Task.CompletedTask;
 	}
 
-	public Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : class, ISocketMessage
+	public Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage
 	{
 		var json = JsonConvert.SerializeObject(message);
 		Messages[client].outgoing.Add(json);

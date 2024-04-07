@@ -9,6 +9,7 @@ using Vla.Addon.Services;
 using Vla.Addons;
 using Vla.Engine;
 using Vla.Server;
+using Vla.Server.Messages.Messages;
 using Vla.Services;
 using Vla.Websocket;
 using Vla.Workspace;
@@ -26,10 +27,11 @@ var host = Host.CreateDefaultBuilder()
 		s.AddSingleton<WorkspaceService>();
 		s.AddSingleton<AddonService>();
 		s.AddSingleton<NodeEngine>();
+		s.AddSingleton<TypeService>();
 		s.AddSingleton<ServerService>();
 		s.UseAddon<CoreAddon>();
 		s.UseAddons(AddonService.Path);
-	}).ConfigureLogging(s => { s.SetMinimumLevel(LogLevel.Information); })
+	}).ConfigureLogging(s => { s.SetMinimumLevel(LogLevel.Debug); })
 	.Build();
 
 var addons = host.Services.GetRequiredService<AddonService>();
@@ -50,25 +52,24 @@ while (true)
 
 	if (workspacesResult.IsValue)
 	{
+		var results = ImmutableArray<NodeExecutionResult>.Empty;
+		
 		foreach (var workspace in workspacesResult.Value.Expect())
 		{
 			foreach (var web in workspace.Webs)
 			{
 				engine.LoadWeb(web);
 
-				await engine.Tick();
-
-				var updatedWeb = engine.SaveWeb();
-
-				workspaces.UpdateWeb(updatedWeb);
+				var result = await engine.Tick();
+				
+				results = results.AddRange(result);
 			}
 		}
 
-		await server.SendToAll("workspace list");
+		await server.BroadcastAsync(new ExecutionMessage(results));
 	}
 	
 	await server.Tick();
 	
 	await Task.Delay(250);
 }
-

@@ -134,6 +134,11 @@ public class ServerService
 			await _server.SendAsync(client, new ExceptionResponse(ex));
 		}
 	}
+	
+	public Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
+	{ 
+		return _server.BroadcastAsync(message);
+	}
 
 	private async Task InvokeMethod(object instance, MethodInfo method, string message, ClientMetadata client)
 	{

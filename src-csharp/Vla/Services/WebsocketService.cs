@@ -51,14 +51,14 @@ public class WebsocketService : IWebsocketService
 		return backlog;
 	}
 
-	public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : class, ISocketMessage
+	public async Task BroadcastAsync<TMessage>(TMessage message) where TMessage : ISocketMessage
 	{
 		_log.LogDebug("Starting broadcast of '{Message}'", message);
 		foreach (var client in _server.ListClients()) await SendAsync(client, message);
 		_log.LogDebug("Broadcast of '{Message}' completed", message);
 	}
 
-	public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : class, ISocketMessage
+	public async Task SendAsync<TMessage>(ClientMetadata client, TMessage message) where TMessage : ISocketMessage
 	{
 		var wrappedMessage = new ServerMessage<TMessage>(message);
 		var json = JsonConvert.SerializeObject(wrappedMessage);
