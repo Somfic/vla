@@ -7,7 +7,7 @@ public readonly struct NodeExecutionResult
 {
 	public Guid Id { get; }
 
-	public bool Executed { get; }
+	public bool Executed { get;init; }
 	
 	public string Name { get; }
 
