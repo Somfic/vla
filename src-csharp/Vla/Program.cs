@@ -61,6 +61,8 @@ while (true)
 				engine.LoadWeb(web);
 
 				var result = await engine.Tick();
+
+				workspaces.UpdateWeb(engine.SaveWeb());
 				
 				results = results.AddRange(result);
 			}
