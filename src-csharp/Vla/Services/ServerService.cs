@@ -91,7 +91,7 @@ public class ServerService
 		try
 		{
 			var jObject = JObject.Parse(message);
-			var id = jObject["id"]?.Value<string>()?.ToLower() ?? string.Empty;
+			var id = jObject["nodeId"]?.Value<string>()?.ToLower() ?? string.Empty;
 
 			if (string.IsNullOrEmpty(id))
 			{
@@ -116,7 +116,7 @@ public class ServerService
 
 			if (!methods.Any())
 			{
-				_log.LogWarning("No methods found for ID '{Id}', skipping", id);
+				_log.LogWarning("No methods found for ID '{NodeId}', skipping", id);
 				_log.LogDebug("Applicable methods: {Methods}", string.Join(", ", allMethods.Select(x => x.id)));
 				return;
 			}
@@ -245,7 +245,7 @@ public class ServerService
 	{
 		foreach (var client in _server.Clients)
 		{
-			await OnIncomingMessage(client, $"{{'id': '{id}'}}");
+			await OnIncomingMessage(client, $"{{'nodeId': '{id}'}}");
 		}
 	}
 }

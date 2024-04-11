@@ -102,7 +102,7 @@ public class NodeEngine
 
 		var instances = sortedInstances.Concat(unsortedInstances).ToImmutableArray();
 
-		// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.Id == x).Name)));
+		// _log.LogDebug("Execution order: {Join}", string.Join("->", instances.Select(x => Instances.First(y => y.NodeId == x).Name)));
 
 		var results = new List<NodeExecutionResult>();
 
@@ -189,10 +189,10 @@ public class NodeEngine
 			{
 				var hash = ComputeHash(node, node.Inputs);
 
-				if (ExecutionCache.TryGetValue(hash, out var cachedResult) && cachedResult.Executed)
+				if (ExecutionCache.TryGetValue(hash, out var cachedResult) && cachedResult.HasExecuted)
 				{
 					_log.LogDebug("Used cached value for {NodeName} ({Hash})", node.Name, hash);
-					return cachedResult with { Executed = false };
+					return cachedResult with { HasExecuted = false };
 				}
 			}
 

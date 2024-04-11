@@ -61,25 +61,25 @@ public class NodeEngine_Lazy
 
 		var result1 = await engine.Tick();
 
-		var constantNumberResult1 = result1.First(x => x.Id == constantNumber.Id);
-		var isEvenResult1 = result1.First(x => x.Id == isEven.Id);
-		var booleanParityResult1 = result1.First(x => x.Id == booleanParity.Id);
+		var constantNumberResult1 = result1.First(x => x.NodeId == constantNumber.Id);
+		var isEvenResult1 = result1.First(x => x.NodeId == isEven.Id);
+		var booleanParityResult1 = result1.First(x => x.NodeId == booleanParity.Id);
 
-		constantNumberResult1.Executed.Should().BeTrue();
-		isEvenResult1.Executed.Should().BeTrue();
-		booleanParityResult1.Executed.Should().BeTrue();
+		constantNumberResult1.HasExecuted.Should().BeTrue();
+		isEvenResult1.HasExecuted.Should().BeTrue();
+		booleanParityResult1.HasExecuted.Should().BeTrue();
 		
 		// Since nothing changed since the last tick, the engine should return not execute any of the nodes
 		
 		var result2 = await engine.Tick();
 		
-		var constantNumberResult2 = result2.First(x => x.Id == constantNumber.Id);
-		var isEvenResult2 = result2.First(x => x.Id == isEven.Id);
-		var booleanParityResult2 = result2.First(x => x.Id == booleanParity.Id);
+		var constantNumberResult2 = result2.First(x => x.NodeId == constantNumber.Id);
+		var isEvenResult2 = result2.First(x => x.NodeId == isEven.Id);
+		var booleanParityResult2 = result2.First(x => x.NodeId == booleanParity.Id);
 		
-		// constantNumberResult2.Executed.Should().BeFalse();
-		isEvenResult2.Executed.Should().BeFalse();
-		booleanParityResult2.Executed.Should().BeFalse();
+		// constantNumberResult2.HasExecuted.Should().BeFalse();
+		isEvenResult2.HasExecuted.Should().BeFalse();
+		booleanParityResult2.HasExecuted.Should().BeFalse();
 		
 		// Though the outputted values should be the same
 		
@@ -93,12 +93,12 @@ public class NodeEngine_Lazy
 		
 		var result3 = await engine.Tick();
 		 
-		var constantNumberResult3 = result3.First(x => x.Id == constantNumber.Id);
-		var isEvenResult3 = result3.First(x => x.Id == isEven.Id);
-		var booleanParityResult3 = result3.First(x => x.Id == booleanParity.Id);
+		var constantNumberResult3 = result3.First(x => x.NodeId == constantNumber.Id);
+		var isEvenResult3 = result3.First(x => x.NodeId == isEven.Id);
+		var booleanParityResult3 = result3.First(x => x.NodeId == booleanParity.Id);
 		
-		constantNumberResult3.Executed.Should().BeTrue();
-		isEvenResult3.Executed.Should().BeTrue();
-		booleanParityResult3.Executed.Should().BeFalse();
+		constantNumberResult3.HasExecuted.Should().BeTrue();
+		isEvenResult3.HasExecuted.Should().BeTrue();
+		booleanParityResult3.HasExecuted.Should().BeFalse();
 	}
 }

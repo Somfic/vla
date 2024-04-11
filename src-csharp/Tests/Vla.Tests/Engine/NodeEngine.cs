@@ -30,7 +30,7 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].HasExecuted, Is.True);
 		Assert.That(results[0].Exception, Is.Null);
 		Assert.That(results[0].GetOutput("result").Value, Is.EqualTo(101));
 		Assert.That(results[1].GetInput("a").Value, Is.EqualTo(101));
@@ -45,7 +45,7 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].HasExecuted, Is.True);
 		Assert.That(results[0].Exception, Is.Null);
 		Assert.That(results[0].GetInput("a").Value, Is.EqualTo(1));
 		Assert.That(results[0].GetInput("b").Value, Is.EqualTo(2));
@@ -75,7 +75,7 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.False);
+		Assert.That(results[0].HasExecuted, Is.False);
 		Assert.That(results[0].Exception, Is.Not.Null);
 		Assert.That(results[0].Exception!.Message, Is.EqualTo("Value cannot be negative"));
 	}
@@ -94,7 +94,7 @@ public class NodeEngine
 		{
 			var results = await engine.Tick();
 
-			Assert.That(results[0].Executed, Is.True);
+			Assert.That(results[0].HasExecuted, Is.True);
 			Assert.That(results[0].Exception, Is.Null);
 		}
 	}
@@ -111,9 +111,9 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].HasExecuted, Is.True);
 		Assert.That(results[0].Exception, Is.Null);
-		Assert.That(results[1].Executed, Is.True);
+		Assert.That(results[1].HasExecuted, Is.True);
 		Assert.That(results[1].Exception, Is.Null);
 
 		Assert.That(results[1].GetInput("a").Value, Is.EqualTo(12));
@@ -129,11 +129,11 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].HasExecuted, Is.True);
 
 		results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.False);
+		Assert.That(results[0].HasExecuted, Is.False);
 	}
 
 	[Test]
@@ -143,11 +143,11 @@ public class NodeEngine
 		//
 		// var result = engine.Tick().Result;
 		//
-		// Assert.That(result[0].Executed, Is.True);
+		// Assert.That(result[0].HasExecuted, Is.True);
 		//
 		// result = engine.Tick().Result;
 		//
-		// Assert.That(result[0].Executed, Is.True);
+		// Assert.That(result[0].HasExecuted, Is.True);
 	}
 
 	[Test]
@@ -197,7 +197,7 @@ public class NodeEngine
 
 		var results = await engine.Tick();
 
-		Assert.That(results[0].Executed, Is.True);
+		Assert.That(results[0].HasExecuted, Is.True);
 		Assert.That(results[0].Exception, Is.Null);
 		Assert.That(results[0].GetInput("a").Label, Is.EqualTo("Value"));
 		Assert.That(results[0].GetInput("b").Label, Is.EqualTo("Value"));
