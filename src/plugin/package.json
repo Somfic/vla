@@ -1,0 +1,16 @@
+{
+    "name": "plugin",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.ts",
+    "scripts": {
+        "test": "vitest run --coverage"
+    },
+    "author": "",
+    "license": "ISC",
+    "private": true,
+    "devDependencies": {
+        "@types/node": "^20.12.8",
+        "typescript": "^5.4.5"
+    }
+}

@@ -1,37 +1,20 @@
 {
-    "name": "scripts",
+    "name": "vla",
+    "author": "somfic",
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "prepare-release": "tsx scripts/prepare-release.ts",
-        "tag-version": "tsx scripts/tag-version.ts",
-        "terminate": "tsx scripts/terminate.ts",
-        "tauri": "tauri",
-        "test-client": "cd src-client && yarn test",
-        "test-server": "cd src-csharp && dotnet test --collect:\"XPlat Code Coverage\"",
-        "test-packager": "cd src-tauri && cargo test --locked --all-features --all-targets && cargo llvm-cov --locked --lcov --output-path lcov.info",
-        "test": "yarn test-client && yarn test-server && yarn test-packager",
-        "dev-client": "cd src-client && yarn dev",
-        "dev-server": "yarn terminate && cd src-csharp && dotnet watch --project Vla --non-interactive",
-        "dev": "concurrently -r \"yarn dev-client\" \"yarn dev-server\"",
-        "build-client": "cd src-client && yarn build",
-        "prebuild-server": "yarn terminate",
-        "build-server": "tsx scripts/build-csharp.ts",
-        "build": "yarn build-client && yarn build-server",
-        "lint-server": "cd src-csharp && dotnet format --check",
-        "lint-client": "cd src-client && yarn lint",
-        "lint": "yarn lint-server && yarn lint-client"
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
-    "author": "",
     "license": "ISC",
-    "dependencies": {
-        "@tauri-apps/cli": "^1.5.8",
-        "@types/node": "^20.10.4",
-        "execa": "^8.0.1",
-        "fs": "^0.0.1-security",
-        "path": "^0.12.7",
-        "sync-fetch": "^0.5.2",
-        "tsx": "^4.6.2",
-        "typescript": "^5.3.3"
+    "workspaces": [
+        "src/core",
+        "src/ui",
+        "src/plugin"
+    ],
+    "private": true,
+    "devDependencies": {
+        "vitest": "^1.5.3"
     }
 }
