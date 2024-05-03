@@ -53,7 +53,7 @@ jobs:
             ### Apply cache ###
             - name: Generate Cargo.lock
               run: cargo generate-lockfile
-              working-directory: ./src/packager/tauri
+              working-directory: ./src/packager
 
             - name: Cache Rust dependencies
               uses: swatinem/rust-cache@v2
