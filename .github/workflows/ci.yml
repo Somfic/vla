@@ -47,8 +47,8 @@ jobs:
 
             - name: Setup Rust dependencies
               run: |
-                  chmod +x ./scripts/deps.sh
-                  ./scripts/deps.sh
+                  chmod +x ./scripts/install-rust-dependencies.sh
+                  ./scripts/install-rust-dependencies.sh
 
             ### Apply cache ###
             - name: Generate Cargo.lock
