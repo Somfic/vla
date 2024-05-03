@@ -33,7 +33,7 @@
         "vite": "^5.1.0",
         "wait-on": "^7.2.0",
         "@tauri-apps/api": "^1.5.3",
-        "@xyflow/svelte": "^0.0.39"
+        "@xyflow/svelte": "^0.0.41"
     },
     "type": "module"
 }
