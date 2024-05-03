@@ -102,7 +102,7 @@ child_process.execSync("git add .", { encoding: "utf8" });
 var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
 
 // Set git identity
-child_process.execSync(`git config user.email 41898282+github-actions[bot]@users.noreply.github.com"`, { encoding: "utf8" });
+child_process.execSync(`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`, { encoding: "utf8" });
 child_process.execSync(`git config user.name "github-actions[bot]"`, { encoding: "utf8" });
 
 // Commit, tag and push
