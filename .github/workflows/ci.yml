@@ -97,6 +97,10 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20
+                  cache: "yarn"
+
+            - name: Setup dependencies
+              run: yarn install --frozen-lockfile
 
             ### If this was a direct push to main, without a pull request, perform a patch bump ###
             - name: Perform patch bump
