@@ -94,3 +94,15 @@ console.log(`Updating ${tauriConf} to version ${version}`);
 let tauriConfContent = JSON.parse(readFileSync(tauriConf, "utf8"));
 tauriConfContent["package"]["version"] = version;
 writeFileSync(tauriConf, JSON.stringify(tauriConfContent, null, 4), "utf8");
+
+// Commit and push and tag
+child_process.execSync("git add .", { encoding: "utf8" });
+
+// Get latest commit author
+var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
+
+// Commit, tag, and push
+child_process.execSync(`git commit -m "chore: release v${version}" --author="${author}"`, { encoding: "utf8" });
+child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
+child_process.execSync("git push", { encoding: "utf8" });
+child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
