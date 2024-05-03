@@ -8,9 +8,9 @@ var version = "";
 if (process.argv.length < 3) {
     console.log("No version specified, attempting to determine from commit message");
 
-    var commit = child_process.execSync("git log -1 --pretty=%B", { encoding: "utf8" }).trim().split("\n")[0];
+    var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
 
-    if (commit.toLocaleLowerCase().includes("merge")) {
+    if (author.toLocaleLowerCase().includes("merge")) {
         console.log("Merging commit detected");
         version = "minor";
     } else {
@@ -119,7 +119,13 @@ if (process.env.CI) {
     child_process.execSync("git add .", { encoding: "utf8" });
 
     // Commit, tag and push
-    child_process.execSync(`git commit -m "chore: release v${version}" --author="${author}"`, { encoding: "utf8" });
+    var author_cmd = "";
+    // Check if author is in valid format (Name <email>)
+    if (/^.* <.*>$/.test(author)) {
+        author_cmd = `--author="${author}"`;
+    }
+
+    child_process.execSync(`git commit -m "chore: release v${version}" ${author_cmd}`, { encoding: "utf8" });
     child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
     child_process.execSync("git push", { encoding: "utf8" });
     child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
