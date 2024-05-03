@@ -19,7 +19,8 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [macos-latest, windows-latest, ubuntu-latest]
+                # os: [macos-latest, windows-latest, ubuntu-latest]
+                os: [ubuntu-latest]
         steps:
             - name: Checkout codebase
               uses: actions/checkout@v4
@@ -104,6 +105,5 @@ jobs:
             - name: Setup dependencies
               run: yarn install --frozen-lockfile
 
-            ### If this was a direct push to main, without a pull request, perform a patch bump ###
             - name: Perform patch bump
-              run: yarn tag:version patch
+              run: yarn tag:version

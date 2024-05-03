@@ -25,7 +25,11 @@ if (version === "major" || version === "minor" || version === "patch") {
 
     // Run git tag --sort=committerdate
     var latestTag = child_process.execSync("git ls-remote --tags --sort=committerdate", { encoding: "utf8" }).split("\n")[0];
-    var currentVersion = latestTag.split("/")[2].replace("v", "");
+
+    var currentVersion = "0.0.0";
+    if (latestTag.split("/")[2] !== undefined) {
+        currentVersion = latestTag.split("/")[2].replace("v", "");
+    }
 
     console.log("Current version is " + currentVersion);
     console.log("Performing " + version + " increment");
