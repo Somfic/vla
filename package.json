@@ -7,7 +7,7 @@
         "tauri": "cd src && cd packager && tauri",
         "test": "vitest run",
         "test:watch": "vitest",
-        "tag:version": "tsx scripts/tag-version.ts"
+        "tag:version": "npx tsx scripts/tag-version.ts"
     },
     "license": "ISC",
     "workspaces": [
@@ -20,7 +20,6 @@
         "@tauri-apps/cli": "^1.5.12",
         "glob": "^10.3.12",
         "sync-fetch": "^0.5.2",
-        "tsx": "^4.9.0",
         "vitest": "^1.5.3"
     }
 }
