@@ -1,7 +1,7 @@
 {
     "name": "vla",
     "author": "somfic",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "description": "",
     "scripts": {
         "tauri": "cd src && cd packager && tauri",
