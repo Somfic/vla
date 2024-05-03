@@ -8,9 +8,9 @@ var version = "";
 if (process.argv.length < 3) {
     console.log("No version specified, attempting to determine from commit message");
 
-    var commit = child_process.execSync("git log -1 --pretty=%B", { encoding: "utf8" }).trim().split("\n")[0];
+    var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
 
-    if (commit.toLocaleLowerCase().includes("merge")) {
+    if (author.toLocaleLowerCase().includes("merge")) {
         console.log("Merging commit detected");
         version = "minor";
     } else {
@@ -24,8 +24,12 @@ if (version === "major" || version === "minor" || version === "patch") {
     // Get the current version
 
     // Run git tag --sort=committerdate
-    var latestTag = child_process.execSync("git ls-remote --tags --sort=committerdate", { encoding: "utf8" }).split("\n")[0];
-    var currentVersion = latestTag.split("/")[2].replace("v", "");
+    var latestTag = child_process.execSync("git ls-remote --tags --sort=-committerdate", { encoding: "utf8" }).split("\n")[0];
+
+    var currentVersion = "0.0.0";
+    if (latestTag.split("/")[2] !== undefined) {
+        currentVersion = latestTag.split("/")[2].replace("v", "");
+    }
 
     console.log("Current version is " + currentVersion);
     console.log("Performing " + version + " increment");
@@ -100,18 +104,29 @@ let tauriConfContent = JSON.parse(readFileSync(tauriConf, "utf8"));
 tauriConfContent["package"]["version"] = version;
 writeFileSync(tauriConf, JSON.stringify(tauriConfContent, null, 4), "utf8");
 
-// Commit and push and tag
-child_process.execSync("git add .", { encoding: "utf8" });
+// Check if running in CI/CD
+if (process.env.CI) {
+    console.log("CI detected, pushing changes");
 
-// Get latest commit author
-var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
+    // Set git identity
+    child_process.execSync(`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`, { encoding: "utf8" });
+    child_process.execSync(`git config user.name "github-actions[bot]"`, { encoding: "utf8" });
 
-// Set git identity
-child_process.execSync(`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`, { encoding: "utf8" });
-child_process.execSync(`git config user.name "github-actions[bot]"`, { encoding: "utf8" });
+    // Get latest commit author
+    var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
 
-// Commit, tag and push
-child_process.execSync(`git commit -m "chore: release v${version}" --author="${author}"`, { encoding: "utf8" });
-child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
-child_process.execSync("git push", { encoding: "utf8" });
-child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
+    // Stage changes
+    child_process.execSync("git add .", { encoding: "utf8" });
+
+    // Commit, tag and push
+    var author_cmd = "";
+    // Check if author is in valid format (Name <email>)
+    if (/^.* <.*>$/.test(author)) {
+        author_cmd = `--author="${author}"`;
+    }
+
+    child_process.execSync(`git commit -m "chore: release v${version}" ${author_cmd}`, { encoding: "utf8" });
+    child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
+    child_process.execSync("git push", { encoding: "utf8" });
+    child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
+}
