@@ -3,7 +3,7 @@
         "beforeDevCommand": "cd ui && yarn dev",
         "beforeBuildCommand": "cd ui && yarn build",
         "devPath": "http://localhost:1420",
-        "distDir": "../---ui/build",
+        "distDir": "../ui/build",
         "withGlobalTauri": false
     },
     "package": {
@@ -18,13 +18,7 @@
             "active": true,
             "targets": "msi",
             "identifier": "somfic.dev.vla",
-            "icon": [
-                "icons/32x32.png",
-                "icons/128x128.png",
-                "icons/128x128@2x.png",
-                "icons/icon.icns",
-                "icons/icon.ico"
-            ]
+            "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
         },
         "security": {
             "csp": null

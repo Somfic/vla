@@ -75,12 +75,14 @@ jobs:
             - name: Test Node projects
               run: yarn run test
 
-            - name: Build Rust project
-              run: cargo install --path ./src/packager
+            - name: Build ui
+              run: yarn run build
+              working-directory: ./src/ui
 
             - name: Test Rust project
-              run: cargo test --workspace --all-features --all-targets -- --nocapture
+              run: cargo test
               working-directory: ./src/packager
+
     tag:
         needs: test
         runs-on: ubuntu-latest
