@@ -3,16 +3,21 @@ import { glob } from "glob";
 import child_process from "child_process";
 
 // Get command line argument for the version
+var version = "";
+
 if (process.argv.length < 3) {
-    console.error("No version specified");
-    process.exit(1);
-}
+    console.log("No version specified, attempting to determine from commit message");
 
-var version = process.argv[2].trim();
+    var commit = child_process.execSync("git log -1 --pretty=%B", { encoding: "utf8" }).trim().split("\n")[0];
 
-if (version === "") {
-    console.error("No version specified");
-    process.exit(1);
+    if (commit.toLocaleLowerCase().includes("merge")) {
+        console.log("Merging commit detected");
+        version = "minor";
+    } else {
+        version = "patch";
+    }
+} else {
+    var version = process.argv[2].trim();
 }
 
 if (version === "major" || version === "minor" || version === "patch") {

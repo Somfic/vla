@@ -84,6 +84,8 @@ jobs:
               working-directory: ./src/packager
 
     tag:
+        permissions:
+            contents: write
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         needs: test
         runs-on: ubuntu-latest
