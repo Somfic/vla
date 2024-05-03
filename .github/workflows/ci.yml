@@ -30,7 +30,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 21
+                  node-version: 20
                   cache: "yarn"
 
             - name: Setup Rust
@@ -96,7 +96,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 21
+                  node-version: 20
 
             ### If this was a direct push to main, without a pull request, perform a patch bump ###
             - name: Perform patch bump
