@@ -96,6 +96,9 @@ jobs:
               with:
                   submodules: true
 
+            - name: Fetch all tags
+              run: git fetch --tags --unshallow
+
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
