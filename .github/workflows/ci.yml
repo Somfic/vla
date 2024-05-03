@@ -84,6 +84,7 @@ jobs:
               working-directory: ./src/packager
 
     tag:
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         needs: test
         runs-on: ubuntu-latest
         steps:
@@ -99,10 +100,4 @@ jobs:
 
             ### If this was a direct push to main, without a pull request, perform a patch bump ###
             - name: Perform patch bump
-              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               run: yarn tag:version patch
-
-            ### If this was a pull request, perform a minor bump ###
-            - name: Perform minor bump
-              if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-              run: yarn tag:version minor
