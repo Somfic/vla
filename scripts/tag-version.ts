@@ -24,7 +24,7 @@ if (version === "major" || version === "minor" || version === "patch") {
     // Get the current version
 
     // Run git tag --sort=committerdate
-    var latestTag = child_process.execSync("git ls-remote --tags --sort=committerdate", { encoding: "utf8" }).split("\n")[0];
+    var latestTag = child_process.execSync("git ls-remote --tags --sort=-committerdate", { encoding: "utf8" }).split("\n")[0];
 
     var currentVersion = "0.0.0";
     if (latestTag.split("/")[2] !== undefined) {
@@ -104,25 +104,23 @@ let tauriConfContent = JSON.parse(readFileSync(tauriConf, "utf8"));
 tauriConfContent["package"]["version"] = version;
 writeFileSync(tauriConf, JSON.stringify(tauriConfContent, null, 4), "utf8");
 
-// Commit and push and tag
-child_process.execSync("git add .", { encoding: "utf8" });
+// Check if running in CI/CD
+if (process.env.CI) {
+    console.log("CI detected, pushing changes");
 
-// Get latest commit author
-var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
+    // Set git identity
+    child_process.execSync(`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`, { encoding: "utf8" });
+    child_process.execSync(`git config user.name "github-actions[bot]"`, { encoding: "utf8" });
 
-var oldIdentityEmail = child_process.execSync("git config user.email", { encoding: "utf8" }).trim();
-var oldIdentityName = child_process.execSync("git config user.name", { encoding: "utf8" }).trim();
+    // Get latest commit author
+    var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
 
-// Set git identity
-child_process.execSync(`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`, { encoding: "utf8" });
-child_process.execSync(`git config user.name "github-actions[bot]"`, { encoding: "utf8" });
+    // Stage changes
+    child_process.execSync("git add .", { encoding: "utf8" });
 
-// Commit, tag and push
-child_process.execSync(`git commit -m "chore: release v${version}" --author="${author}"`, { encoding: "utf8" });
-child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
-child_process.execSync("git push", { encoding: "utf8" });
-child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
-
-// Reset git identity
-child_process.execSync(`git config user.email "${oldIdentityEmail}"`, { encoding: "utf8" });
-child_process.execSync(`git config user.name "${oldIdentityName}"`, { encoding: "utf8" });
+    // Commit, tag and push
+    child_process.execSync(`git commit -m "chore: release v${version}" --author="${author}"`, { encoding: "utf8" });
+    child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
+    child_process.execSync("git push", { encoding: "utf8" });
+    child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
+}
