@@ -5,34 +5,48 @@ import child_process from "child_process";
 // Get command line argument for the version
 var version = "";
 
-if (process.argv.length < 3) {
+const branch = child_process.execSync("git branch --show-current", { encoding: "utf8" }).trim();
+
+if (process.argv.length <= 2) {
     console.log("No version specified, attempting to determine from commit message");
 
     var author = child_process.execSync("git log -1", { encoding: "utf8" }).trim().split("\n")[1].replace("Author: ", "");
 
-    if (author.toLocaleLowerCase().includes("merge")) {
-        console.log("Merging commit detected");
-        version = "minor";
+    if (branch == "main") {
+        if (author.toLocaleLowerCase().includes("merge")) {
+            console.log("Merging commit detected");
+            version = "minor";
+        } else {
+            version = "patch";
+        }
     } else {
-        version = "patch";
+        version = "minor";
     }
 } else {
     var version = process.argv[2].trim();
 }
 
+var dry = false;
+if (process.argv.length >= 3) {
+    dry = process.argv[3] === "dry";
+}
+
 if (version === "major" || version === "minor" || version === "patch") {
-    // Get the current version
+    console.log(`Bumping version by ${version}`);
 
     // Run git tag --sort=committerdate
-    var latestTag = child_process.execSync("git ls-remote --tags --sort=-committerdate", { encoding: "utf8" }).split("\n")[0];
+    var latestTag = child_process
+        .execSync("git ls-remote --tags --sort=-committerdate", { encoding: "utf8" })
+        .trim()
+        .split("\n")
+        .filter((tag) => !tag.includes("next"))[0];
 
     var currentVersion = "0.0.0";
     if (latestTag.split("/")[2] !== undefined) {
         currentVersion = latestTag.split("/")[2].replace("v", "");
     }
 
-    console.log("Current version is " + currentVersion);
-    console.log("Performing " + version + " increment");
+    console.log(`Current version: '${currentVersion}'`);
 
     var major = parseInt(currentVersion.split(".")[0]);
     var minor = parseInt(currentVersion.split(".")[1]);
@@ -53,32 +67,52 @@ if (version === "major" || version === "minor" || version === "patch") {
             break;
     }
 
-    console.log(`Incrementing version to ${major}.${minor}.${patch}`);
-
     version = `${major}.${minor}.${patch}`;
+
+    if (branch == "next") {
+        version += "-next";
+
+        // Remove previous next tag
+        var alphaTags = child_process
+            .execSync("git tag --list", { encoding: "utf8" })
+            .trim()
+            .split("\n")
+            .filter((tag) => tag.startsWith(version));
+
+        // Get the highest tag
+        var amountOfTags = alphaTags.map((tag) => parseInt(tag.split("-next.")[1]));
+        amountOfTags.sort((a, b) => a - b);
+
+        var highestTag = 0;
+
+        if (amountOfTags.length > 0) {
+            highestTag = amountOfTags[amountOfTags.length - 1];
+        }
+
+        version += ".";
+
+        // Format with three digits
+        version += (highestTag + 1).toString().padStart(3, "0");
+    }
 } else {
-    var match = version.match(/v(\d+\.\d+)(.\d+)?/);
+    var match = version.match(/(\d+\.\d+)(.\d+)(\-next)?/);
 
     if (!match) {
         console.error(`Invalid version format specified (semver expected, was ${version})`);
         process.exit(1);
     }
-
-    version = match[1];
-
-    if (match[2]) {
-        version += match[2];
-    } else {
-        version += ".0";
-    }
 }
 
 // Make sure the version is valid (semver)
-const versionRegex = /^\d+\.\d+\.\d+$/;
+const versionRegex = /(\d+\.\d+)(.\d+)?(\-next)?/;
 if (!versionRegex.test(version)) {
     console.error(`Invalid version format specified (semver expected, was ${version})`);
     process.exit(1);
 }
+
+console.log(`New version: '${version}'`);
+
+if (dry) process.exit(0);
 
 const packageJsons = glob.sync("**/package.json", { ignore: ["node_modules/**"] });
 const cargoToml = glob.sync("**/Cargo.toml")[0];
