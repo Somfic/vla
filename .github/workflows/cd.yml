@@ -1,95 +1,19 @@
+permissions:
+    contents: write
+
 name: create release
 on:
-    milestone:
-        types: [closed]
-
+    push:
+        tags:
+            - "v*"
 jobs:
-    changelog:
-        permissions: write-all
+    build:
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout code
+            - name: Checkout codebase
               uses: actions/checkout@v4
 
-            - name: Generate release notes
-              uses: Decathlon/release-notes-generator-action@v3.1.6
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  USE_MILESTONE_TITLE: "true"
-                  FILENAME: "CHANGELOG"
-
-            - name: Save changelog
-              uses: actions/upload-artifact@v4
+            - name: Release
+              uses: softprops/action-gh-release@v2
               with:
-                  name: changelog
-                  path: CHANGELOG.md
-
-    release:
-        needs: changelog
-        permissions: write-all
-        strategy:
-            matrix:
-                platform: [macos-latest, ubuntu-20.04, windows-latest]
-        runs-on: ${{ matrix.platform }}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Download changelog
-              uses: actions/download-artifact@v4
-              with:
-                  name: changelog
-
-            - name: Set up Rust
-              uses: dtolnay/rust-toolchain@stable
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: "yarn"
-
-            - name: Setup Yarn
-              run: npm install --global yarn && yarn
-
-            - name: Install dependencies
-              run: yarn
-              working-directory: ./src-client
-
-            - name: Setup cargo-llvm-cov
-              uses: taiki-e/install-action@cargo-llvm-cov
-
-            - name: Generate Cargo.lock
-              run: cargo generate-lockfile
-              working-directory: ./src-tauri
-
-            - name: Install system dependencies
-              if: matrix.platform == 'ubuntu-20.04' || matrix.platform == 'macos-latest'
-              run: |
-                  chmod +x ./scripts/deps.sh
-                  ./scripts/deps.sh
-
-            - name: Tag version
-              run: yarn run tag-version ${{ github.event.milestone.title }}
-
-            - name: Rust cache
-              uses: swatinem/rust-cache@v2
-              with:
-                  workspaces: "./src-tauri -> target"
-
-            - name: Read changelog
-              id: notes
-              uses: jaywcjlove/github-action-read-file@main
-              with:
-                  path: CHANGELOG.md
-
-            - name: Build application
-              uses: tauri-apps/tauri-action@v0
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-                  releaseName: Vla ${{ github.event.milestone.title }}
-                  releaseBody: ${{ steps.notes.outputs.content }}
-                  prerelease: false
-                  includeUpdaterJson: true
+                  prerelease: ${{ contains(github.ref, '-next') }}
