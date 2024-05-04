@@ -5,6 +5,7 @@ on:
     push:
         branches:
             - main
+            - next
     pull_request:
 
 concurrency:
@@ -87,7 +88,7 @@ jobs:
     tag:
         permissions:
             contents: write
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
+        if: github.event_name == 'push'
         needs: test
         runs-on: ubuntu-latest
         steps:
