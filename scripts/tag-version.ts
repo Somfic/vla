@@ -164,5 +164,5 @@ if (process.env.CI) {
     child_process.execSync(`git commit -m "chore: release v${version}" ${author_cmd}`, { encoding: "utf8" });
     child_process.execSync(`git tag ${tag}`, { encoding: "utf8" });
     child_process.execSync("git push", { encoding: "utf8" });
-    child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
+    child_process.execSync(`git push origin ${tag}`, { encoding: "utf8" });
 }
