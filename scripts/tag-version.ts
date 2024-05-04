@@ -161,7 +161,13 @@ if (process.env.CI) {
         author_cmd = `--author="${author}"`;
     }
 
-    child_process.execSync(`git commit --allow-empty -m "chore: release ${tag}" ${author_cmd}`, { encoding: "utf8" });
+    // Check if there are any changes
+    const status = child_process.execSync("git status --porcelain", { encoding: "utf8" });
+
+    if (status.trim() !== "") {
+        child_process.execSync(`git commit -m "🤖 version bump to ${tag}" ${author_cmd}`, { encoding: "utf8" });
+    }
+
     child_process.execSync(`git tag ${tag}`, { encoding: "utf8" });
     child_process.execSync("git push", { encoding: "utf8" });
     child_process.execSync(`git push origin ${tag}`, { encoding: "utf8" });
