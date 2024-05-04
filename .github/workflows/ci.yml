@@ -87,7 +87,7 @@ jobs:
     tag:
         permissions:
             contents: write
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
         needs: test
         runs-on: ubuntu-latest
         steps:
