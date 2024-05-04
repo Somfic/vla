@@ -4,6 +4,7 @@ import child_process from "child_process";
 
 // Get command line argument for the version
 var version = "";
+var tag = "";
 
 const branch = child_process.execSync("git branch --show-current", { encoding: "utf8" }).trim();
 
@@ -68,9 +69,10 @@ if (version === "major" || version === "minor" || version === "patch") {
     }
 
     version = `${major}.${minor}.${patch}`;
+    tag = `v${version}`;
 
     if (branch == "next") {
-        version += "-next";
+        tag += "-next";
 
         // Remove previous next tag
         var alphaTags = child_process
@@ -89,10 +91,10 @@ if (version === "major" || version === "minor" || version === "patch") {
             highestTag = amountOfTags[amountOfTags.length - 1];
         }
 
-        version += ".";
+        tag += ".";
 
         // Format with three digits
-        version += (highestTag + 1).toString().padStart(3, "0");
+        tag += (highestTag + 1).toString().padStart(3, "0");
     }
 } else {
     var match = version.match(/(\d+\.\d+)(.\d+)(\-next)?/);
@@ -110,7 +112,7 @@ if (!versionRegex.test(version)) {
     process.exit(1);
 }
 
-console.log(`New version: '${version}'`);
+console.log(`New version: '${version}' (${tag})`);
 
 if (dry) process.exit(0);
 
@@ -160,7 +162,7 @@ if (process.env.CI) {
     }
 
     child_process.execSync(`git commit -m "chore: release v${version}" ${author_cmd}`, { encoding: "utf8" });
-    child_process.execSync(`git tag v${version}`, { encoding: "utf8" });
+    child_process.execSync(`git tag ${tag}`, { encoding: "utf8" });
     child_process.execSync("git push", { encoding: "utf8" });
     child_process.execSync(`git push origin v${version}`, { encoding: "utf8" });
 }
