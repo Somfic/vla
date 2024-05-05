@@ -43,7 +43,7 @@ if (version === "major" || version === "minor" || version === "patch") {
         .filter((tag) => !tag.includes("next"))[0];
 
     var currentVersion = "0.0.0";
-    if (latestTag.split("/")[2] !== undefined) {
+    if (latestTag?.split("/")[2] !== undefined) {
         currentVersion = latestTag.split("/")[2].replace("v", "");
     }
 
