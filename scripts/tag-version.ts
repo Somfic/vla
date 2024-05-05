@@ -91,10 +91,10 @@ function updateProjectVersions(version: string) {
     console.log("Updating project versions to", version);
 
     const packageJsons = glob.sync("**/package.json", { ignore: ["node_modules/**"] });
-    const cargoToml = glob.sync("**/Cargo.toml")[0];
+    const cargoTomls = glob.sync("**/Cargo.toml", { ignore: ["node_modules/**", "tauri/**"] });
     const tauriConf = glob.sync("**/tauri.conf.json")[0];
 
-    // Update the package.json file
+    // Update the package.json files
     for (const packageJson of packageJsons) {
         console.log("Updating", packageJson);
         let packageJsonContent = JSON.parse(readFileSync(packageJson, "utf8"));
@@ -102,11 +102,13 @@ function updateProjectVersions(version: string) {
         writeFileSync(packageJson, JSON.stringify(packageJsonContent, null, 4), "utf8");
     }
 
-    // Update the Cargo.toml file
-    console.log("Updating", cargoToml);
-    let cargoTomlContent = readFileSync(cargoToml, "utf8");
-    cargoTomlContent = cargoTomlContent.replace(/version = ".*"/, `version = "${version}"`);
-    writeFileSync(cargoToml, cargoTomlContent, "utf8");
+    // Update the Cargo.toml files
+    for (const cargoToml of cargoTomls) {
+        console.log("Updating", cargoToml);
+        let cargoTomlContent = readFileSync(cargoToml, "utf8");
+        cargoTomlContent = cargoTomlContent.replace(/version = ".*"/, `version = "${version}"`);
+        writeFileSync(cargoToml, cargoTomlContent, "utf8");
+    }
 
     // Update the tauri.conf.json file
     console.log("Updating", tauriConf);
