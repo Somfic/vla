@@ -1,0 +1,9 @@
+{
+    "name": "@somfic/vla-extension",
+    "version": "0.1.0-next.4",
+    "description": "",
+    "main": "index.ts",
+    "author": "somfic",
+    "license": "ISC",
+    "private": false
+}
