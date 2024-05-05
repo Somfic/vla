@@ -1,6 +1,14 @@
-export abstract class Extension {
-    abstract on_start(handle: AppHandle): Promise<void>;
-    abstract on_stop(handle: AppHandle): Promise<void>;
+export interface Extension {
+    metadata(): ExtensionMetadata;
+
+    on_start(handle: AppHandle): Promise<void>;
+    on_stop?(handle: AppHandle): Promise<void>;
+}
+
+export interface ExtensionMetadata {
+    name: string;
+    version: string;
+    description: string;
 }
 
 export interface AppHandle {
