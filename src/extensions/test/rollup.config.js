@@ -7,8 +7,19 @@ import nodePolyfills from "rollup-plugin-polyfill-node";
 export default {
     input: "src/index.ts",
     output: {
-        dir: "output",
+        dir: "dist",
         format: "cjs",
+        exports: "named",
     },
-    plugins: [typescript(), commonjs(), noderesolve(), nodePolyfills()],
+    external: ["@somfic/vla-extensions"],
+    plugins: [
+        noderesolve({
+            extensions: [".js", ".ts"],
+            modulesOnly: false,
+        }),
+
+        commonjs(),
+        nodePolyfills(),
+        typescript(),
+    ],
 };

@@ -137,10 +137,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.17.2.tgz#5a2d08b81e8064b34242d5cc9973ef8dd1e60503"
   integrity sha512-TGGO7v7qOq4CYmSBVEYpI1Y5xDuCEnbVC5Vth8mOsW0gDSzxNrVERPc790IGHsrT2dQSimgMr9Ub3Y1Jci5/8w==
 
-"@somfic/vla-extension@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@somfic/vla-extension/-/vla-extension-1.0.0.tgz#e09031fed31c4a1c7dbcfb48db708f44bdcb3bfe"
-  integrity sha512-0Z+Rnfj1Pt6hs82keSuU8HHbBSJ7APmjzUAPlqB8Mqfd8x7Jzx0aF4VV9giyH5xJDyxN/goyWFvUm455JihMEA==
+"@somfic/vla-extensions@0.1.0-next.4":
+  version "0.1.0-next.4"
+  resolved "https://registry.yarnpkg.com/@somfic/vla-extensions/-/vla-extensions-0.1.0-next.4.tgz#e0f206dee2b78c92d408dfe206ed827a779c79c4"
+  integrity sha512-uziHBUe7MCMa3VfvCRwVGLiwwstXwGfIElUH395gTLub4W5i782DSjqQ1FMTERij06lSTQPltKar4/96XuGeeA==
 
 "@types/estree@*", "@types/estree@1.0.5", "@types/estree@^1.0.0":
   version "1.0.5"
