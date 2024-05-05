@@ -96,6 +96,8 @@ function updateProjectVersions(version: string) {
 
     // Update the package.json files
     for (const packageJson of packageJsons) {
+        if (packageJson.includes("node_modules")) continue;
+
         console.log("Updating", packageJson);
         let packageJsonContent = JSON.parse(readFileSync(packageJson, "utf8"));
         packageJsonContent["version"] = version;
