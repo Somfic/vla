@@ -143,7 +143,7 @@ function pushNewTag(version: string) {
     const status = child_process.execSync("git status --porcelain", { encoding: "utf8" });
 
     if (status.trim() !== "") {
-        child_process.execSync(`git commit -m "🤖 bump to ${tag}" ${author_cmd}`, { encoding: "utf8" });
+        child_process.execSync(`git commit -m "🤖 bump to \`${tag}\`" ${author_cmd}`, { encoding: "utf8" });
     }
 
     child_process.execSync(`git tag ${tag}`, { encoding: "utf8" });
