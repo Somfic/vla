@@ -85,8 +85,8 @@ function determineNewVersion() {
 }
 
 function updateProjectVersions(version: string) {
-    // Clean up version by removing a possible -next.001 suffix
-    version = version.replace(/-next\.[0-9]{3}/, "");
+    // Clean up version by removing leading zeros. Example: next.001 -> next.1
+    version = version.replace(/\.0+(\d+)/, ".$1");
 
     console.log("Updating project versions to", version);
 
