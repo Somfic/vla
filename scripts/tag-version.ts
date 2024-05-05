@@ -58,7 +58,7 @@ function determineNewVersion() {
             tags
                 .filter((tag) => tag.startsWith(nextVersion))
                 .map((tag) => parseInt(tag.split("-next.")[1]))
-                .sort((a, b) => a - b)[0] + 1;
+                .sort((a, b) => b - a)[0] + 1;
 
         return `${nextVersion}.${nextNumber.toString().padStart(3, "0")}`;
     }
