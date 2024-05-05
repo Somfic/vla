@@ -5,8 +5,8 @@
     "description": "",
     "scripts": {
         "tauri": "cd src && cd packager && tauri",
-        "test": "vitest run",
-        "test:watch": "vitest",
+        "test": "npx tsx scripts/build-test-plugin.ts && vitest run",
+        "test:watch": "npx tsx scripts/build-test-plugin.ts && vitest",
         "tag:version": "npx tsx scripts/tag-version.ts"
     },
     "license": "ISC",
