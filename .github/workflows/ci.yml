@@ -72,6 +72,7 @@ jobs:
             ### Build and test ###
             - name: Install Node dependencies
               run: yarn install --frozen-lockfile
+              working-directory: ./src/ui
 
             - name: Build ui
               run: yarn run build
