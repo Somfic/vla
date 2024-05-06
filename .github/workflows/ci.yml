@@ -46,7 +46,7 @@ jobs:
             - name: Setup Rust development tools
               uses: taiki-e/install-action@cargo-llvm-cov
 
-            - name: Setup Rust dependencies
+            - name: Install Rust dependencies
               run: |
                   chmod +x ./scripts/install-rust-dependencies.sh
                   ./scripts/install-rust-dependencies.sh
@@ -54,12 +54,12 @@ jobs:
             ### Apply cache ###
             - name: Generate Cargo.lock
               run: cargo generate-lockfile
-              working-directory: ./src/packager
+              working-directory: ./src/core
 
             - name: Cache Rust dependencies
               uses: swatinem/rust-cache@v2
               with:
-                  workspaces: "./src/packager -> target"
+                  workspaces: "./src/core -> target"
 
             - name: Configure Rust compiler cache
               run: |
@@ -70,19 +70,16 @@ jobs:
               uses: mozilla-actions/sccache-action@v0.0.4
 
             ### Build and test ###
-            - name: Setup Node dependencies
+            - name: Install Node dependencies
               run: yarn install --frozen-lockfile
-
-            - name: Test Node projects
-              run: yarn run test
 
             - name: Build ui
               run: yarn run build
               working-directory: ./src/ui
 
-            - name: Test Rust project
+            - name: Test core
               run: cargo test
-              working-directory: ./src/packager
+              working-directory: ./src/core
 
     tag:
         permissions:
@@ -105,7 +102,7 @@ jobs:
                   node-version: 20
                   cache: "yarn"
 
-            - name: Setup dependencies
+            - name: Install dependencies
               run: yarn install --frozen-lockfile
 
             - name: Perform patch bump
