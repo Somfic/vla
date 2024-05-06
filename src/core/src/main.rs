@@ -9,6 +9,8 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
 
+pub mod plugins;
+
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
