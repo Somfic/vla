@@ -17,6 +17,7 @@
         "@typescript-eslint/parser": "^7.8.0",
         "@vitest/coverage-istanbul": "^1.6.0",
         "@vitest/coverage-v8": "^1.6.0",
+        "@xyflow/svelte": "^0.1.2",
         "eslint": "^8.28.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-svelte": "^2.30.0",
@@ -32,8 +33,7 @@
         "tsx": "^4.9.3",
         "typescript": "^5.3.3",
         "vite": "^5.1.0",
-        "wait-on": "^7.2.0",
-        "@xyflow/svelte": "^0.1.2"
+        "wait-on": "^7.2.0"
     },
     "type": "module"
 }
