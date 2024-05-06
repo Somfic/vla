@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use extism::{convert::Json, host_fn, Manifest, Plugin, PluginBuilder, UserData, Wasm, PTR};
 
+#[derive(Debug)]
 struct AppHandle {
     logs: Vec<String>,
 }
@@ -28,16 +29,18 @@ impl PluginManager {
         }
     }
 
-    pub fn load_plugins_from_urls(&self, urls: Vec<impl Into<String>>) -> Vec<Plugin> {
-        urls.into_iter()
-            .map(|url| self.load_plugin_from_url(url))
-            .filter(|plugin| plugin.is_ok())
-            .map(|plugin| plugin.unwrap())
+    pub fn load_plugins_from_files(
+        &self,
+        paths: Vec<impl AsRef<std::path::Path>>,
+    ) -> Vec<Result<Plugin>> {
+        paths
+            .into_iter()
+            .map(|path| self.load_plugin_from_file(path))
             .collect()
     }
 
-    fn load_plugin_from_url(&self, url: impl Into<String>) -> Result<Plugin> {
-        let wasm = Wasm::url(url);
+    fn load_plugin_from_file(&self, path: impl AsRef<std::path::Path>) -> Result<Plugin> {
+        let wasm = Wasm::file(path);
         self.load_plugin_from_wasm(wasm)
     }
 
@@ -63,21 +66,28 @@ host_fn!(log(user_data: AppHandle; text: String) -> Result<()> {
 });
 
 #[test]
-pub fn test_load_plugin_from_urls_loads_plugin() {
-    let url = "https://github.com/extism/plugins/releases/latest/download/count_vowels.wasm";
+pub fn test_load_plugin_from_path_loads_plugin() -> Result<()> {
+    let path = "src/plugins/test.wasm";
     let app_handle = AppHandle::new();
     let plugin_manager = PluginManager::new(app_handle);
-    let plugins = plugin_manager.load_plugins_from_urls(vec![url]);
+    let mut plugin = plugin_manager.load_plugin_from_file(path)?;
 
-    assert_eq!(plugins.len(), 1);
+    plugin.call::<(), ()>("on_start", ())?;
+
+    assert_eq!(
+        plugin_manager.plugin_data.get()?.lock().unwrap().logs,
+        &["Hello from C#"]
+    );
+
+    Ok(())
 }
 
 #[test]
-pub fn test_load_plugin_from_urls_skips_invalid_url() {
-    let url = "avocado";
+pub fn test_load_plugin_from_path_errors_on_invalid_path() {
+    let path = "avocado";
     let app_handle = AppHandle::new();
     let plugin_manager = PluginManager::new(app_handle);
-    let plugins = plugin_manager.load_plugins_from_urls(vec![url]);
+    let plugins = plugin_manager.load_plugin_from_file(path);
 
-    assert_eq!(plugins.len(), 0);
+    assert_eq!(plugins.is_err(), true);
 }
