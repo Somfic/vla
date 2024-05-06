@@ -1,5 +1,5 @@
 import { Script, createContext } from "vm";
-import { AppHandle, Extension, ExtensionMetadata } from "../../extensions/abstractions/abstractions";
+import type { AppHandle, Extension, ExtensionMetadata } from "../../extensions/abstractions/abstractions";
 
 export class ExtensionRunner {
     private extensions: Extension[] = [];

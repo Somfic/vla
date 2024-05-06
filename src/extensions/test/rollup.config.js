@@ -8,7 +8,7 @@ export default {
     input: "src/index.ts",
     output: {
         dir: "dist",
-        format: "cjs",
+        format: "esm",
         exports: "named",
     },
     external: ["@somfic/vla-extensions"],

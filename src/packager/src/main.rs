@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::Manager;
+
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
@@ -23,6 +24,33 @@ fn main() {
 
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![get_all_plugins])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[tauri::command]
+fn get_all_plugins() -> Vec<String> {
+    let plugin_code = r#"
+    class TestExtension {
+    metadata() {
+        return {
+            name: "test_extension",
+            description: "A test extension",
+            version: "1.0.0",
+        };
+    }
+    async on_start(handle) {
+        handle.log("test_extension");
+    }
+    async on_stop(_handle) { }
+}
+class IrrelevantExport {
+}
+
+export { IrrelevantExport, TestExtension };
+
+    "#;
+
+    vec![plugin_code.to_string()]
 }
