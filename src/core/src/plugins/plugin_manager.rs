@@ -55,8 +55,6 @@ impl PluginManager {
 }
 
 host_fn!(log(user_data: AppHandle; text: String) -> Result<()> {
-    println!("{}", text);
-
     let app_handle = user_data.get()?;
     let mut app_handle = app_handle.lock().unwrap();
 
@@ -66,10 +64,22 @@ host_fn!(log(user_data: AppHandle; text: String) -> Result<()> {
 });
 
 #[test]
-pub fn test_load_plugin_from_path_loads_plugin() -> Result<()> {
+pub fn test_load_plugin_from_path_loads_simple_plugin() -> Result<()> {
+    let path = "src/plugins/count_vowels.wasm";
+    let app_handle = AppHandle::new();
+    let plugin_manager = PluginManager::new(app_handle);
+
+    plugin_manager.load_plugin_from_file(path)?;
+
+    Ok(())
+}
+
+#[test]
+pub fn test_load_plugin_from_path_loads_complex_plugin() -> Result<()> {
     let path = "src/plugins/test.wasm";
     let app_handle = AppHandle::new();
     let plugin_manager = PluginManager::new(app_handle);
+
     let mut plugin = plugin_manager.load_plugin_from_file(path)?;
 
     plugin.call::<(), ()>("on_start", ())?;
@@ -87,6 +97,7 @@ pub fn test_load_plugin_from_path_errors_on_invalid_path() {
     let path = "avocado";
     let app_handle = AppHandle::new();
     let plugin_manager = PluginManager::new(app_handle);
+
     let plugins = plugin_manager.load_plugin_from_file(path);
 
     assert_eq!(plugins.is_err(), true);
