@@ -23,6 +23,7 @@
         "eslint-plugin-svelte": "^2.30.0",
         "execa": "^8.0.1",
         "fuse.js": "^7.0.0",
+        "lucide-svelte": "^0.378.0",
         "prettier": "^3.1.1",
         "prettier-plugin-svelte": "^3.1.2",
         "sass": "^1.69.5",

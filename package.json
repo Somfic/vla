@@ -4,7 +4,10 @@
     "version": "0.1.0-next.6",
     "scripts": {
         "tauri": "cd src && cd core && tauri",
-        "tag:version": "npx tsx scripts/tag-version.ts"
+        "tag:version": "npx tsx scripts/tag-version.ts",
+        "test": "cd src && cd core && cargo test",
+        "dev": "yarn tauri dev",
+        "build": "yarn tauri build"
     },
     "license": "ISC",
     "private": true,

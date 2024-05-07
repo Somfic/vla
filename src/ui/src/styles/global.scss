@@ -10,11 +10,11 @@ main {
   color: white;
 }
 
-* {
-  all: unset;
-  box-sizing: border-box;
+html {
+  overflow: hidden;
 }
 
-style {
-  display: none;
+* {
+  //all: unset;
+  box-sizing: border-box;
 }

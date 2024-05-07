@@ -15,6 +15,7 @@
 
 <style lang="scss">
 	#application {
-		background-color: blue;
+		max-width: 100vw;
+		//background-color: blue;
 	}
 </style>

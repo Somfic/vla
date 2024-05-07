@@ -1,9 +1,49 @@
-<script lang="ts"></script>
+<script lang="ts">
+	import { createEventDispatcher, onMount } from 'svelte';
+	import { appWindow } from '@tauri-apps/api/window';
 
-<div class="traffic-light">
-	<div class="button red"></div>
-	<div class="button yellow"></div>
-	<div class="button green"></div>
+	import Close from 'lucide-svelte/icons/x';
+	import Hide from 'lucide-svelte/icons/minus';
+	import Maximize from 'lucide-svelte/icons/square';
+	import Minimize from 'lucide-svelte/icons/copy';
+
+	appWindow.onFocusChanged(({ payload: focused }) => {
+		active = focused;
+	});
+
+	appWindow.onResized(async () => {
+		isMaximized = await appWindow.isMaximized();
+	});
+
+	const dispatch = createEventDispatcher();
+
+	let active = false;
+	let isMaximized = false;
+	export let platform: string;
+</script>
+
+<div class={`traffic-light ${platform}`}>
+	{#if platform === 'macos'}
+		<button class="button close" class:active on:click={() => dispatch('close')}></button>
+		<button class="button minimize" class:active on:click={() => dispatch('minimize')}></button>
+		<button class="button maximize" class:active on:click={() => dispatch('maximize')}></button>
+	{:else}
+		<button class="button minimize" class:active on:click={() => dispatch('hide')}>
+			<Hide absoluteStrokeWidth strokeWidth={1} size={15} />
+		</button>
+		{#if !isMaximized}
+			<button class="button maximize" class:active on:click={() => dispatch('maximize')}>
+				<Maximize absoluteStrokeWidth strokeWidth={1} size={12} />
+			</button>
+		{:else}
+			<button class="button minimize" class:active on:click={() => dispatch('minimize')}>
+				<Minimize absoluteStrokeWidth strokeWidth={1} size={12} />
+			</button>
+		{/if}
+		<button class="button close" class:active on:click={() => dispatch('close')}>
+			<Close absoluteStrokeWidth strokeWidth={1} size={18} />
+		</button>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -22,30 +62,89 @@
 	$maximize-green-icon: #006500;
 	$maximize-green-icon-active: #003200;
 
-	$disabled-gray: #ddd;
+	$active: #fff;
+	$hover: rgba(255, 255, 255, 0.1);
+	$hover-active: rgba(255, 255, 255, 0.05);
+	$disabled: #aaa;
 
 	.traffic-light {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		width: 50px;
+		overflow: hidden;
+		flex-grow: 1;
 
-		div {
-			width: 10px;
-			height: 10px;
+		button {
+			all: unset;
+			display: flex;
+			flex-grow: 1;
+			align-items: center;
+			justify-content: center;
+
+			:global(svg) {
+				width: 20px;
+				transition: 200ms ease;
+			}
+		}
+
+		&.macos button {
+			width: 12px;
+			margin: 10px 3px;
 			border-radius: 50%;
+			flex-grow: 1;
 
-			&.red {
-				background-color: red;
+			&.close {
+				background-color: $close-red;
 			}
 
-			&.yellow {
-				background-color: yellow;
+			&.minimize {
+				background-color: $minimize-yellow;
 			}
 
-			&.green {
-				background-color: green;
+			&.maximize {
+				background-color: $maximize-green;
+			}
+		}
+
+		&.windows button {
+			padding: 3px 13.6px;
+			aspect-ratio: 1;
+			transition: 200ms ease;
+			border-radius: 5px;
+
+			:global(svg) {
+				stroke: $disabled;
+			}
+
+			&.active :global(svg) {
+				stroke: $active;
+			}
+
+			&:hover {
+				background-color: $hover;
+
+				:global(svg) {
+					stroke: $active;
+				}
+			}
+
+			&:active {
+				background-color: $hover-active;
+			}
+
+			&.close {
+				&:hover {
+					background-color: $close-red;
+				}
+
+				&:active {
+					background-color: $close-red-active;
+				}
+			}
+
+			&.minimize {
+				transform: scaleX(-1);
 			}
 		}
 	}
