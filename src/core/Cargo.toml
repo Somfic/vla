@@ -1,0 +1,26 @@
+[package]
+name = "vla"
+version = "0.1.0-next.5"
+description = ""
+authors = ["somfic"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.74"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.6.0", features = ["macos-private-api"] }
+serde = { version = "^1.0.193", features = ["derive"] }
+serde_json = "^1.0.108"
+chrono = { version = "^0.4.31", features = ["serde"] }
+window-vibrancy = "0.4"
+extism = "1.2.0"
+anyhow = "1.0.82"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

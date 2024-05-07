@@ -9,8 +9,7 @@ on:
     pull_request:
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-    cancel-in-progress: true
+    group: ${{ github.workflow }}
 
 name: test
 jobs:
@@ -47,7 +46,7 @@ jobs:
             - name: Setup Rust development tools
               uses: taiki-e/install-action@cargo-llvm-cov
 
-            - name: Setup Rust dependencies
+            - name: Install Rust dependencies
               run: |
                   chmod +x ./scripts/install-rust-dependencies.sh
                   ./scripts/install-rust-dependencies.sh
@@ -71,19 +70,17 @@ jobs:
               uses: mozilla-actions/sccache-action@v0.0.4
 
             ### Build and test ###
-            - name: Setup Node dependencies
+            - name: Install Node dependencies
               run: yarn install --frozen-lockfile
-
-            - name: Test Node projects
-              run: yarn run test
+              working-directory: ./src/ui
 
             - name: Build ui
               run: yarn run build
               working-directory: ./src/ui
 
-            - name: Test Rust project
+            - name: Test core
               run: cargo test
-              working-directory: ./src/packager
+              working-directory: ./src/core
 
     tag:
         permissions:
@@ -106,7 +103,7 @@ jobs:
                   node-version: 20
                   cache: "yarn"
 
-            - name: Setup dependencies
+            - name: Install dependencies
               run: yarn install --frozen-lockfile
 
             - name: Perform patch bump

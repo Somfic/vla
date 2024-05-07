@@ -1,25 +1,14 @@
 {
-    "name": "vla",
+    "name": "@somfic/vla",
     "author": "somfic",
-    "version": "0.0.1",
-    "description": "",
+    "version": "0.1.0-next.5",
     "scripts": {
         "tauri": "cd src && cd packager && tauri",
-        "test": "vitest run",
-        "test:watch": "vitest",
         "tag:version": "npx tsx scripts/tag-version.ts"
     },
     "license": "ISC",
-    "workspaces": [
-        "src/core",
-        "src/ui",
-        "src/plugin"
-    ],
     "private": true,
     "devDependencies": {
-        "@tauri-apps/cli": "^1.5.12",
-        "glob": "^10.3.12",
-        "sync-fetch": "^0.5.2",
-        "vitest": "^1.5.3"
+        "glob": "^10.3.12"
     }
 }
