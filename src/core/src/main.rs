@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::Manager;
+use window_shadows::set_shadow;
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -15,6 +16,9 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let main_window = app.get_window("main").unwrap();
+
+            #[cfg(any(windows, target_os = "macos"))]
+            set_shadow(&main_window, true).unwrap();
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(main_window, NSVisualEffectMaterial::HudWindow, None, None)
