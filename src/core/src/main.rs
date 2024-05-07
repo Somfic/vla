@@ -26,33 +26,27 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_all_plugins])
+        .invoke_handler(tauri::generate_handler![show_window, get_platform])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
-fn get_all_plugins() -> Vec<String> {
-    let plugin_code = r#"
-    class TestExtension {
-    metadata() {
-        return {
-            name: "test_extension",
-            description: "A test extension",
-            version: "1.0.0",
-        };
-    }
-    async on_start(handle) {
-        handle.log("test_extension");
-    }
-    async on_stop(_handle) { }
-}
-class IrrelevantExport {
+async fn show_window(window: tauri::Window) {
+    window.get_window("main").unwrap().show().unwrap();
 }
 
-export { IrrelevantExport, TestExtension };
+#[tauri::command]
+async fn get_platform() -> String {
+    #[cfg(target_os = "macos")]
+    return "macos".to_string();
 
-    "#;
+    #[cfg(target_os = "windows")]
+    return "windows".to_string();
 
-    vec![plugin_code.to_string()]
+    #[cfg(target_os = "linux")]
+    return "linux".to_string();
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+    return "unknown".to_string();
 }
