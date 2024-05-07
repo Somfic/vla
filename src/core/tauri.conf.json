@@ -13,15 +13,7 @@
     "tauri": {
         "allowlist": {
             "window": {
-                "all": false,
-                "close": true,
-                "hide": true,
-                "show": true,
-                "maximize": true,
-                "minimize": true,
-                "unmaximize": true,
-                "unminimize": true,
-                "startDragging": true
+                "all": true
             }
         },
         "bundle": {
@@ -42,7 +34,7 @@
                 "resizable": true,
                 "fullscreen": false,
                 "transparent": true,
-                "decorations": false,
+                "decorations": true,
                 "visible": false
             }
         ]
