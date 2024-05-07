@@ -1,40 +1,20 @@
-@import 'theme';
-
-:global(html,
-  body,
-  main) {
+html,
+body,
+main {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  font-family: $font;
-  //background-color: rgb(21, 22, 31);
-  background: transparent;
-  color: $foreground;
-  height: 100vh;
-  overflow: hidden;
-}
-
-:global(style) {
-  display: none;
-}
-
-:global(button, p) {
-  all: unset;
   margin: 0;
+  padding: 0;
+  color: white;
 }
 
-:global(::-webkit-scrollbar) {
-  width: 3px;
-  height: 3px;
+* {
+  all: unset;
+  box-sizing: border-box;
 }
 
-:global(::-webkit-scrollbar-track) {
-  margin: 5px;
-  background: transparent;
-}
-
-:global(::-webkit-scrollbar-thumb) {
-  background: $foreground-muted;
-  border-radius: 100px;
-
+style {
+  display: none;
 }
