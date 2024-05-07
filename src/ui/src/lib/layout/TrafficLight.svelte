@@ -11,8 +11,17 @@
 		active = focused;
 	});
 
-	appWindow.onResized(async () => {
-		isMaximized = await appWindow.isMaximized();
+	let maximizedThrottle: number;
+	let lastSize = { width: 0, height: 0 };
+	appWindow.onResized(async ({ payload }) => {
+		if (payload.width === lastSize.width && payload.height === lastSize.height) return;
+		lastSize = payload;
+
+		console.log('resized');
+		clearTimeout(maximizedThrottle);
+		maximizedThrottle = setTimeout(async () => {
+			console.log('calling isMaximized');
+		}, 100);
 	});
 
 	const dispatch = createEventDispatcher();
@@ -81,6 +90,7 @@
 			flex-grow: 1;
 			align-items: center;
 			justify-content: center;
+			transition: 200ms ease;
 
 			:global(svg) {
 				width: 20px;
@@ -88,29 +98,45 @@
 			}
 		}
 
-		&.macos button {
-			width: 12px;
-			margin: 10px 3px;
-			border-radius: 50%;
-			flex-grow: 1;
+		&.macos {
+			margin-left: 5px;
 
-			&.close {
-				background-color: $close-red;
-			}
+			button {
+				width: 12px;
+				height: 12px;
+				margin: 10px 4px;
+				border-radius: 50%;
+				flex-grow: 1;
 
-			&.minimize {
-				background-color: $minimize-yellow;
-			}
+				&.close {
+					background-color: $close-red;
 
-			&.maximize {
-				background-color: $maximize-green;
+					&:active {
+						background-color: $close-red-active;
+					}
+				}
+
+				&.minimize {
+					background-color: $minimize-yellow;
+
+					&:active {
+						background-color: $minimize-yellow-active;
+					}
+				}
+
+				&.maximize {
+					background-color: $maximize-green;
+
+					&:active {
+						background-color: $maximize-green-active;
+					}
+				}
 			}
 		}
 
 		&.windows button {
 			padding: 3px 13.6px;
 			aspect-ratio: 1;
-			transition: 200ms ease;
 			border-radius: 5px;
 
 			:global(svg) {

@@ -4,7 +4,7 @@
 	import TrafficLight from './TrafficLight.svelte';
 	import { appWindow } from '@tauri-apps/api/window';
 
-	let platform = 'macos';
+	let platform = 'windows';
 
 	onMount(async () => {
 		platform = await invoke('get_platform');
@@ -44,6 +44,8 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
+		background-color: rgba(30, 30, 30, 0.8);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
 		.left,
 		.center,
