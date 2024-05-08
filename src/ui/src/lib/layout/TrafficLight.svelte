@@ -61,6 +61,7 @@
 			<button
 				class={`button update ${updateStatus}`}
 				class:active
+				class:disabled={updateStatus !== 'available'}
 				on:click={() => dispatch('update')}
 			>
 				{#if updateStatus === 'available'}
@@ -75,6 +76,24 @@
 			</button>
 		{/if}
 	{:else}
+		{#if updateStatus != 'unavailable'}
+			<button
+				class={`button update ${updateStatus}`}
+				class:active
+				class:disabled={updateStatus !== 'available'}
+				on:click={() => dispatch('update')}
+			>
+				{#if updateStatus === 'available'}
+					<UpdateAvailable absoluteStrokeWidth strokeWidth={1} size={12} />
+				{:else if updateStatus === 'downloading' || updateStatus === 'installing'}
+					<span class="spin">
+						<UpdateInstalling absoluteStrokeWidth strokeWidth={1} size={12} />
+					</span>
+				{:else if updateStatus === 'pending-restart'}
+					<UpdatePendingRestart absoluteStrokeWidth strokeWidth={1} size={12} />
+				{/if}
+			</button>
+		{/if}
 		<button class="button minimize" class:active on:click={() => dispatch('hide')}>
 			<Hide absoluteStrokeWidth strokeWidth={1} size={15} />
 		</button>
@@ -214,15 +233,6 @@
 						animation: spin 1s linear infinite;
 					}
 				}
-
-				@keyframes spin {
-					0% {
-						transform: rotate(0deg);
-					}
-					100% {
-						transform: rotate(360deg);
-					}
-				}
 			}
 
 			&:hover {
@@ -274,11 +284,14 @@
 				}
 			}
 
-			&:active {
+			// active and not disabled
+			&:active:not(.disabled) {
 				background-color: $hover-active;
 			}
 
 			&.close {
+				border-bottom-right-radius: 0;
+
 				&:hover {
 					background-color: $close-red;
 				}
@@ -291,6 +304,22 @@
 			&.minimize {
 				transform: scaleX(-1);
 			}
+		}
+	}
+
+	.spin {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
 		}
 	}
 </style>

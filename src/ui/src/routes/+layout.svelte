@@ -15,18 +15,29 @@
 	<div id="content">
 		<slot />
 	</div>
-	<StatusBar />
+	<div id="status">
+		<StatusBar />
+	</div>
 </main>
 
 <style lang="scss">
 	#application {
 		max-width: 100vw;
 		display: flex;
+		background-color: rgba(0, 0, 0, 0.2);
 	}
 
 	#content {
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
+	}
+
+	#status {
+		display: flex;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100vw;
 	}
 </style>

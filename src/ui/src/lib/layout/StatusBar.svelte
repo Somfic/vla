@@ -21,6 +21,7 @@
 <style lang="scss">
 	.status-bar {
 		display: flex;
+		flex-grow: 1;
 		align-items: center;
 		justify-content: space-between;
 		margin: 10px;

@@ -30,10 +30,11 @@
 		{#if platform === 'windows'}
 			<TrafficLight
 				{platform}
-				updateStatus={'available'}
-				updateProgress={100}
+				updateStatus={'unavailable'}
+				updateProgress={50}
 				on:hide={async () => await appWindow.minimize()}
 				on:close={async () => await appWindow.close()}
+				on:fullscreen={async () => await appWindow.setFullscreen(!(await appWindow.isFullscreen()))}
 				on:maximize={async () => await appWindow.maximize()}
 				on:minimize={async () => await appWindow.unmaximize()}
 			/>
@@ -48,8 +49,9 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		background-color: rgba(30, 30, 30, 0.8);
+		background-color: rgba(30, 30, 30, 0.5);
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		z-index: 200;
 
 		.left,
 		.center,
