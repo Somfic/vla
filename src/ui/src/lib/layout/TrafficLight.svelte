@@ -113,6 +113,8 @@
 </div>
 
 <style lang="scss">
+	@import '../../styles/theme.scss';
+
 	$close-red: #ff6159;
 	$close-red-active: #bf4942;
 	$close-red-icon: #4d0000;
@@ -150,10 +152,10 @@
 			flex-grow: 1;
 			align-items: center;
 			justify-content: center;
-			transition: 200ms ease;
+			transition: $transition;
 
 			:global(svg) {
-				transition: 200ms ease;
+				transition: $transition;
 			}
 		}
 

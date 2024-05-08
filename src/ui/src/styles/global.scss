@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import './theme.scss';
 
 html,
 body,
@@ -11,6 +12,7 @@ main {
   padding: 0;
   color: white;
   font-family: 'Inter', sans-serif;
+  user-select: none;
 }
 
 html {

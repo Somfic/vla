@@ -6,13 +6,21 @@
 
 <div class="ribbon-wrapper">
 	<div class="ribbon">
-		<div class="item" use:tooltip={{ text: 'Command pallet', position: 'right' }}><Terminal /></div>
+		<div class="item-wrapper" use:tooltip={{ text: 'Command pallet', position: 'right' }}>
+			<div class="item">
+				<Terminal />
+			</div>
+		</div>
 		<div class="divider"></div>
-		<div class="item"><Extensions /></div>
+		<div class="item-wrapper" use:tooltip={{ text: 'Extensions', position: 'right' }}>
+			<div class="item"><Extensions /></div>
+		</div>
 	</div>
 </div>
 
 <style lang="scss">
+	@import '../../styles/theme.scss';
+
 	.ribbon-wrapper {
 		display: flex;
 		align-items: center;
@@ -27,6 +35,7 @@
 
 			background-color: rgba(30, 30, 30, 0.8);
 			border: 1px solid rgba(255, 255, 255, 0.1);
+
 			border-radius: 10px;
 
 			color: #8e8e8d;
@@ -38,23 +47,29 @@
 				padding: 12px;
 				border-radius: 10px;
 				cursor: pointer;
-				transition: 200ms ease;
+				transition: $transition;
 				border: 1px solid transparent;
 
 				:global(svg) {
 					width: 20px;
 					height: 20px;
 					stroke: #aaa;
-					transition: 200ms ease;
+					transition: $transition;
 				}
 
 				&:hover {
 					background-color: rgba(255, 255, 255, 0.1);
 					border: 1px solid rgba(255, 255, 255, 0.1);
+					transform: scale(1.2);
 
 					:global(svg) {
-						stroke: #fff;
+						stroke: #ddd;
 					}
+				}
+
+				&:active {
+					transform: scale(1.1);
+					background-color: rgba(255, 255, 255, 0.05);
 				}
 			}
 

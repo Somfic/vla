@@ -19,6 +19,8 @@
 </div>
 
 <style lang="scss">
+	@import '../../styles/theme.scss';
+
 	.status-bar {
 		display: flex;
 		flex-grow: 1;
@@ -42,7 +44,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			transition: 200ms ease;
+			transition: $transition;
 			color: #aaa;
 			gap: 5px;
 			padding: 5px 15px;

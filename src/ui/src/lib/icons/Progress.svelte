@@ -11,7 +11,9 @@
 
 <div class="progress" style:--background={getGradient(angle, fill)}></div>
 
-<style>
+<style lang="scss">
+	@import '../../styles/theme.scss';
+
 	.progress {
 		display: flex;
 		border-radius: 200px;
@@ -23,6 +25,6 @@
 		overflow: hidden;
 		background: var(--background);
 
-		transition: 200ms ease;
+		transition: $transition;
 	}
 </style>
