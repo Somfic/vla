@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Terminal from 'lucide-svelte/icons/terminal';
+	import Extensions from 'lucide-svelte/icons/blocks';
 </script>
 
 <div class="ribbon-wrapper">
 	<div class="ribbon">
 		<div class="item"><Terminal /></div>
-		<div class="item"><Terminal /></div>
-		<div class="item"><Terminal /></div>
-		<div class="item"><Terminal /></div>
+		<div class="divider"></div>
+		<div class="item"><Extensions /></div>
 	</div>
 </div>
 
@@ -55,6 +55,12 @@
 						stroke: #fff;
 					}
 				}
+			}
+
+			.divider {
+				height: 1px;
+				width: 40%;
+				background-color: rgba(170, 170, 170, 0.2);
 			}
 		}
 	}
