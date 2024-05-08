@@ -23,7 +23,7 @@
 			/>
 		{/if}
 	</div>
-	<div class="center">center</div>
+	<div class="center">vla</div>
 	<div class="right">
 		{#if platform === 'windows'}
 			<TrafficLight
