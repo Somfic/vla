@@ -2,11 +2,12 @@
 	import Warning from 'lucide-svelte/icons/triangle-alert';
 	import Sync from 'lucide-svelte/icons/git-commit-vertical';
 	import Notification from 'lucide-svelte/icons/bell';
+	import { tooltip } from '$lib/actions/tooltip';
 </script>
 
 <div class="status-bar">
 	<div class="ribbon">
-		<p class="item"><Sync />Synced</p>
+		<p class="item" use:tooltip={{ text: 'Hello', position: 'right' }}><Sync />Synced</p>
 		<p class="item">12<Warning /></p>
 	</div>
 	<div class="ribbon"><p class="item"><Notification /></p></div>
