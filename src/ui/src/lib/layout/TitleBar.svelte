@@ -4,7 +4,7 @@
 	import TrafficLight from './TrafficLight.svelte';
 	import { appWindow } from '@tauri-apps/api/window';
 
-	let platform = 'windows';
+	let platform = 'macos';
 
 	onMount(async () => {
 		platform = await invoke('get_platform');
@@ -16,6 +16,8 @@
 		{#if platform === 'macos'}
 			<TrafficLight
 				{platform}
+				updateStatus={'available'}
+				updateProgress={100}
 				on:hide={async () => await appWindow.minimize()}
 				on:close={async () => await appWindow.close()}
 				on:maximize={async () => await appWindow.maximize()}
@@ -28,6 +30,8 @@
 		{#if platform === 'windows'}
 			<TrafficLight
 				{platform}
+				updateStatus={'available'}
+				updateProgress={100}
 				on:hide={async () => await appWindow.minimize()}
 				on:close={async () => await appWindow.close()}
 				on:maximize={async () => await appWindow.maximize()}
