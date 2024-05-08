@@ -9,10 +9,13 @@
 	onMount(async () => {
 		platform = await invoke('get_platform');
 	});
+
+	let rightWidth = 0;
+	let leftWidth = 0;
 </script>
 
 <div class="topbar" data-tauri-drag-region>
-	<div class="left">
+	<div class="left" bind:clientWidth={leftWidth} style:margin-right={`-${leftWidth}px`}>
 		{#if platform === 'macos'}
 			<TrafficLight
 				{platform}
@@ -26,7 +29,7 @@
 		{/if}
 	</div>
 	<div class="center">vla</div>
-	<div class="right">
+	<div class="right" bind:clientWidth={rightWidth} style:margin-left={`-${rightWidth}px`}>
 		{#if platform === 'windows'}
 			<TrafficLight
 				{platform}
