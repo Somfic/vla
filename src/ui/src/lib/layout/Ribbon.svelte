@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Terminal from 'lucide-svelte/icons/terminal';
 	import Extensions from 'lucide-svelte/icons/blocks';
+	import { tooltip } from '$lib/actions/tooltip';
 </script>
 
 <div class="ribbon-wrapper">
 	<div class="ribbon">
-		<div class="item"><Terminal /></div>
+		<div class="item" use:tooltip={{ text: 'Command pallet', position: 'right' }}><Terminal /></div>
 		<div class="divider"></div>
 		<div class="item"><Extensions /></div>
 	</div>

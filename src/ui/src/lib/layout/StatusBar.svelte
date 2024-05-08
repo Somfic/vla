@@ -7,10 +7,15 @@
 
 <div class="status-bar">
 	<div class="ribbon">
-		<p class="item" use:tooltip={{ text: 'Hello', position: 'right' }}><Sync />Synced</p>
-		<p class="item">12<Warning /></p>
+		<p class="item" use:tooltip={{ text: 'changed synced to the cloud', position: 'top' }}>
+			<Sync />Synced
+		</p>
+		<p class="item" use:tooltip={{ text: '12 warnings', position: 'top' }}>12<Warning /></p>
 	</div>
-	<div class="ribbon"><p class="item"><Notification /></p></div>
+	<div class="ribbon">
+		<p class="item" use:tooltip={{ text: 'Hello', position: 'left' }}><Notification /></p>
+		<p class="item" use:tooltip={{ text: 'Hello', position: 'bottom' }}><Notification /></p>
+	</div>
 </div>
 
 <style lang="scss">
