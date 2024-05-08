@@ -8,7 +8,7 @@
     },
     "package": {
         "productName": "Vla",
-        "version": "0.1.0-next.8"
+        "version": "0.1.0-next.9"
     },
     "tauri": {
         "allowlist": {
