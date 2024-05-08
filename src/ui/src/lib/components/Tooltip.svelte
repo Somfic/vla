@@ -22,7 +22,7 @@
 		pointer-events: none;
 		transition: $transition;
 		opacity: 0;
-		background-color: rgba(0, 0, 0, 0.1);
+		background-color: rgba(0, 0, 0, 0.2);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		padding: 5px 10px;
 		border-radius: 10px;
@@ -37,7 +37,6 @@
 
 		&.show {
 			opacity: 1;
-			transition-delay: 500ms;
 		}
 
 		&.top {

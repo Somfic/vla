@@ -5,6 +5,7 @@ export function tooltip(
 	params: { text: string; position: 'left' | 'top' | 'right' | 'bottom' }
 ) {
 	element.style.position = 'relative';
+	let timeout: NodeJS.Timeout;
 
 	const tooltipElement = new Tooltip({
 		target: element,
@@ -20,20 +21,32 @@ export function tooltip(
 	});
 
 	function mouseOver() {
-		tooltipElement.$set({ show: true });
+		clearTimeout(timeout);
+		tooltipElement.$set({ show: false });
 	}
 
 	function mouseLeave() {
+		clearTimeout(timeout);
 		tooltipElement.$set({ show: false });
+	}
+
+	function mouseMove() {
+		clearTimeout(timeout);
+		tooltipElement.$set({ show: false });
+		timeout = setTimeout(() => {
+			tooltipElement.$set({ show: true });
+		}, 500);
 	}
 
 	element.addEventListener('mouseover', mouseOver);
 	element.addEventListener('mouseleave', mouseLeave);
+	element.addEventListener('mousemove', mouseMove);
 
 	return {
 		destroy() {
 			element.removeEventListener('mouseover', mouseOver);
 			element.removeEventListener('mouseleave', mouseLeave);
+			element.removeEventListener('mousemove', mouseMove);
 			tooltipElement?.$destroy();
 		}
 	};
