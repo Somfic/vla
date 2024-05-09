@@ -4,8 +4,6 @@ import child_process from "child_process";
 
 let bumpType: "major" | "minor" | "patch" | "prerelease" = "minor";
 
-child_process.execSync("git fetch --tags --unshallow", { encoding: "utf8" });
-
 const branch = child_process.execSync("git branch --show-current", { encoding: "utf8" }).trim();
 const isPreRelease = branch === "next";
 const tags = child_process

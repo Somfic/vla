@@ -85,6 +85,9 @@ jobs:
               uses: mozilla-actions/sccache-action@v0.0.4
 
             ### Tag new version ###
+            - name: fetch all tags
+              run: git fetch --tags --unshallow --force
+
             - name: tag new version
               run: yarn tag:version
 
