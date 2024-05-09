@@ -22,10 +22,10 @@ jobs:
                include:
                 - platform: 'macos-latest' # for Arm based macs (M1 and above).
                   args: '--target aarch64-apple-darwin'
-                  label: macOS (silicon)
+                  label: macos (silicon)
                 - platform: 'macos-latest' # for Intel based macs.
                   args: '--target x86_64-apple-darwin'
-                  label: macOS (intel)
+                  label: macos (intel)
                 - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
                   args: ''
                   label: ubuntu
@@ -65,6 +65,11 @@ jobs:
               run: |
                 sudo apt-get update
                 sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+            - name: install macos intel target
+              if: matrix.platform == 'macos-latest' && matrix.args == '--target x86_64-apple-darwin'
+              run: |
+                rustup target add x86_64-apple-darwin
 
             ### Apply cache ###
             - name: generate Cargo.lock
