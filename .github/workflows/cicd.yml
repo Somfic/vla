@@ -15,14 +15,14 @@ name: ci/cd
 jobs:
     cicd:
         runs-on: ${{ matrix.platform }}
-        name: ci/cd ${{ matrix.label }}
+        name: ${{ matrix.label }}
         strategy:
             fail-fast: false
             matrix:
                include:
                 - platform: 'macos-latest' # for Arm based macs (M1 and above).
                   args: '--target aarch64-apple-darwin'
-                  label: macOS (arm)
+                  label: macOS (silicon)
                 - platform: 'macos-latest' # for Intel based macs.
                   args: '--target x86_64-apple-darwin'
                   label: macOS (intel)
@@ -54,10 +54,13 @@ jobs:
             - name: install yarn
               run: npm install --global yarn
 
+            - name: install script dependencies
+              run: yarn install --frozen-lockfile
+
             - name: install rust development tools
               uses: taiki-e/install-action@cargo-llvm-cov
 
-            - name: install rust dependencies (Ubuntu only)
+            - name: install rust dependencies
               if: matrix.platform == 'ubuntu-22.04'
               run: |
                 sudo apt-get update
