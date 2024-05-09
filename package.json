@@ -1,7 +1,7 @@
 {
     "name": "@somfic/vla",
     "author": "somfic",
-    "version": "0.1.0-next.10",
+    "version": "0.1.0-next.12",
     "scripts": {
         "tauri": "cd src && cd core && tauri",
         "tag:version": "npx tsx scripts/tag-version.ts",
@@ -13,6 +13,7 @@
     "private": true,
     "devDependencies": {
         "@tauri-apps/cli": "^1.5.13",
-        "glob": "^10.3.12"
+        "glob": "^10.3.12",
+        "tsx": "^4.9.3"
     }
 }
