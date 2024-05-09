@@ -111,7 +111,7 @@ jobs:
 
             - name: publish release
               if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
-              uses: tauri-apps/tauri-action@v0
+              uses: tauri-apps/tauri-action@v0.5  
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
