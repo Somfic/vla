@@ -47,7 +47,7 @@
         "updater": {
             "active": true,
             "endpoints": ["https://api.github.com/repos/somfic/vla/releases/latest"],
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFFMzlDNDI0MjE4MjMyRTQKUldUa01vSWhKTVE1cm9IT2wvMHkrWDFjNTl5cGF0TGlGU3U4SU1xMlAxQmJJY211UVVUOGtGd1cK",
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ2RTYzMDYyNkY4QjI3MzEKUldReEo0dHZZakRtMXZnT3ZnU0JZYlIwbkFUVjh2aTdoazVUdUhIcEMxeGswWHFtYTBHcUV4OEMK",
             "dialog": false,
             "windows": {
                 "installMode": "passive",
