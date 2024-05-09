@@ -39,6 +39,16 @@
                 "minWidth": 600,
                 "minHeight": 400
             }
-        ]
+        ],
+        "updater": {
+            "active": true,
+            "endpoints": ["https://api.github.com/repos/somfic/vla/releases/latest"],
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFFMzlDNDI0MjE4MjMyRTQKUldUa01vSWhKTVE1cm9IT2wvMHkrWDFjNTl5cGF0TGlGU3U4SU1xMlAxQmJJY211UVVUOGtGd1cK",
+            "dialog": false,
+            "windows": {
+                "installMode": "passive",
+                "installerArgs": []
+            }
+        }
     }
 }
