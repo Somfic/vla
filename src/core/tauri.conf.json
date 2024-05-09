@@ -18,7 +18,7 @@
         },
         "bundle": {
             "active": true,
-            "targets": "msi",
+            "targets": "all",
             "identifier": "somfic.dev.vla",
             "icon": [
                 "icons/32x32.png",
