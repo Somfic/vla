@@ -19,19 +19,19 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-               include:
-                - platform: 'macos-latest' # for Arm based macs (M1 and above).
-                  args: '--target aarch64-apple-darwin'
-                  label: macos (silicon)
-                - platform: 'macos-latest' # for Intel based macs.
-                  args: '--target x86_64-apple-darwin'
-                  label: macos (intel)
-                - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-                  args: ''
-                  label: ubuntu
-                - platform: 'windows-latest'
-                  args: ''
-                  label: windows
+                include:
+                    - platform: "macos-latest" # for Arm based macs (M1 and above).
+                      args: "--target aarch64-apple-darwin"
+                      label: macos (silicon)
+                    - platform: "macos-latest" # for Intel based macs.
+                      args: "--target x86_64-apple-darwin"
+                      label: macos (intel)
+                    - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+                      args: ""
+                      label: ubuntu
+                    - platform: "windows-latest"
+                      args: ""
+                      label: windows
         steps:
             - name: checkout codebase
               uses: actions/checkout@v4
@@ -63,13 +63,13 @@ jobs:
             - name: install rust dependencies
               if: matrix.platform == 'ubuntu-22.04'
               run: |
-                sudo apt-get update
-                sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
             - name: install macos intel target
               if: matrix.platform == 'macos-latest' && matrix.args == '--target x86_64-apple-darwin'
               run: |
-                rustup target add x86_64-apple-darwin
+                  rustup target add x86_64-apple-darwin
 
             ### Apply cache ###
             - name: generate Cargo.lock
@@ -111,14 +111,16 @@ jobs:
 
             - name: publish release
               if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
-              uses: tauri-apps/tauri-action@v0.5  
+              uses: tauri-apps/tauri-action@v0.5
               env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+                  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
               with:
-                tagName: __VERSION__
-                releaseName: 'v__VERSION__'
-                releaseBody: '.'
-                releaseDraft: false
-                prerelease: ${{ github.ref != 'refs/heads/main' }}
-                projectPath: ./src/core
-                args: ${{ matrix.args }}
+                  tagName: __VERSION__
+                  releaseName: "v__VERSION__"
+                  releaseBody: "."
+                  releaseDraft: false
+                  prerelease: ${{ github.ref != 'refs/heads/main' }}
+                  projectPath: ./src/core
+                  args: ${{ matrix.args }}
