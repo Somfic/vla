@@ -23,15 +23,15 @@ jobs:
                 - platform: 'macos-latest' # for Arm based macs (M1 and above).
                   args: '--target aarch64-apple-darwin'
                   label: macos (silicon)
-                - platform: 'macos-latest' # for Intel based macs.
-                  args: '--target x86_64-apple-darwin'
-                  label: macos (intel)
-                - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-                  args: ''
-                  label: ubuntu
-                - platform: 'windows-latest'
-                  args: ''
-                  label: windows
+                # - platform: 'macos-latest' # for Intel based macs.
+                #   args: '--target x86_64-apple-darwin'
+                #   label: macos (intel)
+                # - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+                #   args: ''
+                #   label: ubuntu
+                # - platform: 'windows-latest'
+                #   args: ''
+                #   label: windows
         steps:
             - name: checkout codebase
               uses: actions/checkout@v4
