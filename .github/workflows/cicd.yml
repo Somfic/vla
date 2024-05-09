@@ -106,7 +106,7 @@ jobs:
               working-directory: ./src/ui
 
             - name: test core
-              run: cargo test --release
+              run: cargo test --release ${{ matrix.args }}
               working-directory: ./src/core
 
             - name: publish release
