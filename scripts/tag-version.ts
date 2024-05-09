@@ -44,9 +44,9 @@ console.log(`New version:     ${newVersion}`);
 
 updateProjectVersions(newVersion);
 
-if (process.env.CI) {
-    pushNewTag(newVersion);
-}
+// if (process.env.CI) {
+//     pushNewTag(newVersion);
+// }
 
 function determineNewVersion() {
     let major = parseInt(currentVersion.split(".")[0]);
