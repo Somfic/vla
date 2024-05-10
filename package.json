@@ -9,6 +9,6 @@
     "license": "ISC",
     "private": true,
     "devDependencies": {
-        "glob": "^10.3.12"
+        "glob": "^10.3.14"
     }
 }
