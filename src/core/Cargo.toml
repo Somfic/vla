@@ -20,6 +20,7 @@ window-vibrancy = "0.4"
 extism = "1.2.0"
 anyhow = "1.0.82"
 window-shadows = "0.2.2"
+schemars = "0.8.19"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

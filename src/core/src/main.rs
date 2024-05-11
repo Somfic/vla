@@ -10,9 +10,14 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
 
+pub mod notifications;
 pub mod plugins;
 
 fn main() {
+    // If running in debug mode, we want to enable logging
+    #[cfg(debug_assertions)]
+    generate_type_schemas();
+
     tauri::Builder::default()
         .setup(|app| {
             let main_window = app.get_window("main").unwrap();
@@ -53,4 +58,15 @@ async fn get_platform() -> String {
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     return "unknown".to_string();
+}
+
+#[cfg(debug_assertions)]
+fn generate_type_schemas() {
+    use crate::notifications::notification::Notification;
+    use schemars::schema_for;
+
+    // Notification
+    let schema = schema_for!(Notification);
+    let output = serde_json::to_string_pretty(&schema).unwrap();
+    std::fs::write("../notification.schema.json", output).unwrap();
 }
