@@ -35,7 +35,7 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![show_window, get_platform])
+        .invoke_handler(tauri::generate_handler![show_window, get_platform, on_nodes_changed, on_connections_changed])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -58,6 +58,16 @@ async fn get_platform() -> String {
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     return "unknown".to_string();
+}
+
+#[tauri::command]
+async fn on_connections_changed() {
+    println!("Connections changed!");
+}
+
+#[tauri::command]
+async fn on_nodes_changed() {
+    println!("Nodes changed!");
 }
 
 #[cfg(debug_assertions)]
