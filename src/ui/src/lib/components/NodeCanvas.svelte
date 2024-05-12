@@ -2,7 +2,10 @@
 	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap } from '@xyflow/svelte';
 
 	import '@xyflow/svelte/dist/base.css';
+	import { createEventDispatcher } from 'svelte';
 	import { writable } from 'svelte/store';
+
+	const dispatcher = createEventDispatcher();
 
 	const nodes = writable([
 		{
@@ -19,6 +22,10 @@
 		}
 	]);
 
+	nodes.subscribe((updatedNodes) => {
+		dispatcher('nodeschanged', { nodes: updatedNodes });
+	});
+
 	const connections = writable([
 		{
 			id: '1-2',
@@ -28,6 +35,10 @@
 			label: 'Edge Text'
 		}
 	]);
+
+	connections.subscribe((updatedConnections) => {
+		dispatcher('connectionschanged', { connections: updatedConnections });
+	});
 </script>
 
 <SvelteFlow
