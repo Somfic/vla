@@ -17,13 +17,7 @@
 		</p>
 	</div>
 	<div class="ribbon">
-		<p
-			class="item"
-			use:tooltip={{
-				text: `${notifications.filter((x) => !x.hasRead).length} new notifications`,
-				position: 'top'
-			}}
-		>
+		<p class="item">
 			<Notifications />
 			<NotificationIcon />
 		</p>
