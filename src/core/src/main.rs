@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::{rc::Rc, sync::Arc};
+
 use tauri::Manager;
 use window_shadows::set_shadow;
 
@@ -14,24 +16,28 @@ pub mod notifications;
 pub mod plugins;
 
 fn main() {
-    // If running in debug mode, we want to enable logging
     #[cfg(debug_assertions)]
     generate_type_schemas();
 
     tauri::Builder::default()
         .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
+            let window = Arc::new(app.get_window("main").unwrap());
 
             #[cfg(any(windows, target_os = "macos"))]
-            set_shadow(&main_window, true).unwrap();
+            set_shadow(window.as_ref(), true).unwrap();
 
             #[cfg(target_os = "macos")]
-            apply_vibrancy(main_window, NSVisualEffectMaterial::HudWindow, None, None)
+            apply_vibrancy(window.as_ref(), NSVisualEffectMaterial::HudWindow, None, None)
                 .expect("Unsupported platform! Window vibrancy is only supported on macOS machines");
 
             #[cfg(target_os = "windows")]
-            apply_acrylic(main_window, None)
+            apply_acrylic(window.as_ref(), None)
                 .expect("Unsupported platform! Window vibrancy effect is only supported on Windows machines");
+
+            let app_handle = plugins::AppHandle::new(window.as_ref());
+            let mut plugin_manager = plugins::PluginManager::new(app_handle);
+
+            plugin_manager.load_plugins()?;
 
             Ok(())
         })
@@ -72,7 +78,7 @@ async fn on_nodes_changed() {
 
 #[cfg(debug_assertions)]
 fn generate_type_schemas() {
-    use crate::notifications::notification::Notification;
+    use crate::notifications::Notification;
     use schemars::schema_for;
 
     // Notification
