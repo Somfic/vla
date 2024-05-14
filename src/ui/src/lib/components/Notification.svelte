@@ -9,7 +9,7 @@
 	export let notification: TrackedNotification;
 </script>
 
-<div class="notification">
+<div class={`notification ${notification.level}`}>
 	<div class="top">
 		<div class="title">
 			<div class="icon">
@@ -32,6 +32,7 @@
 <style lang="scss">
 	.notification {
 		display: flex;
+		align-items: center;
 		flex-grow: 1;
 		background-color: rgba(30, 30, 30, 0.8);
 		padding: 1rem 2rem;
@@ -50,7 +51,8 @@
 		justify-content: space-between;
 	}
 
-	.close {
+	.close,
+	.icon {
 		display: flex;
 		align-items: center;
 		justify-content: center;
