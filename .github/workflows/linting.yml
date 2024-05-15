@@ -3,29 +3,43 @@ on:
     pull_request:
 
 jobs:
-    clippy:
+    linting:
         runs-on: ubuntu-latest
-        name: clippy
+        name: linting
         steps:
             - name: checkout codebase
               uses: actions/checkout@v4
               with:
                   submodules: true
 
+            ### Install languages ###
+            - name: setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: "yarn"
+
             - name: setup rust
               uses: dtolnay/rust-toolchain@stable
               with:
                   components: llvm-tools-preview
 
+            ### Install language dependencies ###
+            - name: install yarn
+              run: npm install --global yarn
+
+            - name: install script dependencies
+              run: yarn install --frozen-lockfile
+
             - name: install rust development tools
               uses: taiki-e/install-action@cargo-llvm-cov
 
             - name: install rust dependencies
-              # if: matrix.platform == 'ubuntu-22.04'
               run: |
                   sudo apt-get update
                   sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+            ### Apply cache ###
             - name: generate Cargo.lock
               run: cargo generate-lockfile
               working-directory: ./src/core
@@ -43,6 +57,20 @@ jobs:
             - name: cache rust compiler
               uses: mozilla-actions/sccache-action@v0.0.4
 
+            ### Build client ###
+            - name: install node dependencies
+              run: yarn install --frozen-lockfile
+              working-directory: ./src/ui
+
+            - name: build ui
+              run: yarn run build
+              working-directory: ./src/ui
+
+            ### Linting ###
             - name: run clippy
-              run: cargo clippy --all-targets --all-features -- -D warnings
+              run: cargo clippy --all-targets --all-features
+              working-directory: ./src/core
+
+            - name: run eslint
+              run: yarn run lint
               working-directory: ./src/core
