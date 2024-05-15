@@ -1,9 +1,6 @@
-use std::sync::Arc;
-
 use crate::notifications::{Notification, NotificationHandle};
 use anyhow::{Context, Result};
 use extism::{convert::Json, host_fn, Manifest, Plugin, PluginBuilder, UserData, Wasm, PTR};
-use std::sync::Mutex;
 use tauri::Manager;
 
 #[derive(Debug)]
@@ -16,7 +13,9 @@ impl AppHandle {
     pub fn new(app: &tauri::App) -> Self {
         AppHandle {
             logs: vec![],
-            notifications: NotificationHandle::new(app.get_window("main").unwrap()),
+            notifications: NotificationHandle::new(
+                app.get_window("main").expect("Could not get main window"),
+            ),
         }
     }
 
@@ -56,8 +55,7 @@ impl PluginManager {
         self.plugins = self
             .load_plugins_from_files(applicable_files)
             .into_iter()
-            .filter(|result| result.is_ok())
-            .map(|result| result.unwrap())
+            .flatten()
             .collect();
 
         Ok(())
@@ -86,8 +84,8 @@ impl PluginManager {
             .build()
             .context("Could not build plugin");
 
-        if result.is_err() {
-            println!("Could not load plugin: {:?}", result.as_ref().unwrap_err());
+        if let Err(err) = &result {
+            println!("Could not load plugin: {:?}", err);
         }
 
         result
@@ -96,7 +94,7 @@ impl PluginManager {
 
 host_fn!(notify(user_data: AppHandle; notification: Json<Notification>) -> Result<()> {
     let app_handle = user_data.get()?;
-    let app_handle = app_handle.lock().unwrap();
+    let app_handle = app_handle.lock().expect("Could not lock app handle");
 
     app_handle.notifications.notify(notification.0)?;
 

@@ -1,5 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// Do not allow unwrap
+#![deny(clippy::unwrap_used)]
 
 use std::{rc::Rc, sync::Arc};
 
@@ -17,20 +19,20 @@ pub mod plugins;
 
 fn main() {
     #[cfg(debug_assertions)]
-    generate_type_schemas();
+    generate_type_schemas().expect("Could not generate type schemas");
 
     tauri::Builder::default()
         .setup(|app| {
+            let window = app.get_window("main").expect("Could not get main window");
+
             #[cfg(any(windows, target_os = "macos"))]
-            set_shadow(app.get_window("main").unwrap(), true).unwrap();
+            let _ = set_shadow(&window, true);
 
             #[cfg(target_os = "macos")]
-            apply_vibrancy(app.get_window("main").unwrap(), NSVisualEffectMaterial::HudWindow, None, None)
-                .expect("Unsupported platform! Window vibrancy is only supported on macOS machines");
+            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None);
 
             #[cfg(target_os = "windows")]
-            apply_acrylic(app.get_window("main").unwrap(), None)
-                .expect("Unsupported platform! Window vibrancy effect is only supported on Windows machines");
+            let _ = apply_acrylic(&window, None);
 
             let app_handle = plugins::AppHandle::new(app);
             let mut plugin_manager = plugins::PluginManager::new(app_handle);
@@ -39,14 +41,23 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![show_window, get_platform, on_nodes_changed, on_connections_changed])
+        .invoke_handler(tauri::generate_handler![
+            show_window,
+            get_platform,
+            on_nodes_changed,
+            on_connections_changed
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
 async fn show_window(window: tauri::Window) {
-    window.get_window("main").unwrap().show().unwrap();
+    let window = window
+        .get_window("main")
+        .expect("Could not get main window");
+
+    window.show().expect("Could not show window");
 }
 
 #[tauri::command]
@@ -75,12 +86,14 @@ async fn on_nodes_changed() {
 }
 
 #[cfg(debug_assertions)]
-fn generate_type_schemas() {
+fn generate_type_schemas() -> anyhow::Result<()> {
     use crate::notifications::Notification;
     use schemars::schema_for;
 
     // Notification
     let schema = schema_for!(Notification);
-    let output = serde_json::to_string_pretty(&schema).unwrap();
-    std::fs::write("../notification.schema.json", output).unwrap();
+    let output = serde_json::to_string_pretty(&schema)?;
+    std::fs::write("../notification.schema.json", output)?;
+
+    Ok(())
 }
