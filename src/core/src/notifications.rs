@@ -21,12 +21,12 @@ pub struct Notification {
 }
 
 #[derive(Debug)]
-pub struct NotificationHandle<'a> {
-    window_handle: &'a tauri::Window,
+pub struct NotificationHandle {
+    window_handle: tauri::Window,
 }
 
-impl<'a> NotificationHandle<'a> {
-    pub fn new(window: &'a tauri::Window) -> Self {
+impl NotificationHandle {
+    pub fn new(window: tauri::Window) -> Self {
         NotificationHandle {
             window_handle: window,
         }

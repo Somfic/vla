@@ -21,20 +21,18 @@ fn main() {
 
     tauri::Builder::default()
         .setup(|app| {
-            let window = Arc::new(app.get_window("main").unwrap());
-
             #[cfg(any(windows, target_os = "macos"))]
-            set_shadow(window.as_ref(), true).unwrap();
+            set_shadow(app.get_window("main").unwrap(), true).unwrap();
 
             #[cfg(target_os = "macos")]
-            apply_vibrancy(window.as_ref(), NSVisualEffectMaterial::HudWindow, None, None)
+            apply_vibrancy(app.get_window("main").unwrap(), NSVisualEffectMaterial::HudWindow, None, None)
                 .expect("Unsupported platform! Window vibrancy is only supported on macOS machines");
 
             #[cfg(target_os = "windows")]
-            apply_acrylic(window.as_ref(), None)
+            apply_acrylic(app.get_window("main").unwrap(), None)
                 .expect("Unsupported platform! Window vibrancy effect is only supported on Windows machines");
 
-            let app_handle = plugins::AppHandle::new(window.as_ref());
+            let app_handle = plugins::AppHandle::new(app);
             let mut plugin_manager = plugins::PluginManager::new(app_handle);
 
             plugin_manager.load_plugins()?;

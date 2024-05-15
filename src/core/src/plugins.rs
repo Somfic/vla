@@ -4,18 +4,19 @@ use crate::notifications::{Notification, NotificationHandle};
 use anyhow::{Context, Result};
 use extism::{convert::Json, host_fn, Manifest, Plugin, PluginBuilder, UserData, Wasm, PTR};
 use std::sync::Mutex;
+use tauri::Manager;
 
 #[derive(Debug)]
-pub struct AppHandle<'a> {
-    notifications: NotificationHandle<'a>,
+pub struct AppHandle {
+    notifications: NotificationHandle,
     logs: Vec<String>,
 }
 
-impl<'a> AppHandle<'a> {
-    pub fn new(window: &'a tauri::Window) -> Self {
+impl AppHandle {
+    pub fn new(app: &tauri::App) -> Self {
         AppHandle {
             logs: vec![],
-            notifications: NotificationHandle::new(window),
+            notifications: NotificationHandle::new(app.get_window("main").unwrap()),
         }
     }
 
@@ -24,13 +25,13 @@ impl<'a> AppHandle<'a> {
     }
 }
 
-pub struct PluginManager<'a> {
+pub struct PluginManager {
     plugins: Vec<Plugin>,
-    plugin_data: UserData<AppHandle<'a>>,
+    plugin_data: UserData<AppHandle>,
 }
 
-impl<'a> PluginManager<'a> {
-    pub fn new(app_handle: AppHandle<'a>) -> Self {
+impl PluginManager {
+    pub fn new(app_handle: AppHandle) -> Self {
         PluginManager {
             plugins: vec![],
             plugin_data: UserData::new(app_handle),
@@ -79,11 +80,17 @@ impl<'a> PluginManager<'a> {
 
     fn load_plugin_from_wasm(&self, wasm: Wasm) -> Result<Plugin> {
         let manifest = Manifest::new([wasm]);
-        PluginBuilder::new(manifest)
+        let result = PluginBuilder::new(manifest)
             .with_wasi(true)
-            .with_function("notify", [PTR], [PTR], self.plugin_data, notify)
+            .with_function("notify", [PTR], [PTR], self.plugin_data.clone(), notify)
             .build()
-            .context("Could not build plugin")
+            .context("Could not build plugin");
+
+        if result.is_err() {
+            println!("Could not load plugin: {:?}", result.as_ref().unwrap_err());
+        }
+
+        result
     }
 }
 
