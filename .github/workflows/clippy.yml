@@ -17,6 +17,15 @@ jobs:
               with:
                   components: llvm-tools-preview
 
+            - name: install rust development tools
+              uses: taiki-e/install-action@cargo-llvm-cov
+
+            - name: install rust dependencies
+              # if: matrix.platform == 'ubuntu-22.04'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
             - name: generate Cargo.lock
               run: cargo generate-lockfile
               working-directory: ./src/core
