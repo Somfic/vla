@@ -17,9 +17,6 @@ jobs:
               with:
                   components: llvm-tools-preview
 
-            - name: install rust development tools
-              run: cargo install clippy
-
             - name: generate Cargo.lock
               run: cargo generate-lockfile
               working-directory: ./src/core
