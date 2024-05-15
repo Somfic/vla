@@ -73,4 +73,4 @@ jobs:
 
             - name: run eslint
               run: yarn run lint
-              working-directory: ./src/core
+              working-directory: ./src/ui
