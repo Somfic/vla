@@ -1,0 +1,41 @@
+on:
+    push:
+    pull_request:
+
+jobs:
+    clippy:
+        runs-on: ubuntu-latest
+        name: clippy
+        steps:
+            - name: checkout codebase
+              uses: actions/checkout@v4
+              with:
+                  submodules: true
+
+            - name: setup rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  components: llvm-tools-preview
+
+            - name: install rust development tools
+              run: cargo install clippy
+
+            - name: generate Cargo.lock
+              run: cargo generate-lockfile
+              working-directory: ./src/core
+
+            - name: cache rust dependencies
+              uses: swatinem/rust-cache@v2
+              with:
+                  workspaces: "./src/core -> target"
+
+            - name: configure rust compiler cache
+              run: |
+                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+
+            - name: cache rust compiler
+              uses: mozilla-actions/sccache-action@v0.0.4
+
+            - name: run clippy
+              run: cargo clippy --all-targets --all-features -- -D warnings
