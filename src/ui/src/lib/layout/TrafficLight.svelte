@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { appWindow } from '@tauri-apps/api/window';
 
 	import Close from 'lucide-svelte/icons/x';
@@ -12,12 +12,12 @@
 	import UpdateDownloading from '$lib/icons/Progress.svelte';
 	import UpdateInstalling from 'lucide-svelte/icons/loader-circle';
 	import UpdatePendingRestart from 'lucide-svelte/icons/rotate-cw';
-	import { tooltip } from '$lib/actions/tooltip';
 
 	appWindow.onFocusChanged(({ payload: focused }) => {
 		active = focused;
 	});
 
+	// eslint-disable-next-line no-undef
 	let maximizedThrottle: NodeJS.Timeout;
 	let lastSize = { width: 0, height: 0 };
 	appWindow.onResized(async ({ payload }) => {

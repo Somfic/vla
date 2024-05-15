@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap } from '@xyflow/svelte';
+	import { SvelteFlow, Background, BackgroundVariant } from '@xyflow/svelte';
 
 	import '@xyflow/svelte/dist/base.css';
 	import { createEventDispatcher } from 'svelte';
