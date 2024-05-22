@@ -5,7 +5,7 @@ on:
     push:
         branches:
             - main
-            - next
+            #- next
     pull_request:
 
 concurrency:
