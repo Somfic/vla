@@ -5,6 +5,7 @@ export function tooltip(
 	params: { text: string; position: 'left' | 'top' | 'right' | 'bottom' }
 ) {
 	element.style.position = 'relative';
+	// eslint-disable-next-line no-undef
 	let timeout: NodeJS.Timeout;
 
 	const tooltipElement = new Tooltip({

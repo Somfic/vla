@@ -3,7 +3,6 @@
 	import SyncIcon from 'lucide-svelte/icons/git-commit-vertical';
 	import NotificationIcon from 'lucide-svelte/icons/bell';
 	import { tooltip } from '$lib/actions/tooltip';
-	import { notifications } from '$lib/core/notifications';
 	import Notifications from './Notifications.svelte';
 </script>
 
