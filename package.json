@@ -7,7 +7,8 @@
         "tag:version": "npx tsx scripts/tag-version.ts",
         "test": "cd src && cd core && cargo test",
         "dev": "yarn tauri dev",
-        "build": "yarn tauri build"
+        "build": "yarn tauri build",
+        "generate:types": "cd src && cd core && cargo run -- --generate-type-schemas && cd .. && cd .. && npx tsx scripts/generate-types.ts"
     },
     "license": "ISC",
     "private": true,

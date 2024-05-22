@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Connection",
+  "type": "object",
+  "required": [
+    "id",
+    "selected",
+    "source",
+    "target"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "selected": {
+      "type": "boolean"
+    },
+    "source": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    }
+  }
+}

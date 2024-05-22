@@ -1,20 +1,25 @@
 <script lang="ts">
-	import Warning from 'lucide-svelte/icons/triangle-alert';
-	import Sync from 'lucide-svelte/icons/git-commit-vertical';
-	import Notification from 'lucide-svelte/icons/bell';
+	import WarningIcon from 'lucide-svelte/icons/triangle-alert';
+	import SyncIcon from 'lucide-svelte/icons/git-commit-vertical';
+	import NotificationIcon from 'lucide-svelte/icons/bell';
 	import { tooltip } from '$lib/actions/tooltip';
+	import Notifications from './Notifications.svelte';
 </script>
 
 <div class="status-bar">
 	<div class="ribbon">
 		<p class="item" use:tooltip={{ text: 'changed synced to the cloud', position: 'top' }}>
-			<Sync />Synced
+			<SyncIcon />Synced
 		</p>
-		<p class="item" use:tooltip={{ text: '12 warnings', position: 'top' }}>12<Warning /></p>
+		<p class="item" use:tooltip={{ text: '12 warnings', position: 'top' }}>
+			12<WarningIcon />
+		</p>
 	</div>
 	<div class="ribbon">
-		<p class="item" use:tooltip={{ text: 'Hello', position: 'left' }}><Notification /></p>
-		<p class="item" use:tooltip={{ text: 'Hello', position: 'bottom' }}><Notification /></p>
+		<p class="item">
+			<Notifications />
+			<NotificationIcon />
+		</p>
 	</div>
 </div>
 
@@ -41,6 +46,7 @@
 		color: #8e8e8d;
 
 		.item {
+			position: relative;
 			display: flex;
 			align-items: center;
 			justify-content: center;

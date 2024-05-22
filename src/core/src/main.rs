@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::{env, sync::Arc};
+
 use tauri::Manager;
 use window_shadows::set_shadow;
 
@@ -10,57 +12,70 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
 
-pub mod plugins;
+use crate::prelude::*;
 
-fn main() {
+pub mod canvas;
+pub mod commands;
+pub mod error;
+pub mod notification;
+pub mod plugins;
+pub mod prelude;
+
+fn main() -> Result<()> {
+    #[cfg(debug_assertions)]
+    if env::args().any(|arg| arg == "--generate-type-schemas") {
+        generate_type_schemas();
+        return Ok(());
+    }
+
     tauri::Builder::default()
         .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
+            let window: &'static mut tauri::Window = Box::leak(Box::new(app.get_window("main").unwrap()));
 
             #[cfg(any(windows, target_os = "macos"))]
-            set_shadow(&main_window, true).unwrap();
+            set_shadow(app.get_window("main").unwrap(), true).unwrap();
 
             #[cfg(target_os = "macos")]
-            apply_vibrancy(main_window, NSVisualEffectMaterial::HudWindow, None, None)
+            apply_vibrancy(app.get_window("main").unwrap(), NSVisualEffectMaterial::HudWindow, None, None)
                 .expect("Unsupported platform! Window vibrancy is only supported on macOS machines");
 
             #[cfg(target_os = "windows")]
-            apply_acrylic(main_window, None)
+            apply_acrylic(app.get_window("main").unwrap(), None)
                 .expect("Unsupported platform! Window vibrancy effect is only supported on Windows machines");
 
+            let app_handle = plugins::AppHandle::new(window);
+            let mut plugin_manager = plugins::PluginManager::new(app_handle);
+
+            plugin_manager.load_plugins()?;
+            
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![show_window, get_platform, on_nodes_changed, on_connections_changed])
+        .invoke_handler(tauri::generate_handler![crate::commands::show_window, crate::commands::get_platform])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    Ok(())
 }
 
-#[tauri::command]
-async fn show_window(window: tauri::Window) {
-    window.get_window("main").unwrap().show().unwrap();
-}
+#[cfg(debug_assertions)]
+fn generate_type_schemas() {
+    use schemars::schema_for;
 
-#[tauri::command]
-async fn get_platform() -> String {
-    #[cfg(target_os = "macos")]
-    return "macos".to_string();
+    // Notification
+    let schema = schema_for!(crate::notification::models::Notification);
+    let output = serde_json::to_string_pretty(&schema).unwrap();
+    std::fs::write("../notification.schema.json", output).unwrap();
+    println!("Notification schema generated");
 
-    #[cfg(target_os = "windows")]
-    return "windows".to_string();
+    // Node
+    let schema = schema_for!(crate::canvas::models::Node);
+    let output = serde_json::to_string_pretty(&schema).unwrap();
+    std::fs::write("../node.schema.json", output).unwrap();
+    println!("Node schema generated");
 
-    #[cfg(target_os = "linux")]
-    return "linux".to_string();
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    return "unknown".to_string();
-}
-
-#[tauri::command]
-async fn on_connections_changed() {
-    println!("Connections changed!");
-}
-
-#[tauri::command]
-async fn on_nodes_changed() {
-    println!("Nodes changed!");
+    // Connection
+    let schema = schema_for!(crate::canvas::models::Connection);
+    let output = serde_json::to_string_pretty(&schema).unwrap();
+    std::fs::write("../connection.schema.json", output).unwrap();
+    println!("Connection schema generated");
 }

@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Node",
+  "type": "object",
+  "required": [
+    "data",
+    "id",
+    "position",
+    "selected",
+    "type"
+  ],
+  "properties": {
+    "data": {
+      "$ref": "#/definitions/NodeData"
+    },
+    "id": {
+      "type": "string"
+    },
+    "position": {
+      "$ref": "#/definitions/Position"
+    },
+    "selected": {
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "NodeData": {
+      "type": "object",
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "Position": {
+      "type": "object",
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "y": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}
