@@ -1,6 +1,5 @@
 use super::models::{Connection, Node};
-use crate::prelude::*;
-use eyre::Context;
+use anyhow::{Context, Result};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
@@ -15,7 +14,15 @@ impl CanvasHandle {
     pub fn new(window: &'static tauri::Window) -> Arc<Mutex<Self>> {
         let canvas = CanvasHandle {
             window_handle: window,
-            nodes: vec![],
+            nodes: vec![Node {
+                id: "1".to_string(),
+                kind: "input".to_string(),
+                position: super::models::Position { x: 100, y: 100 },
+                data: super::models::NodeData {
+                    label: "Hello from Rust".to_string(),
+                },
+                selected: false,
+            }],
             connections: vec![],
         };
 
@@ -31,12 +38,31 @@ impl CanvasHandle {
             handle.window_handle.clone()
         };
 
-        let handle_clone = Arc::clone(&canvas);
+        let canvas_nodes_changed_handle = canvas.clone();
         window_handle.listen_global("canvas_nodes_changed", move |e| {
+            println!("canvas_nodes_changed event received");
+
             let nodes: Vec<Node> = serde_json::from_str(e.payload().unwrap()).unwrap();
-            if let Ok(mut handle) = handle_clone.lock() {
-                handle.set_nodes(nodes);
-            }
+            canvas_nodes_changed_handle.lock().unwrap().nodes = nodes;
+        });
+
+        let canvas_connections_changed_handle = canvas.clone();
+        window_handle.listen_global("canvas_load", move |_| {
+            println!("canvas_load event received");
+
+            canvas_connections_changed_handle
+                .lock()
+                .unwrap()
+                .set_node(Node {
+                    id: "2".to_string(),
+                    kind: "input".to_string(),
+                    position: super::models::Position { x: 200, y: 200 },
+                    data: super::models::NodeData {
+                        label: "Hello from Rust 2".to_string(),
+                    },
+                    selected: false,
+                })
+                .unwrap();
         });
     }
 
@@ -47,6 +73,7 @@ impl CanvasHandle {
             self.nodes.push(node);
         }
 
+        println!("canvas_nodes_changed event emitted");
         self.window_handle
             .emit_all("canvas_nodes_changed", self.nodes.clone())
             .context("Could not emit canvas nodes changed")
@@ -67,6 +94,7 @@ impl CanvasHandle {
     pub fn set_nodes(&mut self, nodes: Vec<Node>) -> Result<()> {
         self.nodes = nodes;
 
+        println!("canvas_nodes_changed event emitted");
         self.window_handle
             .emit_all("canvas_nodes_changed", self.nodes.clone())
             .context("Could not emit canvas nodes changed")
@@ -87,4 +115,26 @@ impl CanvasHandle {
     pub fn get_connections(&self) -> Vec<Connection> {
         self.connections.clone()
     }
+}
+
+pub mod host {
+    use crate::{canvas::models::Node, notification::models::Notification, plugins::AppHandle};
+    use anyhow::{anyhow, Context};
+    use extism::{convert::Json, host_fn};
+
+    host_fn!(pub get_nodes(app_data: AppHandle; notification: Json<Notification>) -> Result<Vec<Node>> {
+        let app_data = app_data.get().context("Could not get app handle")?;
+        let app_handle = app_data.lock().map_err(|_| anyhow!("Could not lock app handle"))?;
+        let canvas_handle = app_handle.canvas.lock().map_err(|_| anyhow!("Could not lock canvas handle"))?;
+
+        Ok(Json(canvas_handle.get_nodes()))
+    });
+
+    host_fn!(pub set_nodes(app_data: AppHandle; nodes: Json<Vec<Node>>) -> Result<()> {
+        let app_data = app_data.get().context("Could not get app handle")?;
+        let app_handle = app_data.lock().map_err(|_| anyhow!("Could not lock app handle"))?;
+        let mut canvas_handle = app_handle.canvas.lock().map_err(|_| anyhow!("Could not lock canvas handle"))?;
+
+        canvas_handle.set_nodes(nodes.0)
+    });
 }

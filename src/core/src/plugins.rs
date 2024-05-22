@@ -1,23 +1,20 @@
 use crate::{
-    canvas::handle::CanvasHandle,
+    canvas::{self, handle::CanvasHandle},
     notification::{handle::NotificationHandle, models::Notification},
-    Error,
 };
+use anyhow::{Context, Result};
 use extism::{convert::Json, host_fn, Manifest, Plugin, PluginBuilder, UserData, Wasm, PTR};
-use eyre::{Context, ContextCompat};
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
 pub struct AppHandle {
     pub notifications: NotificationHandle,
     pub canvas: Arc<Mutex<CanvasHandle>>,
-    window_handle: &'static tauri::Window,
 }
 
 impl AppHandle {
     pub fn new(window: &'static tauri::Window) -> Self {
         AppHandle {
-            window_handle: window,
             notifications: NotificationHandle::new(window),
             canvas: CanvasHandle::new(window),
         }
@@ -37,7 +34,7 @@ impl PluginManager {
         }
     }
 
-    pub fn load_plugins(&mut self) -> crate::prelude::Result<&Vec<Plugin>> {
+    pub fn load_plugins(&mut self) -> Result<&Vec<Plugin>> {
         let plugin_directory = dirs::data_local_dir()
             .context("Could not get local data directory")?
             .join("vla")
@@ -67,40 +64,42 @@ impl PluginManager {
     fn load_plugins_from_files(
         &self,
         paths: Vec<impl AsRef<std::path::Path>>,
-    ) -> Vec<crate::prelude::Result<Plugin>> {
+    ) -> Vec<Result<Plugin>> {
         paths
             .into_iter()
             .map(|path| self.load_plugin_from_file(path))
             .collect()
     }
 
-    fn load_plugin_from_file(
-        &self,
-        path: impl AsRef<std::path::Path>,
-    ) -> crate::prelude::Result<Plugin> {
+    fn load_plugin_from_file(&self, path: impl AsRef<std::path::Path>) -> Result<Plugin> {
         let wasm = Wasm::file(path);
         self.load_plugin_from_wasm(wasm)
     }
 
-    fn load_plugin_from_wasm(&self, wasm: Wasm) -> crate::prelude::Result<Plugin> {
+    fn load_plugin_from_wasm(&self, wasm: Wasm) -> Result<Plugin> {
         let manifest = Manifest::new([wasm]);
         PluginBuilder::new(manifest)
             .with_wasi(true)
-            .with_function("notify", [PTR], [PTR], self.plugin_data.clone(), notify)
+            .with_function_in_namespace(
+                "canvas",
+                "get_nodes",
+                [],
+                [PTR],
+                self.plugin_data.clone(),
+                canvas::handle::host::get_nodes,
+            )
+            .with_function_in_namespace(
+                "canvas",
+                "set_node",
+                [PTR],
+                [],
+                self.plugin_data.clone(),
+                canvas::handle::host::set_nodes,
+            )
             .build()
-            .map_err(|_| Error::Generic("Could not build plugin".to_owned()))
             .context("Could not build plugin")
     }
 }
-
-host_fn!(notify(user_data: AppHandle; notification: Json<Notification>) -> crate::prelude::Result<()> {
-    let app_handle = user_data.get()?;
-    let app_handle = app_handle.lock().unwrap();
-    app_handle.notifications.notify(notification.0)
-     .map_err(|_| Error::Generic("Could not notify".to_owned()))?;
-
-    Ok(())
-});
 
 // #[test]
 // pub fn test_load_plugin_from_path_loads_simple_plugin() -> Result<()> {

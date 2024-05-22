@@ -1,8 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{env, sync::Arc};
-
+use anyhow::Result;
+use std::env;
 use tauri::Manager;
 use window_shadows::set_shadow;
 
@@ -12,14 +12,10 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
 
-use crate::prelude::*;
-
 pub mod canvas;
 pub mod commands;
-pub mod error;
 pub mod notification;
 pub mod plugins;
-pub mod prelude;
 
 fn main() -> Result<()> {
     #[cfg(debug_assertions)]
@@ -47,7 +43,7 @@ fn main() -> Result<()> {
             let mut plugin_manager = plugins::PluginManager::new(app_handle);
 
             plugin_manager.load_plugins()?;
-            
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![crate::commands::show_window, crate::commands::get_platform])
