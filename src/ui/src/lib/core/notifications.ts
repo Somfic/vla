@@ -1,16 +1,7 @@
 import type { Notification } from '$lib/models/notification';
 import type { TrackedNotification } from '$lib/models/trackedNotification';
 
-export const notifications: TrackedNotification[] = [
-	{
-		id: 1,
-		timestamp: new Date(),
-		level: 'information',
-		title: 'Welcome to the app!',
-		body: 'You can now',
-		hasRead: false
-	}
-];
+export const notifications: TrackedNotification[] = [];
 
 export function notify(notification: Notification) {
 	const timestamp = new Date();

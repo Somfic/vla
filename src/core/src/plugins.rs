@@ -1,48 +1,51 @@
-use std::sync::Arc;
-
-use crate::notifications::{Notification, NotificationHandle};
-use anyhow::{Context, Result};
+use crate::{
+    canvas::handle::CanvasHandle,
+    notification::{handle::NotificationHandle, models::Notification},
+    Error,
+};
 use extism::{convert::Json, host_fn, Manifest, Plugin, PluginBuilder, UserData, Wasm, PTR};
-use std::sync::Mutex;
+use eyre::{Context, ContextCompat};
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
-pub struct AppHandle<'a> {
-    notifications: NotificationHandle<'a>,
-    logs: Vec<String>,
+pub struct AppHandle {
+    pub notifications: NotificationHandle,
+    pub canvas: Arc<Mutex<CanvasHandle>>,
+    window_handle: &'static tauri::Window,
 }
 
-impl<'a> AppHandle<'a> {
-    pub fn new(window: &'a tauri::Window) -> Self {
+impl AppHandle {
+    pub fn new(window: &'static tauri::Window) -> Self {
         AppHandle {
-            logs: vec![],
+            window_handle: window,
             notifications: NotificationHandle::new(window),
+            canvas: CanvasHandle::new(window),
         }
     }
-
-    pub fn log(&mut self, text: impl Into<String>) {
-        self.logs.push(text.into());
-    }
 }
 
-pub struct PluginManager<'a> {
+pub struct PluginManager {
     plugins: Vec<Plugin>,
-    plugin_data: UserData<AppHandle<'a>>,
+    plugin_data: UserData<AppHandle>,
 }
 
-impl<'a> PluginManager<'a> {
-    pub fn new(app_handle: AppHandle<'a>) -> Self {
+impl PluginManager {
+    pub fn new(app_handle: AppHandle) -> Self {
         PluginManager {
             plugins: vec![],
             plugin_data: UserData::new(app_handle),
         }
     }
 
-    pub fn load_plugins(&mut self) -> Result<()> {
-        let plugin_directory = std::path::Path::new("plugins");
+    pub fn load_plugins(&mut self) -> crate::prelude::Result<&Vec<Plugin>> {
+        let plugin_directory = dirs::data_local_dir()
+            .context("Could not get local data directory")?
+            .join("vla")
+            .join("plugins");
 
         // Create the directory if it doesn't exist
         if !plugin_directory.exists() {
-            std::fs::create_dir(plugin_directory).context("Could not create plugin directory")?;
+            std::fs::create_dir(&plugin_directory).context("Could not create plugin directory")?;
         }
 
         let applicable_files = std::fs::read_dir(plugin_directory)
@@ -55,43 +58,46 @@ impl<'a> PluginManager<'a> {
         self.plugins = self
             .load_plugins_from_files(applicable_files)
             .into_iter()
-            .filter(|result| result.is_ok())
-            .map(|result| result.unwrap())
+            .filter_map(|result| result.ok())
             .collect();
 
-        Ok(())
+        Ok(&self.plugins)
     }
 
     fn load_plugins_from_files(
         &self,
         paths: Vec<impl AsRef<std::path::Path>>,
-    ) -> Vec<Result<Plugin>> {
+    ) -> Vec<crate::prelude::Result<Plugin>> {
         paths
             .into_iter()
             .map(|path| self.load_plugin_from_file(path))
             .collect()
     }
 
-    fn load_plugin_from_file(&self, path: impl AsRef<std::path::Path>) -> Result<Plugin> {
+    fn load_plugin_from_file(
+        &self,
+        path: impl AsRef<std::path::Path>,
+    ) -> crate::prelude::Result<Plugin> {
         let wasm = Wasm::file(path);
         self.load_plugin_from_wasm(wasm)
     }
 
-    fn load_plugin_from_wasm(&self, wasm: Wasm) -> Result<Plugin> {
+    fn load_plugin_from_wasm(&self, wasm: Wasm) -> crate::prelude::Result<Plugin> {
         let manifest = Manifest::new([wasm]);
         PluginBuilder::new(manifest)
             .with_wasi(true)
-            .with_function("notify", [PTR], [PTR], self.plugin_data, notify)
+            .with_function("notify", [PTR], [PTR], self.plugin_data.clone(), notify)
             .build()
+            .map_err(|_| Error::Generic("Could not build plugin".to_owned()))
             .context("Could not build plugin")
     }
 }
 
-host_fn!(notify(user_data: AppHandle; notification: Json<Notification>) -> Result<()> {
+host_fn!(notify(user_data: AppHandle; notification: Json<Notification>) -> crate::prelude::Result<()> {
     let app_handle = user_data.get()?;
     let app_handle = app_handle.lock().unwrap();
-
-    app_handle.notifications.notify(notification.0)?;
+    app_handle.notifications.notify(notification.0)
+     .map_err(|_| Error::Generic("Could not notify".to_owned()))?;
 
     Ok(())
 });
