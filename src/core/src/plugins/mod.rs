@@ -1,10 +1,12 @@
 use crate::{
     canvas::{self, handle::CanvasHandle},
-    notification::{handle::NotificationHandle, models::Notification},
+    notifications::{handle::NotificationHandle, models::Notification},
 };
 use anyhow::{Context, Result};
-use extism::{convert::Json, host_fn, Manifest, Plugin, PluginBuilder, UserData, Wasm, PTR};
+use extism::{convert::Json, host_fn, Manifest, PluginBuilder, ToBytes, UserData, Wasm, PTR};
 use std::sync::{Arc, Mutex};
+
+pub mod native;
 
 #[derive(Debug)]
 pub struct AppHandle {
@@ -21,8 +23,19 @@ impl AppHandle {
     }
 }
 
+pub trait Plugin {
+    fn metadata(&mut self) -> Result<Metadata>;
+    fn canvas_on_nodes_changed(&mut self, nodes: &[canvas::models::Node]) -> Result<()>;
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct Metadata {
+    namespace: String,
+    name: String,
+}
+
 pub struct PluginManager {
-    plugins: Vec<Plugin>,
+    plugins: Vec<Box<dyn Plugin>>,
     plugin_data: UserData<AppHandle>,
 }
 
@@ -34,7 +47,30 @@ impl PluginManager {
         }
     }
 
-    pub fn load_plugins(&mut self) -> Result<&Vec<Plugin>> {
+    pub fn load_plugins(&mut self) -> Result<()> {
+        let plugins_from_files = self.load_plugins_from_files()?;
+        let plugins_from_native = self.load_plugins_from_native();
+
+        self.plugins = plugins_from_files
+            .into_iter()
+            .chain(plugins_from_native)
+            .collect();
+
+        for plugin in &mut self.plugins {
+            let metadata = plugin.metadata()?;
+            println!("Loaded plugin: {}::{}", metadata.namespace, metadata.name);
+        }
+
+        Ok(())
+    }
+
+    fn load_plugins_from_native(&self) -> Vec<Box<dyn Plugin>> {
+        vec![Box::new(native::test::TestPlugin::new(
+            self.plugin_data.clone(),
+        ))]
+    }
+
+    fn load_plugins_from_files(&self) -> Result<Vec<Box<dyn Plugin>>> {
         let plugin_directory = dirs::data_local_dir()
             .context("Could not get local data directory")?
             .join("vla")
@@ -52,33 +88,22 @@ impl PluginManager {
             .filter(|path| path.extension().map_or(false, |ext| ext == "vla"))
             .collect::<Vec<_>>();
 
-        self.plugins = self
-            .load_plugins_from_files(applicable_files)
+        let plugins = applicable_files
             .into_iter()
-            .filter_map(|result| result.ok())
+            .flat_map(|path| self.load_plugin_from_file(path))
             .collect();
 
-        Ok(&self.plugins)
+        Ok(plugins)
     }
 
-    fn load_plugins_from_files(
-        &self,
-        paths: Vec<impl AsRef<std::path::Path>>,
-    ) -> Vec<Result<Plugin>> {
-        paths
-            .into_iter()
-            .map(|path| self.load_plugin_from_file(path))
-            .collect()
-    }
-
-    fn load_plugin_from_file(&self, path: impl AsRef<std::path::Path>) -> Result<Plugin> {
+    fn load_plugin_from_file(&self, path: impl AsRef<std::path::Path>) -> Result<Box<dyn Plugin>> {
         let wasm = Wasm::file(path);
         self.load_plugin_from_wasm(wasm)
     }
 
-    fn load_plugin_from_wasm(&self, wasm: Wasm) -> Result<Plugin> {
+    fn load_plugin_from_wasm(&self, wasm: Wasm) -> Result<Box<dyn Plugin>> {
         let manifest = Manifest::new([wasm]);
-        PluginBuilder::new(manifest)
+        let plugin = PluginBuilder::new(manifest)
             .with_wasi(true)
             .with_function_in_namespace(
                 "canvas",
@@ -97,7 +122,21 @@ impl PluginManager {
                 canvas::handle::host::set_nodes,
             )
             .build()
-            .context("Could not build plugin")
+            .context("Could not build plugin")?;
+
+        Ok(Box::new(plugin))
+    }
+}
+
+impl Plugin for extism::Plugin {
+    fn metadata(&mut self) -> Result<Metadata> {
+        let metadata = self.call::<(), Json<Metadata>>("metadata", ())?;
+        Ok(metadata.into_inner())
+    }
+
+    fn canvas_on_nodes_changed(&mut self, nodes: &[canvas::models::Node]) -> Result<()> {
+        self.call::<Json<&[canvas::models::Node]>, ()>("canvas_on_nodes_changed", Json(nodes))?;
+        Ok(())
     }
 }
 

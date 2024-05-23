@@ -14,7 +14,7 @@ use window_vibrancy::apply_acrylic;
 
 pub mod canvas;
 pub mod commands;
-pub mod notification;
+pub mod notifications;
 pub mod plugins;
 
 fn main() -> Result<()> {
@@ -58,7 +58,7 @@ fn generate_type_schemas() {
     use schemars::schema_for;
 
     // Notification
-    let schema = schema_for!(crate::notification::models::Notification);
+    let schema = schema_for!(crate::notifications::models::Notification);
     let output = serde_json::to_string_pretty(&schema).unwrap();
     std::fs::write("../notification.schema.json", output).unwrap();
     println!("Notification schema generated");

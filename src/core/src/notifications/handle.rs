@@ -22,7 +22,7 @@ impl NotificationHandle {
 }
 
 mod host {
-    use crate::{notification::models::Notification, plugins::AppHandle};
+    use crate::{notifications::models::Notification, plugins::AppHandle};
     use anyhow::Context;
     use extism::{convert::Json, host_fn};
 

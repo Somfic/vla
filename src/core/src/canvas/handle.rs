@@ -27,43 +27,8 @@ impl CanvasHandle {
         };
 
         let canvas_arc = Arc::new(Mutex::new(canvas));
-        Self::setup(canvas_arc.clone());
 
         canvas_arc
-    }
-
-    pub fn setup(canvas: Arc<Mutex<Self>>) {
-        let window_handle = {
-            let handle = canvas.lock().unwrap();
-            handle.window_handle.clone()
-        };
-
-        let canvas_nodes_changed_handle = canvas.clone();
-        window_handle.listen_global("canvas_nodes_changed", move |e| {
-            println!("canvas_nodes_changed event received");
-
-            let nodes: Vec<Node> = serde_json::from_str(e.payload().unwrap()).unwrap();
-            canvas_nodes_changed_handle.lock().unwrap().nodes = nodes;
-        });
-
-        let canvas_connections_changed_handle = canvas.clone();
-        window_handle.listen_global("canvas_load", move |_| {
-            println!("canvas_load event received");
-
-            canvas_connections_changed_handle
-                .lock()
-                .unwrap()
-                .set_node(Node {
-                    id: "2".to_string(),
-                    kind: "input".to_string(),
-                    position: super::models::Position { x: 200, y: 200 },
-                    data: super::models::NodeData {
-                        label: "Hello from Rust 2".to_string(),
-                    },
-                    selected: false,
-                })
-                .unwrap();
-        });
     }
 
     pub fn set_node(&mut self, node: Node) -> Result<()> {
@@ -118,21 +83,21 @@ impl CanvasHandle {
 }
 
 pub mod host {
-    use crate::{canvas::models::Node, notification::models::Notification, plugins::AppHandle};
+    use crate::{canvas::models::Node, notifications::models::Notification, plugins::AppHandle};
     use anyhow::{anyhow, Context};
     use extism::{convert::Json, host_fn};
 
-    host_fn!(pub get_nodes(app_data: AppHandle; notification: Json<Notification>) -> Result<Vec<Node>> {
-        let app_data = app_data.get().context("Could not get app handle")?;
-        let app_handle = app_data.lock().map_err(|_| anyhow!("Could not lock app handle"))?;
+    host_fn!(pub get_nodes(app_handle: AppHandle; notification: Json<Notification>) -> Result<Vec<Node>> {
+        let app_handle = app_handle.get().context("Could not get app handle")?;
+        let app_handle = app_handle.lock().map_err(|_| anyhow!("Could not lock app handle"))?;
         let canvas_handle = app_handle.canvas.lock().map_err(|_| anyhow!("Could not lock canvas handle"))?;
 
         Ok(Json(canvas_handle.get_nodes()))
     });
 
-    host_fn!(pub set_nodes(app_data: AppHandle; nodes: Json<Vec<Node>>) -> Result<()> {
-        let app_data = app_data.get().context("Could not get app handle")?;
-        let app_handle = app_data.lock().map_err(|_| anyhow!("Could not lock app handle"))?;
+    host_fn!(pub set_nodes(app_handle: AppHandle; nodes: Json<Vec<Node>>) -> Result<()> {
+        let app_handle = app_handle.get().context("Could not get app handle")?;
+        let app_handle = app_handle.lock().map_err(|_| anyhow!("Could not lock app handle"))?;
         let mut canvas_handle = app_handle.canvas.lock().map_err(|_| anyhow!("Could not lock canvas handle"))?;
 
         canvas_handle.set_nodes(nodes.0)
