@@ -1,14 +1,21 @@
 {
     "name": "@somfic/vla",
     "author": "somfic",
-    "version": "0.3.0",
+    "version": "0.1.0-next.12",
     "scripts": {
-        "tauri": "cd src && cd packager && tauri",
-        "tag:version": "npx tsx scripts/tag-version.ts"
+        "tauri": "cd src && cd core && tauri",
+        "tag:version": "npx tsx scripts/tag-version.ts",
+        "test": "cd src && cd core && cargo test",
+        "dev": "yarn tauri dev",
+        "build": "yarn tauri build",
+        "generate:types": "cd src && cd core && cargo run -- --generate-type-schemas && cd .. && cd .. && npx tsx scripts/generate-types.ts"
     },
     "license": "ISC",
     "private": true,
     "devDependencies": {
-        "glob": "^10.3.16"
+        "@tauri-apps/cli": "^1.5.13",
+        "glob": "^10.3.12",
+        "json-schema-to-typescript": "^14.0.4",
+        "tsx": "^4.9.3"
     }
 }

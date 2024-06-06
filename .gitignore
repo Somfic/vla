@@ -602,3 +602,4 @@ speech-recognition.bin
 test-results.json
 src-client/build
 .DS_Store
+/__keys

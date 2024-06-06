@@ -8,23 +8,23 @@
     },
     "package": {
         "productName": "Vla",
-        "version": "0.3.0"
+        "version": "0.1.0-next.12"
     },
     "tauri": {
         "allowlist": {
-            "all": false
+            "window": {
+                "all": true
+            }
         },
         "bundle": {
             "active": true,
-            "targets": "msi",
+            "targets": ["deb", "appimage", "nsis", "app", "dmg", "updater"],
+            "publisher": "somfic",
             "identifier": "somfic.dev.vla",
-            "icon": [
-                "icons/32x32.png",
-                "icons/128x128.png",
-                "icons/128x128@2x.png",
-                "icons/icon.icns",
-                "icons/icon.ico"
-            ]
+            "category": "Utility",
+            "shortDescription": "Short description",
+            "longDescription": "Long description",
+            "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
         },
         "security": {
             "csp": null
@@ -38,8 +38,10 @@
                 "resizable": true,
                 "fullscreen": false,
                 "transparent": true,
-                "decorations": true,
-                "visible": true
+                "decorations": false,
+                "visible": false,
+                "minWidth": 600,
+                "minHeight": 400
             }
         ]
     }

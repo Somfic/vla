@@ -1,40 +1,30 @@
-@import 'theme';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import './theme.scss';
 
-:global(html,
-  body,
-  main) {
+html,
+body,
+main {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  font-family: $font;
-  //background-color: rgb(21, 22, 31);
-  background: transparent;
-  color: $foreground;
-  height: 100vh;
+  margin: 0;
+  padding: 0;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+}
+
+html {
   overflow: hidden;
 }
 
-:global(style) {
-  display: none;
+* {
+  //all: unset;
+  user-select: none;
+  box-sizing: border-box;
 }
 
-:global(button, p) {
-  all: unset;
+p {
   margin: 0;
-}
-
-:global(::-webkit-scrollbar) {
-  width: 3px;
-  height: 3px;
-}
-
-:global(::-webkit-scrollbar-track) {
-  margin: 5px;
-  background: transparent;
-}
-
-:global(::-webkit-scrollbar-thumb) {
-  background: $foreground-muted;
-  border-radius: 100px;
-
 }

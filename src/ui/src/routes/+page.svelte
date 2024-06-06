@@ -1,25 +1,30 @@
 <script lang="ts">
-	import { invoke } from '@tauri-apps/api/tauri';
-	import { onMount } from 'svelte';
+	import NodeCanvas from '$lib/components/NodeCanvas.svelte';
+	import Ribbon from '$lib/layout/Ribbon.svelte';
 
-	let date = new Date();
-	let plugin: any = null;
-
-	onMount(async () => {
-		const plugin_sources = (await invoke('get_all_plugins')) as string[];
-		const plugin_source = plugin_sources[0];
-
-		plugin = await import(plugin_source);
-
-		console.log(plugin);
-	});
-
-	setInterval(() => {
-		date = new Date();
-	}, 10);
+	let height: number;
 </script>
 
-<main>
-	<p>plugins: {JSON.stringify(plugin)}</p>
-	<p>Hello {date}</p>
-</main>
+<div class="content" bind:clientHeight={height} style:height={`${height}px`}>
+	<NodeCanvas />
+</div>
+
+<div id="ribbon">
+	<Ribbon />
+</div>
+
+<style lang="scss">
+	.content {
+		flex-grow: 1;
+	}
+
+	#ribbon {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+</style>
