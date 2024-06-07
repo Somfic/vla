@@ -13,7 +13,7 @@
     "license": "ISC",
     "private": true,
     "devDependencies": {
-        "@tauri-apps/cli": "^1.5.13",
+        "@tauri-apps/cli": "^1.5.14",
         "glob": "^10.3.12",
         "json-schema-to-typescript": "^14.0.4",
         "tsx": "^4.9.3"
