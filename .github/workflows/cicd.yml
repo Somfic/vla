@@ -87,7 +87,7 @@ jobs:
                   echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
 
             - name: cache rust compiler
-              uses: mozilla-actions/sccache-action@v0.0.4
+              uses: mozilla-actions/sccache-action@v0.0.5
 
             ### Tag new version ###
             - name: fetch all tags
