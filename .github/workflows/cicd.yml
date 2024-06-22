@@ -105,7 +105,7 @@ jobs:
           rm -rf ~/.cargo/advisory-db
           cargo audit
           cargo pants
-        working-directory: ./src/src-tauri
+        working-directory: src-tauri
 
       - name: check svelte code
         run: bun run check
@@ -116,7 +116,7 @@ jobs:
 
       - name: test core
         run: cargo test --release ${{ matrix.args }}
-        working-directory: ./src-tauri
+        working-directory: src-tauri
 
       - name: publish release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
