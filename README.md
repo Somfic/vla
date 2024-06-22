@@ -1,13 +1,7 @@
-<img src="banner.png" title="Vla by Somfic">
+# Tauri + SvelteKit + TypeScript
 
-<div text-align="center">
-<h1 align="center">Vla</h1>
+This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
 
-<p align="center"><i>A visual macros tool</i></p>
+## Recommended IDE Setup
 
-![image](https://github.com/Somfic/vla/assets/29230467/397233c6-f07d-46ea-967c-eb9ac93b0a9e)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSomfic%2Fvla.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FSomfic%2Fvla?ref=badge_shield)
-
-
-## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSomfic%2Fvla.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FSomfic%2Fvla?ref=badge_large)
+[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).

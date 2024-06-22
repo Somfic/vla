@@ -1,124 +1,160 @@
 permissions:
-    contents: write
+  contents: write
 
 on:
-    push:
-        branches:
-            - main
-            #- next
-    pull_request:
+    - push
+    - pull_request
 
 concurrency:
-    group: ${{ github.workflow }}
+  group: ${{ github.workflow }}
 
 name: ci/cd
 jobs:
-    cicd:
-        runs-on: ${{ matrix.platform }}
-        name: ${{ matrix.label }}
-        strategy:
-            fail-fast: false
-            matrix:
-                include:
-                    - platform: "macos-latest" # for Arm based macs (M1 and above).
-                      args: "--target aarch64-apple-darwin"
-                      label: macos (silicon)
-                    - platform: "macos-latest" # for Intel based macs.
-                      args: "--target x86_64-apple-darwin"
-                      label: macos (intel)
-                    - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
-                      args: ""
-                      label: ubuntu
-                    - platform: "windows-latest"
-                      args: ""
-                      label: windows
-        steps:
-            - name: checkout codebase
-              uses: actions/checkout@v4
-              with:
-                  submodules: true
+  cicd:
+    runs-on: ${{ matrix.platform }}
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+            label: macos (silicon)
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin"
+            label: macos (intel)
+          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+            args: ""
+            label: ubuntu
+          - platform: "windows-latest"
+            args: ""
+            label: windows
+    steps:
+      - name: checkout codebase
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-            ### Install languages ###
-            - name: setup node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: "yarn"
+        ### Install languages and runtimes ###
+      - name: install bun
+        uses: oven-sh/setup-bun@v1
 
-            - name: setup rust
-              uses: dtolnay/rust-toolchain@stable
-              with:
-                  components: llvm-tools-preview
+      - name: install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: llvm-tools-preview, rustfmt, clippy
 
-            ### Install language dependencies ###
-            - name: install yarn
-              run: npm install --global yarn
+        ### Caching ###
+      - name: bun cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-            - name: install script dependencies
-              run: yarn install --frozen-lockfile
+      - name: rust cache
+        uses: actions/cache@v4
+        continue-on-error: false
+        with:
+          save-always: true
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
-            - name: install rust development tools
-              uses: taiki-e/install-action@cargo-llvm-cov
+        ### Install language dependencies ###
+      - name: install bun dependencies
+        run: bun install
 
-            - name: install rust dependencies
-              if: matrix.platform == 'ubuntu-22.04'
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: install rust development tools
+        uses: taiki-e/install-action@cargo-llvm-cov
 
-            - name: install macos intel target
-              if: matrix.platform == 'macos-latest' && matrix.args == '--target x86_64-apple-darwin'
-              run: |
-                  rustup target add x86_64-apple-darwin
+      - name: install rust dependencies (ubuntu)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-            ### Apply cache ###
-            - name: generate Cargo.lock
-              run: cargo generate-lockfile
-              working-directory: ./src/core
+      - name: install rust dependencies (macos intel)
+        if: matrix.platform == 'macos-latest' && matrix.args == '--target x86_64-apple-darwin'
+        run: |
+          rustup target add x86_64-apple-darwin
 
-            - name: cache rust dependencies
-              uses: swatinem/rust-cache@v2
-              with:
-                  workspaces: "./src/core -> target"
+      - name: install cargo check tools
+        run: |
+          cargo install --locked cargo-deny || true
+          cargo install --locked cargo-outdated || true
+          cargo install --locked cargo-udeps || true
+          cargo install --locked cargo-audit || true
+          cargo install --locked cargo-pants || true
 
-            - name: configure rust compiler cache
-              run: |
-                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+      ### Linting ###
+      - name: check rust code
+        run: |
+          cargo deny check -c config/cargo-deny.toml
+          cargo outdated
+          cargo udeps
+          rm -rf ~/.cargo/advisory-db
+          cargo audit
+          cargo pants
+        working-directory: ./src/src-tauri
 
-            - name: cache rust compiler
-              uses: mozilla-actions/sccache-action@v0.0.4
+      - name: check svelte code
+        run: bun run check
 
-            ### Tag new version ###
-            - name: fetch all tags
-              run: git fetch --tags --unshallow --force
+      ### Build and test ###
+      - name: build ui
+        run: bun run build
 
-            - name: tag new version
-              run: yarn tag:version
+      - name: test core
+        run: cargo test --release ${{ matrix.args }}
+        working-directory: ./src-tauri
 
-            ### Build and test ###
-            - name: install node dependencies
-              run: yarn install --frozen-lockfile
-              working-directory: ./src/ui
+      - name: publish release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
+        uses: tauri-apps/tauri-action@v0.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "__VERSION__"
+          releaseBody: "."
+          releaseDraft: false
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          projectPath: ./src-tauri
+          args: ${{ matrix.args }}
 
-            - name: build ui
-              run: yarn run build
-              working-directory: ./src/ui
+        ### Publish ###
+      - name: install committer
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: cargo install --locked committer || true
 
-            - name: test core
-              run: cargo test --release ${{ matrix.args }}
-              working-directory: ./src/core
+      - name: tag
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          committer tag
+          echo "COMMITTER_IS_NEW=$(cat .env/COMMITTER_IS_NEW)" >> $GITHUB_ENV
+          echo "COMMITTER_TAG=$(cat .env/COMMITTER_TAG)" >> $GITHUB_ENV
+      
+      - name: push tag to origin
+        if: env.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: git push --tags origin
 
-            - name: publish release
-              if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
-              uses: tauri-apps/tauri-action@v0.5
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  tagName: v__VERSION__
-                  releaseName: "__VERSION__"
-                  releaseBody: "."
-                  releaseDraft: false
-                  prerelease: ${{ github.ref != 'refs/heads/main' }}
-                  projectPath: ./src/core
-                  args: ${{ matrix.args }}
+        # TODO: add tauri generated files to the release #
+      - name: create release 
+        if: env.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/release/*.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ env.COMMITTER_TAG }}
+          body_path: ".env/COMMITTER_CHANGELOG"
+          draft: false
