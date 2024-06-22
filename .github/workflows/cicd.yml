@@ -99,7 +99,7 @@ jobs:
       ### Linting ###
       - name: check rust code
         run: |
-          cargo deny check -c config/cargo-deny.toml
+          cargo deny check -c Deny.toml
           cargo outdated
           cargo udeps
           rm -rf ~/.cargo/advisory-db
