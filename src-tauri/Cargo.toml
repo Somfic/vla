@@ -1,7 +1,8 @@
 [package]
 name = "vla"
 version = "0.0.0"
-description = "A Tauri App"
+description = "the vla app"
+license = "MIT"
 authors = ["you"]
 edition = "2021"
 
