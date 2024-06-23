@@ -13,6 +13,9 @@ jobs:
   cicd:
     runs-on: ${{ matrix.platform }}
     name: ${{ matrix.label }}
+    outputs:
+      COMMITTER_IS_NEW: ${{ steps.tag.outputs.COMMITTER_IS_NEW }}
+      COMMITTER_TAG: ${{ steps.tag.outputs.COMMITTER_TAG }}
     strategy:
       fail-fast: false
       matrix:
@@ -118,19 +121,7 @@ jobs:
         run: cargo test --release ${{ matrix.args }}
         working-directory: src-tauri
 
-      - name: publish release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
-        uses: tauri-apps/tauri-action@v0.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: v__VERSION__
-          releaseName: "__VERSION__"
-          releaseBody: "."
-          releaseDraft: false
-          prerelease: ${{ github.ref != 'refs/heads/main' }}
-          projectPath: ./src-tauri
-          args: ${{ matrix.args }}
+      
 
         ### Publish ###
       - name: install committer
@@ -139,22 +130,53 @@ jobs:
 
       - name: tag
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        id: tag
         run: |
           committer tag
-          echo "COMMITTER_IS_NEW=$(cat .env/COMMITTER_IS_NEW)" >> $GITHUB_ENV
-          echo "COMMITTER_TAG=$(cat .env/COMMITTER_TAG)" >> $GITHUB_ENV
+          echo "COMMITTER_IS_NEW=$(cat .env/COMMITTER_IS_NEW)" >> $GITHUB_OUTPUT
+          echo "COMMITTER_TAG=$(cat .env/COMMITTER_TAG)" >> $GITHUB_OUTPUT
+      
+      - name: upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: .env/COMMITTER_CHANGELOG
       
       - name: push tag to origin
-        if: env.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        if: steps.tag.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: git push --tags origin
 
         # TODO: add tauri generated files to the release #
+      - name: publish release
+        if: steps.tag.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: tauri-apps/tauri-action@v0.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ steps.tag.COMMITTER_TAG }}
+          releaseName: ${{ steps.tag.COMMITTER_TAG }}
+          releaseDraft: true
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          projectPath: ./src-tauri
+          args: ${{ matrix.args }}
+
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: cicd
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: download changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: changelog
+
       - name: create release 
-        if: env.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        if: needs.cicd.outputs.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: softprops/action-gh-release@v2
         with:
           files: target/release/*.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ env.COMMITTER_TAG }}
-          body_path: ".env/COMMITTER_CHANGELOG"
+          tag_name: ${{ needs.cicd.outputs.COMMITTER_TAG }}
+          body_path: .env/COMMITTER_CHANGELOG
           draft: false
