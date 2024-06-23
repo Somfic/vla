@@ -133,6 +133,7 @@ jobs:
           echo "COMMITTER_TAG=$(cat .env/COMMITTER_TAG)" >> $GITHUB_OUTPUT
 
       - name: upload changelog
+        if: steps.tag.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: actions/upload-artifact@v4
         with:
           name: changelog
