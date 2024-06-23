@@ -46,7 +46,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: llvm-tools-preview, rustfmt, clippy
 
@@ -95,7 +95,6 @@ jobs:
         run: |
           cargo install --locked cargo-deny || true
           cargo install --locked cargo-outdated || true
-          cargo install --locked cargo-udeps || true
           cargo install --locked cargo-audit || true
           cargo install --locked cargo-pants || true
 
@@ -104,7 +103,6 @@ jobs:
         run: |
           cargo deny check -c Deny.toml
           cargo outdated
-          cargo udeps
           rm -rf ~/.cargo/advisory-db
           cargo audit
           cargo pants
@@ -121,8 +119,6 @@ jobs:
         run: cargo test --release ${{ matrix.args }}
         working-directory: src-tauri
 
-      
-
         ### Publish ###
       - name: install committer
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -135,13 +131,13 @@ jobs:
           committer tag
           echo "COMMITTER_IS_NEW=$(cat .env/COMMITTER_IS_NEW)" >> $GITHUB_OUTPUT
           echo "COMMITTER_TAG=$(cat .env/COMMITTER_TAG)" >> $GITHUB_OUTPUT
-      
+
       - name: upload changelog
         uses: actions/upload-artifact@v4
         with:
           name: changelog
           path: .env/COMMITTER_CHANGELOG
-      
+
       - name: push tag to origin
         if: steps.tag.COMMITTER_IS_NEW == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: git push --tags origin
@@ -159,7 +155,6 @@ jobs:
           prerelease: ${{ github.ref != 'refs/heads/main' }}
           projectPath: ./src-tauri
           args: ${{ matrix.args }}
-
 
   publish:
     runs-on: ubuntu-latest
