@@ -12,7 +12,8 @@
   "license": "MIT",
   "dependencies": {
     "@tauri-apps/api": "^1",
-    "lucide-svelte": "^0.396.0"
+    "lucide-svelte": "^0.396.0",
+    "sass": "^1.77.6"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",
