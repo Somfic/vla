@@ -16,6 +16,6 @@
         "@tauri-apps/cli": "^1.5.13",
         "glob": "^10.3.12",
         "json-schema-to-typescript": "^14.0.4",
-        "tsx": "^4.9.3"
+        "tsx": "^4.16.0"
     }
 }
