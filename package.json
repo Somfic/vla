@@ -14,7 +14,7 @@
     "private": true,
     "devDependencies": {
         "@tauri-apps/cli": "^1.5.13",
-        "glob": "^10.3.12",
+        "glob": "^10.4.3",
         "json-schema-to-typescript": "^14.0.4",
         "tsx": "^4.9.3"
     }
