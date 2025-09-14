@@ -781,15 +781,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "document-features"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95249b50c6c185bee49034bcb378a49dc2b5dff0be90ff6616d31d64febab05d"
-dependencies = [
- "litrs",
-]
-
-[[package]]
 name = "dpi"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1712,12 +1703,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "indoc"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfa799dd5ed20a7e349f3b4639aa80d74549c81716d9ec4f994c9b5815598306"
-
-[[package]]
 name = "infer"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1774,9 +1759,9 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.10.5"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
 dependencies = [
  "either",
 ]
@@ -1954,12 +1939,6 @@ name = "litemap"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "241eaef5fd12c88705a01fc1066c48c4b36e0dd4377dcdc7ec3942cea7a69956"
-
-[[package]]
-name = "litrs"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5e54036fe321fd421e10d732f155734c4e4afd610dd556d9a82833ab3ee0bed"
 
 [[package]]
 name = "lock_api"
@@ -3454,41 +3433,26 @@ dependencies = [
 
 [[package]]
 name = "specta"
-version = "1.0.5"
+version = "2.0.0-rc.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2240c3aa020aa61d2c569087d213baafbb212f4ceb9de9dd162376ea6aa0fe3"
+checksum = "ab7f01e9310a820edd31c80fde3cae445295adde21a3f9416517d7d65015b971"
 dependencies = [
- "document-features",
- "indoc",
- "once_cell",
+ "ctor",
  "paste",
- "serde",
- "serde_json",
  "specta-macros",
  "thiserror 1.0.69",
 ]
 
 [[package]]
-name = "specta"
-version = "2.0.0-rc.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab7f01e9310a820edd31c80fde3cae445295adde21a3f9416517d7d65015b971"
-dependencies = [
- "thiserror 1.0.69",
-]
-
-[[package]]
 name = "specta-macros"
-version = "1.0.5"
+version = "2.0.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4605306321c356e03873b8ee71d7592a5e7c508add325c3ed0677c16fdf1bcfb"
+checksum = "c0074b9e30ed84c6924eb63ad8d2fe71cdc82628525d84b1fcb1f2fd40676517"
 dependencies = [
  "Inflector",
- "itertools",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
- "termcolor",
+ "syn 2.0.106",
 ]
 
 [[package]]
@@ -3497,7 +3461,7 @@ version = "0.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77216504061374659e7245eac53d30c7b3e5fe64b88da97c753e7184b0781e63"
 dependencies = [
- "specta 2.0.0-rc.22",
+ "specta",
  "thiserror 1.0.69",
 ]
 
@@ -3507,7 +3471,7 @@ version = "0.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3220a0c365e51e248ac98eab5a6a32f544ff6f961906f09d3ee10903a4f52b2d"
 dependencies = [
- "specta 2.0.0-rc.22",
+ "specta",
  "specta-serde",
  "thiserror 1.0.69",
 ]
@@ -3713,6 +3677,7 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "serialize-to-javascript",
+ "specta",
  "swift-rs",
  "tauri-build",
  "tauri-macros",
@@ -3933,6 +3898,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "taurpc"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9c82102620c5d56eafdc268383430e84b57d3e32bb90dacf43d4afb2a6f5006"
+dependencies = [
+ "anyhow",
+ "heck 0.5.0",
+ "itertools",
+ "serde",
+ "serde_json",
+ "specta",
+ "specta-macros",
+ "specta-serde",
+ "specta-typescript",
+ "tauri",
+ "taurpc-macros",
+ "tokio",
+]
+
+[[package]]
+name = "taurpc-macros"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52dac96e03af03e6454eedeb76be7248dbee4b5094b546aa20e8dc25fd01b734"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 2.0.106",
+]
+
+[[package]]
 name = "tempfile"
 version = "3.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3954,15 +3952,6 @@ dependencies = [
  "futf",
  "mac",
  "utf-8",
-]
-
-[[package]]
-name = "termcolor"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
-dependencies = [
- "winapi-util",
 ]
 
 [[package]]
@@ -4056,10 +4045,24 @@ dependencies = [
  "io-uring",
  "libc",
  "mio",
+ "parking_lot",
  "pin-project-lite",
+ "signal-hook-registry",
  "slab",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
 ]
 
 [[package]]
@@ -4416,11 +4419,12 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
- "specta 1.0.5",
- "specta-typescript",
+ "specta",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+ "taurpc",
+ "tokio",
 ]
 
 [[package]]
