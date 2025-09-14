@@ -1,21 +1,29 @@
 {
-    "name": "@somfic/vla",
-    "author": "somfic",
-    "version": "0.1.0-next.12",
-    "scripts": {
-        "tauri": "cd src && cd core && tauri",
-        "tag:version": "npx tsx scripts/tag-version.ts",
-        "test": "cd src && cd core && cargo test",
-        "dev": "yarn tauri dev",
-        "build": "yarn tauri build",
-        "generate:types": "cd src && cd core && cargo run -- --generate-type-schemas && cd .. && cd .. && npx tsx scripts/generate-types.ts"
-    },
-    "license": "ISC",
-    "private": true,
-    "devDependencies": {
-        "@tauri-apps/cli": "^1.5.13",
-        "glob": "^10.3.12",
-        "json-schema-to-typescript": "^14.0.4",
-        "tsx": "^4.9.3"
-    }
+  "name": "vla",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "tauri": "tauri"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-opener": "^2"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.6",
+    "@sveltejs/kit": "^2.9.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3",
+    "@tauri-apps/cli": "^2"
+  }
 }
