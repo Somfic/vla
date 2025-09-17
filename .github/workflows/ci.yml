@@ -29,7 +29,7 @@ jobs:
           ${{ runner.os }}-bun-
 
     - name: Install dependencies
-      run: bun installs 
+      run: bun install
 
     - name: Type check
       run: bun run check
