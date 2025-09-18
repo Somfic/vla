@@ -6,7 +6,7 @@
         Controls,
         type OnConnectEnd,
     } from "@xyflow/svelte";
-    import "@xyflow/svelte/dist/style.css";
+    import "@xyflow/svelte/dist/style.css";g
 
     const save = () => onSave({ nodes, edges });
 
