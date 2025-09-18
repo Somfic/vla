@@ -1,12 +1,7 @@
 <script lang="ts">
     import type { Graph } from "$lib/core";
-    import {
-        Background,
-        SvelteFlow,
-        Controls,
-        type OnConnectEnd,
-    } from "@xyflow/svelte";
-    import "@xyflow/svelte/dist/style.css";g
+    import { Background, SvelteFlow, Controls } from "@xyflow/svelte";
+    import "@xyflow/svelte/dist/style.css";
 
     const save = () => onSave({ nodes, edges });
 
