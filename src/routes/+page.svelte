@@ -1,12 +1,13 @@
 <script lang="ts">
   import api from "$lib/api";
-  import Canvas from "$components/Canvas.svelte";
+  import Canvas from "$components/canvas/Canvas.svelte";
   import type { Graph, Node } from "$lib/core";
+  import SideBar from "$components/sidebar/SideBar.svelte";
+  import MenuBar from "$components/menubar/MenuBar.svelte";
+  import { SvelteFlowProvider } from "@xyflow/svelte";
 
   let graph = $state<Graph | null>(null);
-  let loading = $state(true);
-  let error = $state<string | null>(null);
-  let status = $state<string>("");
+  api.load_graph("../graph.json").then((g) => (graph = g));
 
   async function handleAutoSave(updatedGraph: Graph) {
     graph = updatedGraph;
@@ -31,23 +32,27 @@
     };
     await handleAutoSave(graph);
   }
-
-  async function initApp() {
-    try {
-      graph = await api.load_graph("../graph.json");
-    } catch (e) {
-      // If loading from file fails, create empty graph
-      graph = {
-        nodes: [],
-        edges: [],
-      };
-    } finally {
-      loading = false;
-    }
-  }
-
-  initApp();
 </script>
+
+<main>
+  <SvelteFlowProvider>
+    <div class="menubar">
+      <MenuBar />
+    </div>
+
+    <div class="content">
+      {#if !graph}
+        <p>Loading graph...</p>
+      {:else}
+        <Canvas {graph} onSave={handleAutoSave} />
+      {/if}
+    </div>
+
+    <div class="sidebar">
+      <SideBar />
+    </div>
+  </SvelteFlowProvider>
+</main>
 
 <div class="controls">
   <button onclick={addNode}>Add Node</button>
@@ -56,15 +61,28 @@
   {/if}
 </div>
 
-{#if loading}
-  <p>Loading...</p>
-{:else if error}
-  <p>Error: {error}</p>
-{:else if graph}
-  <Canvas {graph} onSave={handleAutoSave} />
-{/if}
+<style lang="scss">
+  @import "$styles/theme";
 
-<style>
+  main {
+    display: flex;
+  }
+
+  .menubar,
+  .sidebar {
+    width: 200px;
+  }
+
+  .content {
+    display: flex;
+    flex-grow: 1;
+    background-color: $background-secondary;
+    margin: $gap 0;
+    overflow: hidden;
+    border: 2px solid $border-color;
+    border-radius: $border-radius;
+  }
+
   .controls {
     position: absolute;
     top: 10px;

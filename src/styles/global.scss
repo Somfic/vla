@@ -1,0 +1,23 @@
+@use './reset';
+@import './theme';
+@import url("https://fonts.googleapis.com/css2?family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap");
+
+* {
+    font-family: "Zalando Sans", sans-serif;
+    font-weight: bold;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
+html,
+body,
+main {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: $background;
+    color: $foreground;
+    scroll-behavior: smooth;
+}
