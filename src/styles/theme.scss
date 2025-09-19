@@ -3,8 +3,11 @@ $background-secondary: #1C1D21;
 
 $foreground: #FFFFFF;
 
-$border-radius: 20px;
-$border-color: rgba(255, 255, 255, 0.1);
+$primary: #007acc;
+
+$border-radius: 10px;
+$border-radius2: calc($border-radius * 2);
+$border-color: #333438;
 
 $gap: 12px;
 $gap2: calc($gap * 2);

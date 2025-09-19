@@ -39,6 +39,8 @@
 </div>
 
 <style lang="scss">
+    @import "$styles/theme";
+
     .canvas {
         flex-grow: 1;
     }
@@ -48,6 +50,6 @@
     }
 
     :global(.svelte-flow__background, .svelte-flow__container) {
-        background-color: transparent;
+        background-color: $background-secondary;
     }
 </style>

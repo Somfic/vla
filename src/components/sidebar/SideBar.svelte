@@ -22,6 +22,10 @@
         padding: 0;
     }
 
+    :global(.svelte-flow__minimap-node) {
+        border-radius: 10px;
+    }
+
     :global(.svelte-flow) {
         --xy-minimap-background-color-default: red;
     }

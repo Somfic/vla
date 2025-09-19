@@ -11,8 +11,6 @@
     let { id, data }: NodeProps<Node<NodeData>> = $props();
 
     let brick = api.get_brick(data.brick_id);
-
-    console.log(brick);
 </script>
 
 {#await brick}
@@ -75,11 +73,15 @@
 {/await}
 
 <style lang="scss">
+    @import "$styles/theme";
+
     .node {
         display: flex;
         flex-direction: column;
-        border: 1px solid #222;
-        background-color: #eee;
+        border: 2px solid $border-color;
+        border-radius: $border-radius;
+        background-color: $background;
+        padding: $gap;
     }
 
     .content {
@@ -96,6 +98,23 @@
             position: relative;
             display: flex;
             align-items: center;
+        }
+
+        $handle-size: 5px;
+
+        :global(.svelte-flow__handle) {
+            background-color: $primary;
+            height: $handle-size;
+            width: $handle-size;
+            border-radius: 50%;
+        }
+
+        :global(.input .svelte-flow__handle) {
+            left: calc(-1 * ($gap + 1px));
+        }
+
+        :global(.output .svelte-flow__handle) {
+            right: calc(-1 * ($gap + 1px));
         }
     }
 

@@ -80,7 +80,7 @@
     margin: $gap 0;
     overflow: hidden;
     border: 2px solid $border-color;
-    border-radius: $border-radius;
+    border-radius: $border-radius2;
   }
 
   .controls {
@@ -97,7 +97,7 @@
     background: #007acc;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: $border-radius;
     cursor: pointer;
   }
 
@@ -108,7 +108,7 @@
   .status {
     padding: 8px 12px;
     background: #f0f0f0;
-    border-radius: 4px;
+    border-radius: $border-radius;
     font-size: 14px;
     margin-top: 8px;
   }
