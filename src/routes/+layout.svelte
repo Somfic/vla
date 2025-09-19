@@ -5,8 +5,17 @@
 {@render children()}
 
 <style lang="scss">
+    @import url("https://fonts.googleapis.com/css2?family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap");
+
     :global(*, *:before, *:after) {
         box-sizing: border-box;
+    }
+
+    :global(*) {
+        font-family: "Zalando Sans", sans-serif;
+        font-optical-sizing: auto;
+        font-style: normal;
+        font-variation-settings: "wdth" 100;
     }
 
     :global(

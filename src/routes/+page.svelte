@@ -22,8 +22,8 @@
     const newNode: Node = {
       id: (graph.nodes.length + 1).toString(),
       position: { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 },
-      data: { label: `Node ${graph.nodes.length + 1}` },
-      type: "default",
+      data: { brick_id: "testBrick" },
+      type: "vla",
     };
     graph = {
       ...graph,

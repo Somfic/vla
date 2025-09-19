@@ -4,18 +4,27 @@ import { createTauRPCProxy as createProxy, type InferCommandOutput } from 'taurp
 type TAURI_CHANNEL<T> = (response: T) => void
 
 
+export type Brick = { id: string; label: string; description: string; inputs: BrickHandle[]; outputs: BrickHandle[]; arguments: BrickArgument[] }
+
+export type BrickArgument = { id: string; label: string; type: BrickArgumentType }
+
+export type BrickArgumentType = "String" | "Number" | "Boolean"
+
+export type BrickHandle = { id: string; label: string }
+
 export type Edge = { id: string; source: string; target: string }
 
 export type Graph = { nodes: Node[]; edges: Edge[] }
 
 export type Node = { id: string; position: Point; data: NodeData; type: string }
 
-export type NodeData = { label: string }
+export type NodeData = { brick_id: string }
 
 export type Point = { x: number; y: number }
 
-const ARGS_MAP = { '':'{"hello_world":["name"],"load_graph":["filename"],"save_graph":["graph","filename"]}' }
-export type Router = { "": {hello_world: (name: string) => Promise<string>, 
+const ARGS_MAP = { '':'{"get_brick":["brick_id"],"hello_world":["name"],"load_graph":["filename"],"save_graph":["graph","filename"]}' }
+export type Router = { "": {get_brick: (brickId: string) => Promise<Brick>, 
+hello_world: (name: string) => Promise<string>, 
 load_graph: (filename: string) => Promise<Graph>, 
 save_graph: (graph: Graph, filename: string) => Promise<string>} };
 

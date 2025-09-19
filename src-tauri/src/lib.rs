@@ -6,6 +6,7 @@ pub trait Api {
     async fn hello_world(name: String) -> String;
     async fn save_graph(graph: Graph, filename: String) -> Result<String, String>;
     async fn load_graph(filename: String) -> Result<Graph, String>;
+    async fn get_brick(brick_id: String) -> Brick;
 }
 
 #[derive(Clone)]
@@ -40,6 +41,34 @@ impl Api for ApiImpl {
             Err(e) => Err(format!("Failed to read file: {}", e)),
         }
     }
+
+    async fn get_brick(self, brick_id: String) -> Brick {
+        Brick {
+            id: "testBrick".to_string(),
+            label: "Test Brick".to_string(),
+            description: "A simple test brick".to_string(),
+            inputs: vec![BrickHandle {
+                id: "in1".to_string(),
+                label: "Input 1".to_string(),
+            }],
+            outputs: vec![BrickHandle {
+                id: "out1".to_string(),
+                label: "Output 1".to_string(),
+            }],
+            arguments: vec![
+                BrickArgument {
+                    id: "arg1".to_string(),
+                    label: "Argument 1".to_string(),
+                    r#type: BrickArgumentType::String,
+                },
+                BrickArgument {
+                    id: "arg2".to_string(),
+                    label: "Argument 2".to_string(),
+                    r#type: BrickArgumentType::Number,
+                },
+            ],
+        }
+    }
 }
 
 #[taurpc::ipc_type]
@@ -64,7 +93,7 @@ pub struct Point {
 
 #[taurpc::ipc_type]
 pub struct NodeData {
-    pub label: String,
+    pub brick_id: String,
 }
 
 #[taurpc::ipc_type]
@@ -72,4 +101,34 @@ pub struct Edge {
     pub id: String,
     pub source: String,
     pub target: String,
+}
+
+#[taurpc::ipc_type]
+pub struct Brick {
+    pub id: String,
+    pub label: String,
+    pub description: String,
+    pub inputs: Vec<BrickHandle>,
+    pub outputs: Vec<BrickHandle>,
+    pub arguments: Vec<BrickArgument>,
+}
+
+#[taurpc::ipc_type]
+pub struct BrickHandle {
+    pub id: String,
+    pub label: String,
+}
+
+#[taurpc::ipc_type]
+pub struct BrickArgument {
+    pub id: String,
+    pub label: String,
+    pub r#type: BrickArgumentType,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub enum BrickArgumentType {
+    String,
+    Number,
+    Boolean,
 }
