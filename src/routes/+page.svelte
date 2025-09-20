@@ -70,7 +70,7 @@
 
   .menubar,
   .sidebar {
-    width: 200px;
+    padding: $gap;
   }
 
   .content {
@@ -102,7 +102,7 @@
   }
 
   button:hover {
-    background: #005a9e;
+    background: $primary;
   }
 
   .status {

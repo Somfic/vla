@@ -84,6 +84,10 @@
         padding: $gap;
     }
 
+    :global(.svelte-flow__node .selected) {
+        border-color: $primary;
+    }
+
     .content {
         flex: 1;
     }
@@ -100,13 +104,14 @@
             align-items: center;
         }
 
-        $handle-size: 5px;
+        $handle-size: 10px;
 
         :global(.svelte-flow__handle) {
             background-color: $primary;
             height: $handle-size;
             width: $handle-size;
             border-radius: 50%;
+            z-index: 20000;
         }
 
         :global(.input .svelte-flow__handle) {

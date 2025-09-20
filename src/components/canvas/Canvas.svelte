@@ -49,7 +49,7 @@
         display: none;
     }
 
-    :global(.svelte-flow__background, .svelte-flow__container) {
-        background-color: $background-secondary;
+    :global(.svelte-flow__background) {
+        background: $background-secondary;
     }
 </style>
