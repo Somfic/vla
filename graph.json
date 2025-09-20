@@ -3,8 +3,8 @@
     {
       "id": "1",
       "position": {
-        "x": -3560.0,
-        "y": -1120.0
+        "x": -300.0,
+        "y": 80.0
       },
       "data": {
         "brick_id": "testBrick",
@@ -16,7 +16,25 @@
         }
       },
       "type": "vla"
+    },
+    {
+      "id": "2",
+      "position": {
+        "x": 75.58825267662957,
+        "y": 99.11150808538656
+      },
+      "data": {
+        "brick_id": "testBrick",
+        "arguments": {}
+      },
+      "type": "vla"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "id": "xy-edge__1out1-2in1",
+      "source": "1",
+      "target": "2"
+    }
+  ]
 }

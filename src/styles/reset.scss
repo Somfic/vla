@@ -5,7 +5,9 @@
 *:before,
 *:after {
     box-sizing: border-box;
+  
 }
+
 
 html,
 body,
@@ -103,8 +105,9 @@ table {
     border-spacing: 0;
 }
 
-input {
+input, select {
     appearance: none;
     -webkit-appearance: none;
     border-radius: 0;
+    all: unset;
 }
