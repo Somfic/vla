@@ -4,21 +4,10 @@
     import type { VlaNode } from "$lib/api";
 
     const nodesStore = useNodes();
-    let selectedNode: VlaNode | undefined = $state(undefined);
 
-    // Use a different approach - track changes manually
-    let lastNodesString = $state('');
-
-    $effect(() => {
-        const currentNodes = nodesStore.current;
-        const nodesString = JSON.stringify(currentNodes.map(n => ({ id: n.id, selected: n.selected })));
-
-        if (nodesString !== lastNodesString) {
-            lastNodesString = nodesString;
-            selectedNode = currentNodes.find((n) => n.selected) as VlaNode | undefined;
-            console.log('Selection update:', selectedNode?.id || 'none');
-        }
-    });
+    const selectedNode = $derived(
+        nodesStore.current.find((n) => n.selected) as VlaNode | undefined
+    );
 </script>
 
 <div class="sidebar">
