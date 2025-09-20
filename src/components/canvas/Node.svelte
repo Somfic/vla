@@ -72,6 +72,7 @@
         border-radius: $border-radius;
         background-color: $background;
         padding: $gap;
+        gap: $gap;
     }
 
     :global(.svelte-flow__node .selected) {
