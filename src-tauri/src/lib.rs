@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -58,13 +59,18 @@ impl Api for ApiImpl {
             arguments: vec![
                 BrickArgument {
                     id: "arg1".to_string(),
-                    label: "Argument 1".to_string(),
+                    label: "String argument".to_string(),
                     r#type: BrickArgumentType::String,
                 },
                 BrickArgument {
                     id: "arg2".to_string(),
-                    label: "Argument 2".to_string(),
+                    label: "Number argument".to_string(),
                     r#type: BrickArgumentType::Number,
+                },
+                BrickArgument {
+                    id: "arg3".to_string(),
+                    label: "Boolean argument".to_string(),
+                    r#type: BrickArgumentType::Boolean,
                 },
             ],
         }
@@ -94,6 +100,7 @@ pub struct Point {
 #[taurpc::ipc_type]
 pub struct NodeData {
     pub brick_id: String,
+    pub arguments: HashMap<String, String>,
 }
 
 #[taurpc::ipc_type]

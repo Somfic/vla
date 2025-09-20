@@ -3,148 +3,15 @@
     {
       "id": "1",
       "position": {
-        "x": -1936.544504698401,
-        "y": -72.17873381101953
+        "x": -1914.0581470567288,
+        "y": -240.88074365049073
       },
       "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "2",
-      "position": {
-        "x": -1702.4055999505008,
-        "y": 72.06926173809148
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "3",
-      "position": {
-        "x": -1492.151221204087,
-        "y": 25.019603867456254
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "4",
-      "position": {
-        "x": -1935.8594180938803,
-        "y": 84.1432982630378
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "5",
-      "position": {
-        "x": -1701.9196839158042,
-        "y": -57.08059510356054
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "6",
-      "position": {
-        "x": -1247.638518671006,
-        "y": 23.910585102515455
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "7",
-      "position": {
-        "x": -1050.0471008632608,
-        "y": 63.46216404082743
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "8",
-      "position": {
-        "x": -552.27489143014,
-        "y": -15.175153829879925
-      },
-      "data": {
-        "brick_id": "testBrick"
-      },
-      "type": "vla"
-    },
-    {
-      "id": "9",
-      "position": {
-        "x": -292.9481260610826,
-        "y": 222.33252266403215
-      },
-      "data": {
-        "brick_id": "testBrick"
+        "brick_id": "testBrick",
+        "arguments": {}
       },
       "type": "vla"
     }
   ],
-  "edges": [
-    {
-      "id": "xy-edge__1out1-2",
-      "source": "1",
-      "target": "2"
-    },
-    {
-      "id": "xy-edge__4out1-2in1",
-      "source": "4",
-      "target": "2"
-    },
-    {
-      "id": "xy-edge__5out1-3in1",
-      "source": "5",
-      "target": "3"
-    },
-    {
-      "id": "xy-edge__2out1-3in1",
-      "source": "2",
-      "target": "3"
-    },
-    {
-      "id": "xy-edge__1out1-5in1",
-      "source": "1",
-      "target": "5"
-    },
-    {
-      "id": "xy-edge__4out1-5in1",
-      "source": "4",
-      "target": "5"
-    },
-    {
-      "id": "xy-edge__3out1-6in1",
-      "source": "3",
-      "target": "6"
-    },
-    {
-      "id": "xy-edge__6out1-7in1",
-      "source": "6",
-      "target": "7"
-    },
-    {
-      "id": "xy-edge__5out1-3in1",
-      "source": "5",
-      "target": "3"
-    }
-  ]
+  "edges": []
 }
