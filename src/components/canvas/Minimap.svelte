@@ -18,7 +18,7 @@
         padding: 0;
 
         border: 2px solid $border-color;
-        border-radius: $border-radius2;
+        border-radius: $border-radius;
         overflow: hidden;
     }
 
@@ -29,7 +29,7 @@
     }
 
     :global(.svelte-flow__minimap-node) {
-        border-radius: 10px;
+        border-radius: $border-radius;
         fill: $foreground;
     }
 </style>

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use std::fs;
 use std::path::Path;
 
@@ -50,26 +50,26 @@ impl Api for ApiImpl {
             description: "A simple test brick".to_string(),
             inputs: vec![BrickHandle {
                 id: "in1".to_string(),
-                label: "Input 1".to_string(),
+                label: "Input".to_string(),
             }],
             outputs: vec![BrickHandle {
                 id: "out1".to_string(),
-                label: "Output 1".to_string(),
+                label: "Output".to_string(),
             }],
             arguments: vec![
                 BrickArgument {
                     id: "arg1".to_string(),
-                    label: "String argument".to_string(),
+                    label: "String".to_string(),
                     r#type: BrickArgumentType::String,
                 },
                 BrickArgument {
                     id: "arg2".to_string(),
-                    label: "Number argument".to_string(),
+                    label: "Number".to_string(),
                     r#type: BrickArgumentType::Number,
                 },
                 BrickArgument {
                     id: "arg3".to_string(),
-                    label: "Boolean argument".to_string(),
+                    label: "Boolean".to_string(),
                     r#type: BrickArgumentType::Boolean,
                 },
             ],
@@ -100,7 +100,7 @@ pub struct Point {
 #[taurpc::ipc_type]
 pub struct NodeData {
     pub brick_id: String,
-    pub arguments: HashMap<String, String>,
+    pub arguments: BTreeMap<String, String>,
 }
 
 #[taurpc::ipc_type]

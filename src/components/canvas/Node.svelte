@@ -1,27 +1,11 @@
 <script lang="ts">
-    import api, { type VlaNode, saveNodeChanges } from "$lib/api";
+    import api, { type VlaNode } from "$lib/api";
     import { Handle, Position, type NodeProps } from "@xyflow/svelte";
+    import ArgumentInput from "./arguments/ArgumentInput.svelte";
 
     let { data }: NodeProps<VlaNode> = $props();
 
     let brick = api.get_brick(data.brick_id);
-
-    // Helper functions to handle JSON serialization for arguments
-    function getBooleanValue(argumentId: string): boolean {
-        const value = data.arguments[argumentId];
-        if (value === undefined) return false;
-        try {
-            return JSON.parse(value);
-        } catch {
-            return false;
-        }
-    }
-
-    function setBooleanValue(argumentId: string, value: boolean) {
-        data.arguments[argumentId] = JSON.stringify(value);
-        // Call save through api
-        saveNodeChanges();
-    }
 </script>
 
 {#await brick}
@@ -34,17 +18,7 @@
 
         <div class="arguments">
             {#each brick.arguments as argument}
-                <div class="argument">
-                    <label for={argument.id}>{argument.label}</label>
-                    {#if argument.type === "Boolean"}
-                        <input
-                            type="checkbox"
-                            id={argument.id}
-                            checked={getBooleanValue(argument.id)}
-                            onchange={(e) => setBooleanValue(argument.id, e.currentTarget.checked)}
-                        />
-                    {/if}
-                </div>
+                <ArgumentInput {argument} {data} />
             {/each}
         </div>
 
@@ -147,42 +121,5 @@
         display: flex;
         flex-direction: column;
         gap: $gap;
-
-        .argument {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            input[type="checkbox"] {
-                width: 16px;
-                height: 16px;
-                cursor: pointer;
-                appearance: none;
-                background-color: $background-secondary;
-                border: 2px solid $border-color;
-                border-radius: 3px;
-                position: relative;
-
-                &:checked {
-                    background-color: $primary;
-                    border-color: $primary;
-
-                    &::after {
-                        content: "✓";
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        color: $foreground;
-                        font-size: 12px;
-                        font-weight: bold;
-                    }
-                }
-
-                &:hover {
-                    border-color: $primary;
-                }
-            }
-        }
     }
 </style>
