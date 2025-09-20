@@ -3,15 +3,16 @@
     {
       "id": "1",
       "position": {
-        "x": -2436.009934302273,
-        "y": -489.2014128365282
+        "x": -2405.2077795558894,
+        "y": -712.4162930088197
       },
       "data": {
         "brick_id": "testBrick",
         "arguments": {
           "arg1": "\"Hello world\"",
           "arg2": "150",
-          "arg3": "false"
+          "arg3": "false",
+          "arg4": "\"Option 3\""
         }
       },
       "type": "vla"

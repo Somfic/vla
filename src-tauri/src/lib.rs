@@ -1,4 +1,4 @@
-use std::collections::{HashMap, BTreeMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 
@@ -61,16 +61,33 @@ impl Api for ApiImpl {
                     id: "arg1".to_string(),
                     label: "String".to_string(),
                     r#type: BrickArgumentType::String,
+                    enum_options: None,
                 },
                 BrickArgument {
                     id: "arg2".to_string(),
                     label: "Number".to_string(),
                     r#type: BrickArgumentType::Number,
+                    enum_options: None,
                 },
                 BrickArgument {
                     id: "arg3".to_string(),
                     label: "Boolean".to_string(),
                     r#type: BrickArgumentType::Boolean,
+                    enum_options: None,
+                },
+                BrickArgument {
+                    id: "arg4".to_string(),
+                    label: "Enum".to_string(),
+                    r#type: BrickArgumentType::Enum,
+                    enum_options: Some(
+                        vec![
+                            "Option 1".to_string(),
+                            "Option 2".to_string(),
+                            "Option 3".to_string(),
+                        ]
+                        .into_iter()
+                        .collect(),
+                    ),
                 },
             ],
         }
@@ -131,6 +148,7 @@ pub struct BrickArgument {
     pub id: String,
     pub label: String,
     pub r#type: BrickArgumentType,
+    pub enum_options: Option<Vec<String>>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
@@ -138,4 +156,5 @@ pub enum BrickArgumentType {
     String,
     Number,
     Boolean,
+    Enum,
 }

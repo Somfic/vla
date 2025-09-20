@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { NodeData, BrickArgument } from "$lib/core";
+    import type { NodeData, BrickArgument, Brick } from "$lib/core";
     import { saveNodeChanges } from "$lib/api";
 
     interface Props {
@@ -9,15 +9,28 @@
 
     let { argument, data }: Props = $props();
 
+    function getDefaultValue(type: string) {
+        switch (type) {
+            case "Boolean":
+                return false;
+            case "Number":
+                return 0;
+            case "String":
+                return "";
+            default:
+                return null;
+        }
+    }
+
     function getValue(argumentId: string, type: string) {
         const value = data.arguments[argumentId];
         if (value === undefined) {
-            return type === "Boolean" ? false : type === "Number" ? 0 : "";
+            return getDefaultValue(type);
         }
         try {
             return JSON.parse(value);
         } catch {
-            return type === "Boolean" ? false : type === "Number" ? 0 : "";
+            return getDefaultValue(type);
         }
     }
 
@@ -114,6 +127,22 @@
             value={getValue(argument.id, "String")}
             onchange={(e) => setValue(argument.id, e.currentTarget.value)}
         />
+    {:else if argument.type === "Enum" && argument.enum_options}
+        <select
+            id={argument.id}
+            class="nodrag text-input"
+            value={getValue(argument.id, "String")}
+            onchange={(e) => setValue(argument.id, e.currentTarget.value)}
+        >
+            {#each argument.enum_options as option}
+                <option
+                    value={option}
+                    selected={option === getValue(argument.id, "String")}
+                >
+                    {option}
+                </option>
+            {/each}
+        </select>
     {/if}
 </div>
 
