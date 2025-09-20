@@ -1,11 +1,27 @@
 <script lang="ts">
-    import api, { type VlaNode } from "$lib/api";
+    import api, { type VlaNode, saveNodeChanges } from "$lib/api";
     import { Handle, Position, type NodeProps } from "@xyflow/svelte";
 
-    let { data }: NodeProps<VlaNode> & { onArgumentChange?: () => void } =
-        $props();
+    let { data }: NodeProps<VlaNode> = $props();
 
     let brick = api.get_brick(data.brick_id);
+
+    // Helper functions to handle JSON serialization for arguments
+    function getBooleanValue(argumentId: string): boolean {
+        const value = data.arguments[argumentId];
+        if (value === undefined) return false;
+        try {
+            return JSON.parse(value);
+        } catch {
+            return false;
+        }
+    }
+
+    function setBooleanValue(argumentId: string, value: boolean) {
+        data.arguments[argumentId] = JSON.stringify(value);
+        // Call save through api
+        saveNodeChanges();
+    }
 </script>
 
 {#await brick}
@@ -21,7 +37,12 @@
                 <div class="argument">
                     <label for={argument.id}>{argument.label}</label>
                     {#if argument.type === "Boolean"}
-                        <input type="checkbox" />
+                        <input
+                            type="checkbox"
+                            id={argument.id}
+                            checked={getBooleanValue(argument.id)}
+                            onchange={(e) => setBooleanValue(argument.id, e.currentTarget.checked)}
+                        />
                     {/if}
                 </div>
             {/each}

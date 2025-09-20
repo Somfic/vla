@@ -9,6 +9,7 @@
     } from "@xyflow/svelte";
     import "@xyflow/svelte/dist/base.css";
     import Node from "$components/canvas/Node.svelte";
+    import { setSaveCallback } from "$lib/api";
 
     const save = () => onSave({ nodes, edges });
 
@@ -22,6 +23,10 @@
 
     let nodes = $state(graph.nodes);
     let edges = $state(graph.edges);
+
+    // Set up save callback through api
+    setSaveCallback(save);
+
     let nodeTypes = { vla: Node };
 </script>
 
