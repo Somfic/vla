@@ -22,38 +22,40 @@
             {/each}
         </div>
 
-        <div class="inputs">
-            {#each brick.inputs as input}
-                <div class="input">
-                    <div class="handle">
-                        <Handle
-                            type="target"
-                            id={input.id}
-                            position={Position.Left}
-                        />
+        <div class="handles">
+            <div class="inputs">
+                {#each brick.inputs as input}
+                    <div class="input">
+                        <div class="handle">
+                            <Handle
+                                type="target"
+                                id={input.id}
+                                position={Position.Left}
+                            />
+                        </div>
+                        <div class="label">
+                            {input.label}
+                        </div>
                     </div>
-                    <div class="label">
-                        {input.label}
-                    </div>
-                </div>
-            {/each}
-        </div>
+                {/each}
+            </div>
 
-        <div class="outputs">
-            {#each brick.outputs as output}
-                <div class="output">
-                    <div class="label">
-                        {output.label}
+            <div class="outputs">
+                {#each brick.outputs as output}
+                    <div class="output">
+                        <div class="label">
+                            {output.label}
+                        </div>
+                        <div class="handle">
+                            <Handle
+                                type="source"
+                                id={output.id}
+                                position={Position.Right}
+                            />
+                        </div>
                     </div>
-                    <div class="handle">
-                        <Handle
-                            type="source"
-                            id={output.id}
-                            position={Position.Right}
-                        />
-                    </div>
-                </div>
-            {/each}
+                {/each}
+            </div>
         </div>
 
         <div class="preview">
@@ -72,6 +74,12 @@
         border-radius: $border-radius;
         background-color: $background;
         padding: $gap;
+        gap: $gap;
+    }
+
+    .handles {
+        display: flex;
+        justify-content: space-between;
         gap: $gap;
     }
 

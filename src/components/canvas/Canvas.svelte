@@ -36,6 +36,7 @@
         bind:edges
         {nodeTypes}
         fitView
+        snapGrid={[20, 20]}
         onnodedragstop={save}
         onconnectend={save}
     >

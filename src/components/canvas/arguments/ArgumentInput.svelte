@@ -71,13 +71,14 @@
     <label for={argument.id}>{argument.label}</label>
 
     {#if argument.type === "Boolean"}
-        <input
-            type="checkbox"
+        <button
+            type="button"
             id={argument.id}
-            class="nodrag"
-            checked={getValue(argument.id, "Boolean")}
-            onchange={(e) => setValue(argument.id, e.currentTarget.checked)}
-        />
+            class="nodrag toggle {getValue(argument.id, 'Boolean') ? 'active' : ''}"
+            onclick={() => setValue(argument.id, !getValue(argument.id, "Boolean"))}
+        >
+            <div class="toggle-slider"></div>
+        </button>
     {:else if argument.type === "Number"}
         <div class="number-input nodrag">
             <input
@@ -155,30 +156,36 @@
         align-items: center;
         justify-content: space-between;
 
-        input[type="checkbox"] {
-            width: 16px;
+        .toggle {
+            width: 32px;
             height: 16px;
             cursor: pointer;
-            appearance: none;
             background-color: $background-secondary;
             border: 2px solid $border-color;
-            border-radius: 3px;
+            border-radius: 8px;
             position: relative;
-            margin: 0;
+            padding: 0;
+            transition: all 0.2s ease;
 
-            &:checked {
+            .toggle-slider {
+                width: 12px;
+                height: 12px;
+                background-color: $foreground;
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 2px;
+                transform: translateY(-50%);
+                transition: all 0.2s ease;
+            }
+
+            &.active {
                 background-color: $primary;
                 border-color: $primary;
 
-                &::after {
-                    content: "✓";
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    color: $foreground;
-                    font-size: 12px;
-                    font-weight: bold;
+                .toggle-slider {
+                    left: calc(100% - 14px);
+                    background-color: white;
                 }
             }
 
