@@ -3,8 +3,8 @@
     {
       "id": "1",
       "position": {
-        "x": -3660.0,
-        "y": -1340.0
+        "x": -3540.0,
+        "y": -1300.0
       },
       "data": {
         "brick_id": "testBrick",
@@ -69,5 +69,11 @@
       "type": "vla"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "id": "xy-edge__1out1-1in1",
+      "source": "1",
+      "target": "1"
+    }
+  ]
 }
