@@ -6,7 +6,7 @@ type TAURI_CHANNEL<T> = (response: T) => void
 
 export type Brick = { id: string; label: string; description: string; inputs: BrickHandle[]; outputs: BrickHandle[]; arguments: BrickArgument[] }
 
-export type BrickArgument = { id: string; label: string; type: BrickArgumentType; enum_options: string[] | null }
+export type BrickArgument = { id: string; label: string; type: BrickArgumentType; enum_options: string[] | null; default_value: string | null }
 
 export type BrickArgumentType = "String" | "Number" | "Boolean" | "Enum"
 
@@ -18,7 +18,7 @@ export type Graph = { nodes: Node[]; edges: Edge[] }
 
 export type Node = { id: string; position: Point; data: NodeData; type: string }
 
-export type NodeData = { brick_id: string; arguments: Partial<{ [key in string]: string }> }
+export type NodeData = { brick_id: string; brick?: Brick; arguments: Partial<{ [key in string]: string }> }
 
 export type Point = { x: number; y: number }
 

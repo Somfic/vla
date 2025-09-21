@@ -36,7 +36,13 @@ impl Api for ApiImpl {
 
         match fs::read_to_string(&filename) {
             Ok(content) => match serde_json::from_str::<Graph>(&content) {
-                Ok(graph) => Ok(graph),
+                Ok(mut graph) => {
+                    // Populate brick data for each node
+                    for node in &mut graph.nodes {
+                        node.data.brick = self.clone().get_brick(node.data.brick_id.clone()).await;
+                    }
+                    Ok(graph)
+                }
                 Err(e) => Err(format!("Failed to parse graph: {}", e)),
             },
             Err(e) => Err(format!("Failed to read file: {}", e)),
@@ -61,24 +67,28 @@ impl Api for ApiImpl {
                     id: "arg1".to_string(),
                     label: "String".to_string(),
                     r#type: BrickArgumentType::String,
+                    default_value: None,
                     enum_options: None,
                 },
                 BrickArgument {
                     id: "arg2".to_string(),
                     label: "Number".to_string(),
                     r#type: BrickArgumentType::Number,
+                    default_value: None,
                     enum_options: None,
                 },
                 BrickArgument {
                     id: "arg3".to_string(),
                     label: "Boolean".to_string(),
                     r#type: BrickArgumentType::Boolean,
+                    default_value: None,
                     enum_options: None,
                 },
                 BrickArgument {
                     id: "arg4".to_string(),
                     label: "Enum".to_string(),
                     r#type: BrickArgumentType::Enum,
+                    default_value: Some("Option 1".to_string()),
                     enum_options: Some(
                         vec![
                             "Option 1".to_string(),
@@ -117,6 +127,8 @@ pub struct Point {
 #[taurpc::ipc_type]
 pub struct NodeData {
     pub brick_id: String,
+    #[serde(default)]
+    pub brick: Brick,
     pub arguments: BTreeMap<String, String>,
 }
 
@@ -128,6 +140,7 @@ pub struct Edge {
 }
 
 #[taurpc::ipc_type]
+#[derive(Default)]
 pub struct Brick {
     pub id: String,
     pub label: String,
@@ -138,17 +151,20 @@ pub struct Brick {
 }
 
 #[taurpc::ipc_type]
+#[derive(Default)]
 pub struct BrickHandle {
     pub id: String,
     pub label: String,
 }
 
 #[taurpc::ipc_type]
+#[derive(Default)]
 pub struct BrickArgument {
     pub id: String,
     pub label: String,
     pub r#type: BrickArgumentType,
     pub enum_options: Option<Vec<String>>,
+    pub default_value: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
@@ -157,4 +173,10 @@ pub enum BrickArgumentType {
     Number,
     Boolean,
     Enum,
+}
+
+impl Default for BrickArgumentType {
+    fn default() -> Self {
+        BrickArgumentType::String
+    }
 }

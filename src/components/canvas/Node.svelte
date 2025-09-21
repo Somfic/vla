@@ -4,65 +4,59 @@
     import ArgumentInput from "./arguments/ArgumentInput.svelte";
 
     let { data }: NodeProps<VlaNode> = $props();
-
-    let brick = api.get_brick(data.brick_id);
 </script>
 
-{#await brick}
-    <div>Loading brick...</div>
-{:then brick}
-    <div class="node">
-        <div class="header">
-            {brick.label}
-        </div>
+<div class="node">
+    <div class="header">
+        {data.brick?.label}
+    </div>
 
-        <div class="arguments">
-            {#each brick.arguments as argument}
-                <ArgumentInput {argument} {data} />
+    <div class="arguments">
+        {#each data.brick!.arguments as argument}
+            <ArgumentInput {argument} {data} />
+        {/each}
+    </div>
+
+    <div class="handles">
+        <div class="inputs">
+            {#each data.brick!.inputs as input}
+                <div class="input">
+                    <div class="handle">
+                        <Handle
+                            type="target"
+                            id={input.id}
+                            position={Position.Left}
+                        />
+                    </div>
+                    <div class="label">
+                        {input.label}
+                    </div>
+                </div>
             {/each}
         </div>
 
-        <div class="handles">
-            <div class="inputs">
-                {#each brick.inputs as input}
-                    <div class="input">
-                        <div class="handle">
-                            <Handle
-                                type="target"
-                                id={input.id}
-                                position={Position.Left}
-                            />
-                        </div>
-                        <div class="label">
-                            {input.label}
-                        </div>
+        <div class="outputs">
+            {#each data.brick!.outputs as output}
+                <div class="output">
+                    <div class="label">
+                        {output.label}
                     </div>
-                {/each}
-            </div>
-
-            <div class="outputs">
-                {#each brick.outputs as output}
-                    <div class="output">
-                        <div class="label">
-                            {output.label}
-                        </div>
-                        <div class="handle">
-                            <Handle
-                                type="source"
-                                id={output.id}
-                                position={Position.Right}
-                            />
-                        </div>
+                    <div class="handle">
+                        <Handle
+                            type="source"
+                            id={output.id}
+                            position={Position.Right}
+                        />
                     </div>
-                {/each}
-            </div>
-        </div>
-
-        <div class="preview">
-            <img src="https://via.placeholder.com/500" alt="Node Preview" />
+                </div>
+            {/each}
         </div>
     </div>
-{/await}
+
+    <div class="preview">
+        <img src="https://via.placeholder.com/500" alt="Node Preview" />
+    </div>
+</div>
 
 <style lang="scss">
     @import "$styles/theme";

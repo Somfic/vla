@@ -6,22 +6,21 @@
     const nodesStore = useNodes();
 
     const selectedNode = $derived(
-        nodesStore.current.find((n) => n.selected) as VlaNode | undefined
+        nodesStore.current.find((n) => n.selected) as VlaNode | undefined,
     );
 </script>
 
 <div class="sidebar">
-    <div class="debug-panel">
-        <h3>Debug Panel</h3>
-        {#if selectedNode}
+    {#if selectedNode?.data}
+        <div class="arguments">
+            <h3>{selectedNode.data.brick_id}</h3>
+            <h2>{selectedNode.data.brick?.description}</h2>
             <div class="node-data">
                 <h4>Selected Node: {selectedNode.id}</h4>
                 <pre>{JSON.stringify(selectedNode.data, null, 2)}</pre>
             </div>
-        {:else}
-            <p>No node selected</p>
-        {/if}
-    </div>
+        </div>
+    {/if}
 
     <Minimap />
 </div>
@@ -35,7 +34,7 @@
         gap: $gap;
     }
 
-    .debug-panel {
+    .arguments {
         background-color: $background-secondary;
         border: 2px solid $border-color;
         border-radius: $border-radius;
