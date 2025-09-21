@@ -7,7 +7,8 @@ pub trait Api {
     async fn hello_world(name: String) -> String;
     async fn save_graph(graph: Graph, filename: String) -> Result<String, String>;
     async fn load_graph(filename: String) -> Result<Graph, String>;
-    async fn get_brick(brick_id: String) -> Brick;
+    async fn get_brick(brick_id: String) -> Option<Brick>;
+    async fn get_bricks() -> Vec<Brick>;
 }
 
 #[derive(Clone)]
@@ -49,8 +50,13 @@ impl Api for ApiImpl {
         }
     }
 
-    async fn get_brick(self, brick_id: String) -> Brick {
-        Brick {
+    async fn get_brick(self, brick_id: String) -> Option<Brick> {
+        let bricks = self.get_bricks().await;
+        bricks.into_iter().find(|b| b.id == brick_id)
+    }
+
+    async fn get_bricks(self) -> Vec<Brick> {
+        vec![Brick {
             id: "testBrick".to_string(),
             label: "Test Brick".to_string(),
             description: "A simple test brick".to_string(),
@@ -100,7 +106,7 @@ impl Api for ApiImpl {
                     ),
                 },
             ],
-        }
+        }]
     }
 }
 
@@ -128,7 +134,7 @@ pub struct Point {
 pub struct NodeData {
     pub brick_id: String,
     #[serde(default)]
-    pub brick: Brick,
+    pub brick: Option<Brick>,
     pub arguments: BTreeMap<String, String>,
 }
 
@@ -140,7 +146,6 @@ pub struct Edge {
 }
 
 #[taurpc::ipc_type]
-#[derive(Default)]
 pub struct Brick {
     pub id: String,
     pub label: String,
@@ -151,14 +156,12 @@ pub struct Brick {
 }
 
 #[taurpc::ipc_type]
-#[derive(Default)]
 pub struct BrickHandle {
     pub id: String,
     pub label: String,
 }
 
 #[taurpc::ipc_type]
-#[derive(Default)]
 pub struct BrickArgument {
     pub id: String,
     pub label: String,
@@ -173,10 +176,4 @@ pub enum BrickArgumentType {
     Number,
     Boolean,
     Enum,
-}
-
-impl Default for BrickArgumentType {
-    fn default() -> Self {
-        BrickArgumentType::String
-    }
 }
