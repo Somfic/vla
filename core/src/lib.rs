@@ -66,7 +66,9 @@ impl Api for ApiImpl {
     }
 
     async fn get_bricks(self) -> Vec<bricks::types::Brick> {
-        bricks::get_all_bricks()
+        let bricks = bricks::get_all_bricks();
+        println!("{:#?}", bricks);
+        bricks
     }
 }
 

@@ -1,4 +1,4 @@
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct Brick {
     pub id: String,
     pub label: String,
@@ -40,7 +40,7 @@ impl Default for Brick {
     }
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct BrickInput {
     pub id: String,
     pub label: String,
@@ -48,14 +48,14 @@ pub struct BrickInput {
     pub default_value: Option<String>,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct BrickOutput {
     pub id: String,
     pub label: String,
     pub r#type: BrickHandleType,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct BrickArgument {
     pub id: String,
     pub label: String,
@@ -64,7 +64,7 @@ pub struct BrickArgument {
     pub default_value: Option<String>,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub enum BrickArgumentType {
     String,
     Number,
@@ -72,7 +72,7 @@ pub enum BrickArgumentType {
     Enum,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub enum BrickHandleType {
     String,
     Number,

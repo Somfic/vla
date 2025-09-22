@@ -11,11 +11,126 @@
 ///     }
 /// }
 /// ```
+///
+/// Multiple outputs usage:
+/// ```rust,ignore
+/// brick! {
+///     fn process_data(#[argument] value: i32 = 0) -> (String, i32) {
+///         id: "process_data",
+///         label: "Process Data",
+///         description: "Processes data and returns multiple outputs",
+///         outputs: {
+///             formatted: String = "Formatted Value",
+///             doubled: i32 = "Doubled Value"
+///         },
+///         body: {
+///             let formatted = format!("Value: {}", value);
+///             let doubled = value * 2;
+///             (formatted, doubled)
+///         }
+///     }
+/// }
+/// ```
 macro_rules! brick {
+    // Multiple outputs pattern
     (
         fn $fn_name:ident(
             $($(#[$param_attr:ident $(($($attr_content:tt)*))?])? $param_name:ident: $param_type:ident $(= $default:expr)?),*
-        ) -> $return_type:ident {
+        ) -> ($($output_type:ident),+) {
+            id: $id:expr,
+            label: $label:expr,
+            description: $description:expr,
+            outputs: {
+                $($output_id:ident: $output_ty:ident = $output_label:expr),+
+            },
+            body: $body:block
+        }
+    ) => {
+        paste::paste! {
+            // Define the actual function
+            fn $fn_name($($param_name: $param_type),*) -> ($($output_type),+) $body
+
+            // Define the execution wrapper
+            #[allow(unused_variables)]
+            fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgument>,
+                inputs: Vec<crate::bricks::types::BrickInput>
+            ) -> Vec<crate::bricks::types::BrickOutput> {
+                // Extract arguments and inputs
+                $(
+                    let $param_name = brick!(@extract_value
+                        $(#[$param_attr $(($($attr_content)*))?])?,
+                        $param_type,
+                        &args,
+                        &inputs,
+                        stringify!($param_name)
+                        $(, $default)?
+                    );
+                )*
+
+                let _result = $fn_name($($param_name),*);
+
+                // Return all outputs (values aren't used yet, but structure is correct)
+                vec![
+                    $(
+                        crate::bricks::types::BrickOutput {
+                            id: stringify!($output_id).to_string(),
+                            label: $output_label.to_string(),
+                            r#type: brick!(@output_type $output_ty),
+                        }
+                    ),+
+                ]
+            }
+
+            // Define the brick getter function
+            #[allow(unused_mut)]
+            pub fn [<$fn_name _brick>]() -> crate::bricks::types::Brick {
+                let mut arguments = Vec::new();
+                let mut inputs = Vec::new();
+
+                $(
+                    brick!(@push_argument
+                        arguments,
+                        $(#[$param_attr $(($($attr_content)*))?])?,
+                        $param_name,
+                        $param_type
+                        $(, $default)?
+                    );
+                    brick!(@push_input
+                        inputs,
+                        $(#[$param_attr $(($($attr_content)*))?])?,
+                        $param_name,
+                        $param_type
+                        $(, $default)?
+                    );
+                )*
+
+                crate::bricks::types::Brick {
+                    id: $id.to_string(),
+                    label: $label.to_string(),
+                    description: $description.to_string(),
+                    arguments,
+                    inputs,
+                    outputs: vec![
+                        $(
+                            crate::bricks::types::BrickOutput {
+                                id: stringify!($output_id).to_string(),
+                                label: $output_label.to_string(),
+                                r#type: brick!(@output_type $output_ty),
+                            }
+                        ),+
+                    ],
+                    execution: [<$fn_name _execution>],
+                }
+            }
+        }
+    };
+
+    // Single output pattern (backward compatibility)
+    (
+        fn $fn_name:ident(
+            $($(#[$param_attr:ident $(($($attr_content:tt)*))?])? $param_name:ident: $param_type:ident $(= $default:expr)?),*
+        ) -> $(#[$output_attr:ident $(($($output_attr_content:tt)*))?])? $return_type:ident {
             id: $id:expr,
             label: $label:expr,
             description: $description:expr,
@@ -85,7 +200,7 @@ macro_rules! brick {
                     outputs: vec![
                         crate::bricks::types::BrickOutput {
                             id: "result".to_string(),
-                            label: "Result".to_string(),
+                            label: brick!(@extract_output_label $($output_attr $(($($output_attr_content)*))?)?),
                             r#type: brick!(@return_type $return_type),
                         }
                     ],
@@ -121,6 +236,11 @@ macro_rules! brick {
     // Extract label from attribute content
     (@extract_label label = $label:expr) => { $label.to_string() };
     (@extract_label $param_name:ident) => { stringify!($param_name).to_string() };
+
+    // Extract output label from output attribute or use default
+    (@extract_output_label output(label = $label:expr)) => { $label.to_string() };
+    (@extract_output_label output($($attr_content:tt)*)) => { "Result".to_string() };
+    (@extract_output_label) => { "Result".to_string() };
 
     // Extract default value handling
     (@maybe_default_value $param_type:ident) => { None };
@@ -314,6 +434,11 @@ macro_rules! brick {
     (@input_type String) => { crate::bricks::types::BrickHandleType::String };
     (@input_type i32) => { crate::bricks::types::BrickHandleType::Number };
     (@input_type bool) => { crate::bricks::types::BrickHandleType::Boolean };
+
+    // Convert type identifiers to BrickHandleType for outputs
+    (@output_type String) => { crate::bricks::types::BrickHandleType::String };
+    (@output_type i32) => { crate::bricks::types::BrickHandleType::Number };
+    (@output_type bool) => { crate::bricks::types::BrickHandleType::Boolean };
 }
 
 pub(crate) use brick;

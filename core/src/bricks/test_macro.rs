@@ -125,6 +125,53 @@ mod tests {
         }
     }
 
+    brick! {
+        fn multiple_outputs(#[argument] value: i32 = 10) -> (String, i32, bool) {
+            id: "multiple_outputs",
+            label: "Multiple Outputs",
+            description: "Test brick with multiple outputs",
+            outputs: {
+                formatted: String = "Formatted Value",
+                doubled: i32 = "Doubled Value",
+                is_positive: bool = "Is Positive"
+            },
+            body: {
+                let formatted = format!("Value: {}", value);
+                let doubled = value * 2;
+                let is_positive = value > 0;
+                (formatted, doubled, is_positive)
+            }
+        }
+    }
+
+    brick! {
+        fn mixed_inputs_multiple_outputs(#[input] data: String, #[argument(label = "Multiplier")] multiplier: i32 = 2) -> (String, i32) {
+            id: "mixed_inputs_multiple_outputs",
+            label: "Mixed Inputs Multiple Outputs",
+            description: "Test brick with inputs and multiple outputs",
+            outputs: {
+                processed: String = "Processed Data",
+                length: i32 = "Data Length"
+            },
+            body: {
+                let processed = format!("{} x{}", data, multiplier);
+                let length = data.len() as i32;
+                (processed, length)
+            }
+        }
+    }
+
+    brick! {
+        fn test_output_label() -> #[output(label = "Custom Output")] String {
+            id: "test_output_label",
+            label: "Test Output Label",
+            description: "Test brick with custom output label",
+            body: {
+                "test result".to_string()
+            }
+        }
+    }
+
     #[test]
     fn test_basic_brick_structure() {
         // Test arguments only
@@ -643,5 +690,160 @@ mod tests {
         let outputs = (brick.execution)(args, inputs);
         assert_eq!(outputs.len(), 1);
         assert_eq!(outputs[0].id, "result");
+    }
+
+    #[test]
+    fn test_multiple_outputs_structure() {
+        let brick = multiple_outputs_brick();
+        assert_eq!(brick.id, "multiple_outputs");
+
+        // Should have 1 argument
+        assert_eq!(brick.arguments.len(), 1);
+        assert_eq!(brick.arguments[0].id, "value");
+        assert_eq!(brick.arguments[0].default_value, Some("10".to_string()));
+
+        // Should have 0 inputs
+        assert_eq!(brick.inputs.len(), 0);
+
+        // Should have 3 outputs
+        assert_eq!(brick.outputs.len(), 3);
+
+        // Check first output
+        assert_eq!(brick.outputs[0].id, "formatted");
+        assert_eq!(brick.outputs[0].label, "Formatted Value");
+        match brick.outputs[0].r#type {
+            BrickHandleType::String => {}
+            _ => panic!("Expected String type for formatted output"),
+        }
+
+        // Check second output
+        assert_eq!(brick.outputs[1].id, "doubled");
+        assert_eq!(brick.outputs[1].label, "Doubled Value");
+        match brick.outputs[1].r#type {
+            BrickHandleType::Number => {}
+            _ => panic!("Expected Number type for doubled output"),
+        }
+
+        // Check third output
+        assert_eq!(brick.outputs[2].id, "is_positive");
+        assert_eq!(brick.outputs[2].label, "Is Positive");
+        match brick.outputs[2].r#type {
+            BrickHandleType::Boolean => {}
+            _ => panic!("Expected Boolean type for is_positive output"),
+        }
+    }
+
+    #[test]
+    fn test_mixed_inputs_multiple_outputs() {
+        let brick = mixed_inputs_multiple_outputs_brick();
+        assert_eq!(brick.id, "mixed_inputs_multiple_outputs");
+
+        // Should have 1 argument with custom label
+        assert_eq!(brick.arguments.len(), 1);
+        assert_eq!(brick.arguments[0].id, "multiplier");
+        assert_eq!(brick.arguments[0].label, "Multiplier");
+        assert_eq!(brick.arguments[0].default_value, Some("2".to_string()));
+
+        // Should have 1 input
+        assert_eq!(brick.inputs.len(), 1);
+        assert_eq!(brick.inputs[0].id, "data");
+        assert_eq!(brick.inputs[0].label, "data");
+
+        // Should have 2 outputs
+        assert_eq!(brick.outputs.len(), 2);
+        assert_eq!(brick.outputs[0].id, "processed");
+        assert_eq!(brick.outputs[0].label, "Processed Data");
+        assert_eq!(brick.outputs[1].id, "length");
+        assert_eq!(brick.outputs[1].label, "Data Length");
+    }
+
+    #[test]
+    fn test_multiple_outputs_execution() {
+        let brick = multiple_outputs_brick();
+
+        let args = vec![BrickArgument {
+            id: "value".to_string(),
+            label: "value".to_string(),
+            r#type: BrickArgumentType::Number,
+            enum_options: None,
+            default_value: Some("5".to_string()),
+        }];
+
+        let inputs = vec![];
+
+        let outputs = (brick.execution)(args, inputs);
+        assert_eq!(outputs.len(), 3);
+
+        // Verify output structure (values aren't processed yet, but structure should be correct)
+        assert_eq!(outputs[0].id, "formatted");
+        assert_eq!(outputs[0].label, "Formatted Value");
+        assert_eq!(outputs[1].id, "doubled");
+        assert_eq!(outputs[1].label, "Doubled Value");
+        assert_eq!(outputs[2].id, "is_positive");
+        assert_eq!(outputs[2].label, "Is Positive");
+    }
+
+    #[test]
+    fn test_mixed_multiple_outputs_execution() {
+        let brick = mixed_inputs_multiple_outputs_brick();
+
+        let args = vec![BrickArgument {
+            id: "multiplier".to_string(),
+            label: "Multiplier".to_string(),
+            r#type: BrickArgumentType::Number,
+            enum_options: None,
+            default_value: Some("3".to_string()),
+        }];
+
+        let inputs = vec![BrickInput {
+            id: "data".to_string(),
+            label: "data".to_string(),
+            r#type: BrickHandleType::String,
+            default_value: Some("test".to_string()),
+        }];
+
+        let outputs = (brick.execution)(args, inputs);
+        assert_eq!(outputs.len(), 2);
+        assert_eq!(outputs[0].id, "processed");
+        assert_eq!(outputs[0].label, "Processed Data");
+        assert_eq!(outputs[1].id, "length");
+        assert_eq!(outputs[1].label, "Data Length");
+    }
+
+    #[test]
+    fn test_backward_compatibility_with_multiple_outputs() {
+        // Test that single output bricks still work alongside multiple output bricks
+        let single_brick = test_labels_brick();
+        assert_eq!(single_brick.outputs.len(), 1);
+        assert_eq!(single_brick.outputs[0].id, "result");
+
+        let multiple_brick = multiple_outputs_brick();
+        assert_eq!(multiple_brick.outputs.len(), 3);
+
+        // Both should execute without issues
+        let outputs1 = (single_brick.execution)(vec![], vec![]);
+        assert_eq!(outputs1.len(), 1);
+
+        let outputs2 = (multiple_brick.execution)(vec![], vec![]);
+        assert_eq!(outputs2.len(), 3);
+    }
+
+    #[test]
+    fn test_custom_output_labels() {
+        // Test that custom output labels work for single outputs
+        let brick = test_output_label_brick();
+        assert_eq!(brick.outputs.len(), 1);
+        assert_eq!(brick.outputs[0].label, "Custom Output");
+        assert_eq!(brick.outputs[0].id, "result");
+
+        // Test execution works
+        let outputs = (brick.execution)(vec![], vec![]);
+        assert_eq!(outputs.len(), 1);
+
+        // Test that default label still works for bricks without custom output labels
+        let default_brick = arguments_only_brick();
+        assert_eq!(default_brick.outputs.len(), 1);
+        assert_eq!(default_brick.outputs[0].label, "Result");
+        assert_eq!(default_brick.outputs[0].id, "result");
     }
 }

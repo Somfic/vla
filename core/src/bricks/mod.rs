@@ -11,7 +11,11 @@ pub fn get_all_bricks() -> Vec<Brick> {
 }
 
 brick! {
-    fn add_numbers(#[input(label = "First")] first: i32, #[input] second: i32 = 1) -> i32 {
+    fn add_numbers(
+        #[input(label = "First")] first: i32,
+        #[input(label = "Second")] second: i32 = 1)
+        ->
+        #[output(label = "Hi")] i32 {
         id: "add_numbers",
         label: "Add Numbers",
         description: "Adds two numbers together",
