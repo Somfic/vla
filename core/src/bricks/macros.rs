@@ -3,29 +3,22 @@
 ///
 /// Usage:
 /// ```rust,ignore
-/// brick! {
-///     #[id("example_brick")]
-///     #[label("Example Brick")]
-///     #[description("Demonstrates all parameter types")]
-///     fn example_brick(
-///         #[argument] #[label("Configuration")] config: String,
-///         #[input] #[label("Input Data")] data: i32,
-///         #[output] #[label("Status")] status: bool
-///     ) -> String {
-///         format!("Config: {}, Data: {}, Status: {}", config, data, status)
-///     }
-/// }
+//  brick! {
+//         #[id("basic_multiple")]
+//         #[label("Basic Multiple")]
+//         fn basic_multiple(
+//             #[input] #[label("X")] x: i32,
+//             #[input] #[label("Y")] y: i32
+//         ) -> (
+//             #[label("Addition")] i32,
+//             #[label("Subtraction")] i32
+//         ) {
+//             (x + y, x - y)
+//         }
+//     }
 /// ```
-///
-/// Parameter Types:
-/// - `#[argument]`: User-configurable parameters (brick settings)
-/// - `#[input]`: Data flow inputs (connected from other bricks)
-/// - `#[output]`: Data flow outputs (will be available as separate outputs)
-///
-/// Additional attributes:
-/// - `#[label("Custom Label")]`: Override the parameter name with a custom label
 macro_rules! brick {
-    // Pattern that explicitly requires each parameter to have input, output, or argument
+    // Pattern that explicitly requires each parameter to have input or argument
     (
         #[id($id:expr)]
         $(#[label($label:expr)])?
@@ -74,7 +67,7 @@ macro_rules! brick {
         $(#[label($label:expr)])?
         $(#[description($description:expr)])?
         fn $fn_name:ident(
-            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident),*
+            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
         ) -> (
             $($(#[$output_attr:ident$(($($output_attr_content:tt)*))? ])+ $output_type:ident),+
         )
@@ -102,7 +95,8 @@ macro_rules! brick {
                         $param_type,
                         &args,
                         &inputs,
-                        stringify!($param_name)
+                        stringify!($param_name),
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
                     );
                 )*
 
@@ -131,7 +125,8 @@ macro_rules! brick {
                         outputs,
                         [$(#[$param_attr$(($($param_attr_content)*))? ])+],
                         $param_name,
-                        $param_type
+                        $param_type,
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
                     );
                 )*
 
@@ -157,7 +152,7 @@ macro_rules! brick {
         $(#[label($label:expr)])?
         $(#[description($description:expr)])?
         fn $fn_name:ident(
-            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident),*
+            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
         ) -> $return_type:ident
         $body:block
     ) => {
@@ -183,7 +178,8 @@ macro_rules! brick {
                         $param_type,
                         &args,
                         &inputs,
-                        stringify!($param_name)
+                        stringify!($param_name),
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
                     );
                 )*
 
@@ -219,7 +215,8 @@ macro_rules! brick {
                         outputs,
                         [$(#[$param_attr$(($($param_attr_content)*))? ])+],
                         $param_name,
-                        $param_type
+                        $param_type,
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
                     );
                 )*
 
@@ -250,6 +247,19 @@ macro_rules! brick {
     // Helper: Get description or default
     (@get_description_or_default $desc:expr) => { $desc.to_string() };
     (@get_description_or_default) => { "Default Description".to_string() };
+
+    // Helper: Get custom default or type default
+    (@get_custom_default_or_type_default $param_type:ident, $default:expr) => {
+        brick!(@convert_default_to_string $default)
+    };
+    (@get_custom_default_or_type_default $param_type:ident,) => {
+        brick!(@get_default_value $param_type)
+    };
+
+    // Helper: Convert default value to string
+    (@convert_default_to_string $default:expr) => {
+        stringify!($default).to_string()
+    };
 
     // Helper: Get default value as string
     (@get_default_value String) => { "".to_string() };
@@ -285,18 +295,18 @@ macro_rules! brick {
     (@get_attr_label []) => { "".to_string() };
 
     // Helper: Get parameter value based on attributes
-    (@get_param_value_with_attrs $attrs:tt, $param_type:ident, $args:expr, $inputs:expr, $param_name:expr) => {
+    (@get_param_value_with_attrs $attrs:tt, $param_type:ident, $args:expr, $inputs:expr, $param_name:expr, $custom_default:expr) => {
         if brick!(@has_attr argument, $attrs) {
             // Look in arguments
             let value = $args.iter().find(|arg| arg.id == $param_name)
                 .and_then(|arg| arg.default_value.clone())
-                .unwrap_or_else(|| brick!(@get_default_value $param_type));
+                .unwrap_or_else(|| $custom_default);
             brick!(@parse_to_type $param_type, value)
         } else if brick!(@has_attr input, $attrs) {
             // Look in inputs
             let value = $inputs.iter().find(|input| input.id == $param_name)
                 .and_then(|input| input.default_value.clone())
-                .unwrap_or_else(|| brick!(@get_default_value $param_type));
+                .unwrap_or_else(|| $custom_default);
             brick!(@parse_to_type $param_type, value)
         } else {
             // For outputs, use default value (outputs are set by function execution)
@@ -305,7 +315,7 @@ macro_rules! brick {
     };
 
     // Helper: Process parameter with attributes for brick creation
-    (@process_param_with_attrs $arg_vec:ident, $input_vec:ident, $output_vec:ident, $attrs:tt, $param_name:ident, $param_type:ident) => {
+    (@process_param_with_attrs $arg_vec:ident, $input_vec:ident, $output_vec:ident, $attrs:tt, $param_name:ident, $param_type:ident, $default_value:expr) => {
         let label = {
             let attr_label = brick!(@get_attr_label $attrs);
             if attr_label.is_empty() {
@@ -321,14 +331,14 @@ macro_rules! brick {
                 label,
                 r#type: brick!(@get_argument_type $param_type),
                 enum_options: None,
-                default_value: Some(brick!(@get_default_value $param_type)),
+                default_value: Some($default_value),
             });
         } else if brick!(@has_attr input, $attrs) {
             $input_vec.push(crate::bricks::types::BrickInput {
                 id: stringify!($param_name).to_string(),
                 label,
                 r#type: brick!(@get_return_type $param_type),
-                default_value: Some(brick!(@get_default_value $param_type)),
+                default_value: Some($default_value),
             });
         }
     };

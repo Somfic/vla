@@ -3,13 +3,14 @@
     {
       "id": "1",
       "position": {
-        "x": 0.0,
-        "y": -180.0
+        "x": 180.0,
+        "y": 60.0
       },
       "data": {
-        "brick_id": "hello_world",
+        "brick_id": "math",
         "brick": null,
         "arguments": {
+          "invert": "false",
           "name": "\"John\""
         }
       },

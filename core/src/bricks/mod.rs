@@ -12,8 +12,9 @@ brick! {
     #[label("Math Operations")]
     #[description("Performs addition and multiplication on two numbers")]
     fn math(
-        #[input] #[label("First")] first: i32,
-        #[input] #[label("Second")] second: i32
+        #[input] #[label("First")] first: i32 = 1,
+        #[input] #[label("Second")] second: i32 = 2,
+        #[argument] #[label("Invert")] invert: bool = true
     ) -> (
         #[label("Addition")] i32,
         #[label("Multiplication")] i32
