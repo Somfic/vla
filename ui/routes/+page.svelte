@@ -7,7 +7,10 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
 
   let graph = $state<Graph | null>(null);
-  api.load_graph("../graph.json").then((g) => (graph = g));
+  api.load_graph("../graph.json").then((g) => {
+    graph = g;
+    console.log("Graph loaded:", graph);
+  });
 
   async function handleAutoSave(updatedGraph: Graph) {
     graph = updatedGraph;
@@ -22,8 +25,8 @@
     if (!graph) return;
     const newNode: Node = {
       id: (graph.nodes.length + 1).toString(),
-      position: { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 },
-      data: { brick_id: "testBrick", arguments: {} },
+      position: { x: 0, y: 0 },
+      data: { brick_id: "testBrick", brick: null, arguments: {} },
       type: "vla",
     };
     graph = {

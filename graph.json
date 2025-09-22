@@ -3,62 +3,12 @@
     {
       "id": "1",
       "position": {
-        "x": -3540.0,
-        "y": -1300.0
+        "x": -3600.0,
+        "y": -1340.0
       },
       "data": {
-        "brick_id": "testBrick",
-        "brick": {
-          "id": "testBrick",
-          "label": "Test Brick",
-          "description": "A simple test brick",
-          "inputs": [
-            {
-              "id": "in1",
-              "label": "Input"
-            }
-          ],
-          "outputs": [
-            {
-              "id": "out1",
-              "label": "Output"
-            }
-          ],
-          "arguments": [
-            {
-              "id": "arg1",
-              "label": "String",
-              "type": "String",
-              "enum_options": null,
-              "default_value": null
-            },
-            {
-              "id": "arg2",
-              "label": "Number",
-              "type": "Number",
-              "enum_options": null,
-              "default_value": null
-            },
-            {
-              "id": "arg3",
-              "label": "Boolean",
-              "type": "Boolean",
-              "enum_options": null,
-              "default_value": null
-            },
-            {
-              "id": "arg4",
-              "label": "Enum",
-              "type": "Enum",
-              "enum_options": [
-                "Option 1",
-                "Option 2",
-                "Option 3"
-              ],
-              "default_value": "Option 1"
-            }
-          ]
-        },
+        "brick_id": "test_hello",
+        "brick": null,
         "arguments": {
           "arg1": "\"Hello world\"",
           "arg2": "120",
