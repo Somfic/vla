@@ -30,7 +30,7 @@
     const newNode: Node = {
       id: (graph.nodes.length + 1).toString(),
       position: { x: 0, y: 0 },
-      data: { brick_id: "testBrick", brick: null, arguments: {} },
+      data: { brick_id: "math", brick: null, arguments: {} },
       type: "vla",
     };
     graph = {

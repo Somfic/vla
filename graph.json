@@ -3,8 +3,8 @@
     {
       "id": "1",
       "position": {
-        "x": 180.0,
-        "y": 60.0
+        "x": 240.0,
+        "y": 0.0
       },
       "data": {
         "brick_id": "math",
@@ -15,7 +15,46 @@
         }
       },
       "type": "vla"
+    },
+    {
+      "id": "2",
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "data": {
+        "brick_id": "testBrick",
+        "brick": null,
+        "arguments": {}
+      },
+      "type": "vla"
+    },
+    {
+      "id": "3",
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "data": {
+        "brick_id": "math",
+        "brick": null,
+        "arguments": {
+          "invert": "true"
+        }
+      },
+      "type": "vla"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "id": "xy-edge__3output_0-1first",
+      "source": "3",
+      "target": "1"
+    },
+    {
+      "id": "xy-edge__3output_1-1second",
+      "source": "3",
+      "target": "1"
+    }
+  ]
 }
