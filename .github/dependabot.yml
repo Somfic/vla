@@ -9,7 +9,7 @@ updates:
       include: "scope"
 
   - package-ecosystem: "cargo"
-    directory: "/src-tauri"
+    directory: "/core"
     schedule:
       interval: "daily"
     commit-message:

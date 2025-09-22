@@ -61,7 +61,7 @@ jobs:
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
       with:
-        workspaces: "src-tauri -> target"
+        workspaces: "core -> target"
 
     - name: Cache Bun dependencies
       uses: actions/cache@v4
@@ -84,13 +84,13 @@ jobs:
       run: bun run build
 
     - name: Check Rust formatting
-      run: cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check
+      run: cargo fmt --all --manifest-path core/Cargo.toml -- --check
 
     - name: Run Rust linter
-      run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
+      run: cargo clippy --manifest-path core/Cargo.toml --all-targets --all-features -- -D warnings
 
     - name: Run Rust tests
-      run: cargo test --manifest-path src-tauri/Cargo.toml
+      run: cargo test --manifest-path core/Cargo.toml
 
     - name: Build Tauri app
       uses: tauri-apps/tauri-action@v0

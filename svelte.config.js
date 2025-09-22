@@ -9,9 +9,12 @@ import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 const config = {
   preprocess: vitePreprocess(),
   kit: {
+    files: {
+      src: 'ui',
+    },
     alias: {
-      '$components': 'src/components',
-      '$styles': 'src/styles',
+      '$components': 'ui/components',
+      '$styles': 'ui/styles',
     },
     adapter: adapter({
       fallback: "index.html",

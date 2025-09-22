@@ -1,8 +1,8 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
-#[taurpc::procedures(export_to = "../src/lib/core.ts")]
+#[taurpc::procedures(export_to = "../ui/lib/core.ts")]
 pub trait Api {
     async fn hello_world(name: String) -> String;
     async fn save_graph(graph: Graph, filename: String) -> Result<String, String>;
