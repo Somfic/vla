@@ -2,6 +2,10 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
+use crate::bricks::types::Brick;
+
+pub mod bricks;
+
 #[taurpc::procedures(export_to = "../ui/lib/core.ts")]
 pub trait Api {
     async fn hello_world(name: String) -> String;
@@ -21,7 +25,13 @@ impl Api for ApiImpl {
     }
 
     async fn save_graph(self, graph: Graph, filename: String) -> Result<String, String> {
-        match serde_json::to_string_pretty(&graph) {
+        // Create a copy of the graph with brick fields cleared for file storage
+        let mut graph_for_file = graph.clone();
+        for node in &mut graph_for_file.nodes {
+            node.data.brick = None;
+        }
+
+        match serde_json::to_string_pretty(&graph_for_file) {
             Ok(json) => match fs::write(&filename, json) {
                 Ok(_) => Ok(format!("Graph saved to {}", filename)),
                 Err(e) => Err(format!("Failed to write file: {}", e)),
@@ -50,63 +60,15 @@ impl Api for ApiImpl {
         }
     }
 
-    async fn get_brick(self, brick_id: String) -> Option<Brick> {
+    async fn get_brick(self, brick_id: String) -> Option<bricks::types::Brick> {
         let bricks = self.get_bricks().await;
         bricks.into_iter().find(|b| b.id == brick_id)
     }
 
-    async fn get_bricks(self) -> Vec<Brick> {
-        vec![Brick {
-            id: "testBrick".to_string(),
-            label: "Test Brick".to_string(),
-            description: "A simple test brick".to_string(),
-            inputs: vec![BrickHandle {
-                id: "in1".to_string(),
-                label: "Input".to_string(),
-            }],
-            outputs: vec![BrickHandle {
-                id: "out1".to_string(),
-                label: "Output".to_string(),
-            }],
-            arguments: vec![
-                BrickArgument {
-                    id: "arg1".to_string(),
-                    label: "String".to_string(),
-                    r#type: BrickArgumentType::String,
-                    default_value: None,
-                    enum_options: None,
-                },
-                BrickArgument {
-                    id: "arg2".to_string(),
-                    label: "Number".to_string(),
-                    r#type: BrickArgumentType::Number,
-                    default_value: None,
-                    enum_options: None,
-                },
-                BrickArgument {
-                    id: "arg3".to_string(),
-                    label: "Boolean".to_string(),
-                    r#type: BrickArgumentType::Boolean,
-                    default_value: None,
-                    enum_options: None,
-                },
-                BrickArgument {
-                    id: "arg4".to_string(),
-                    label: "Enum".to_string(),
-                    r#type: BrickArgumentType::Enum,
-                    default_value: Some("Option 1".to_string()),
-                    enum_options: Some(
-                        vec![
-                            "Option 1".to_string(),
-                            "Option 2".to_string(),
-                            "Option 3".to_string(),
-                        ]
-                        .into_iter()
-                        .collect(),
-                    ),
-                },
-            ],
-        }]
+    async fn get_bricks(self) -> Vec<bricks::types::Brick> {
+        let bricks = bricks::get_all_bricks();
+        println!("{:#?}", bricks);
+        bricks
     }
 }
 
@@ -130,10 +92,9 @@ pub struct Point {
     pub y: f64,
 }
 
-#[taurpc::ipc_type]
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct NodeData {
     pub brick_id: String,
-    #[serde(default)]
     pub brick: Option<Brick>,
     pub arguments: BTreeMap<String, String>,
 }
@@ -143,37 +104,4 @@ pub struct Edge {
     pub id: String,
     pub source: String,
     pub target: String,
-}
-
-#[taurpc::ipc_type]
-pub struct Brick {
-    pub id: String,
-    pub label: String,
-    pub description: String,
-    pub inputs: Vec<BrickHandle>,
-    pub outputs: Vec<BrickHandle>,
-    pub arguments: Vec<BrickArgument>,
-}
-
-#[taurpc::ipc_type]
-pub struct BrickHandle {
-    pub id: String,
-    pub label: String,
-}
-
-#[taurpc::ipc_type]
-pub struct BrickArgument {
-    pub id: String,
-    pub label: String,
-    pub r#type: BrickArgumentType,
-    pub enum_options: Option<Vec<String>>,
-    pub default_value: Option<String>,
-}
-
-#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
-pub enum BrickArgumentType {
-    String,
-    Number,
-    Boolean,
-    Enum,
 }

@@ -1,62 +1,64 @@
 <script lang="ts">
-    import api, { type VlaNode } from "$lib/api";
+    import { type VlaNode } from "$lib/api";
     import { Handle, Position, type NodeProps } from "@xyflow/svelte";
     import ArgumentInput from "./arguments/ArgumentInput.svelte";
 
     let { data }: NodeProps<VlaNode> = $props();
 </script>
 
-<div class="node">
-    <div class="header">
-        {data.brick?.label}
-    </div>
+{#if data.brick}
+    <div class="node">
+        <div class="header">
+            {data.brick?.label}
+        </div>
 
-    <div class="arguments">
-        {#each data.brick!.arguments as argument}
-            <ArgumentInput {argument} {data} />
-        {/each}
-    </div>
-
-    <div class="handles">
-        <div class="inputs">
-            {#each data.brick!.inputs as input}
-                <div class="input">
-                    <div class="handle">
-                        <Handle
-                            type="target"
-                            id={input.id}
-                            position={Position.Left}
-                        />
-                    </div>
-                    <div class="label">
-                        {input.label}
-                    </div>
-                </div>
+        <div class="arguments">
+            {#each data.brick.arguments as argument}
+                <ArgumentInput {argument} {data} />
             {/each}
         </div>
 
-        <div class="outputs">
-            {#each data.brick!.outputs as output}
-                <div class="output">
-                    <div class="label">
-                        {output.label}
+        <div class="handles">
+            <div class="inputs">
+                {#each data.brick.inputs as input}
+                    <div class="input">
+                        <div class="handle">
+                            <Handle
+                                type="target"
+                                id={input.id}
+                                position={Position.Left}
+                            />
+                        </div>
+                        <div class="label">
+                            {input.label}
+                        </div>
                     </div>
-                    <div class="handle">
-                        <Handle
-                            type="source"
-                            id={output.id}
-                            position={Position.Right}
-                        />
+                {/each}
+            </div>
+
+            <div class="outputs">
+                {#each data.brick.outputs as output}
+                    <div class="output">
+                        <div class="label">
+                            {output.label}
+                        </div>
+                        <div class="handle">
+                            <Handle
+                                type="source"
+                                id={output.id}
+                                position={Position.Right}
+                            />
+                        </div>
                     </div>
-                </div>
-            {/each}
+                {/each}
+            </div>
+        </div>
+
+        <div class="preview">
+            <img src="https://via.placeholder.com/500" alt="Node Preview" />
         </div>
     </div>
-
-    <div class="preview">
-        <img src="https://via.placeholder.com/500" alt="Node Preview" />
-    </div>
-</div>
+{/if}
 
 <style lang="scss">
     @import "$styles/theme";

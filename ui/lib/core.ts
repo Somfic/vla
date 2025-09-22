@@ -4,13 +4,17 @@ import { createTauRPCProxy as createProxy, type InferCommandOutput } from 'taurp
 type TAURI_CHANNEL<T> = (response: T) => void
 
 
-export type Brick = { id: string; label: string; description: string; inputs: BrickHandle[]; outputs: BrickHandle[]; arguments: BrickArgument[] }
+export type Brick = { id: string; label: string; description: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[] }
 
 export type BrickArgument = { id: string; label: string; type: BrickArgumentType; enum_options: string[] | null; default_value: string | null }
 
 export type BrickArgumentType = "String" | "Number" | "Boolean" | "Enum"
 
-export type BrickHandle = { id: string; label: string }
+export type BrickHandleType = "String" | "Number" | "Boolean" | "Enum"
+
+export type BrickInput = { id: string; label: string; type: BrickHandleType; default_value: string | null }
+
+export type BrickOutput = { id: string; label: string; type: BrickHandleType }
 
 export type Edge = { id: string; source: string; target: string }
 
@@ -18,7 +22,7 @@ export type Graph = { nodes: Node[]; edges: Edge[] }
 
 export type Node = { id: string; position: Point; data: NodeData; type: string }
 
-export type NodeData = { brick_id: string; brick?: Brick | null; arguments: Partial<{ [key in string]: string }> }
+export type NodeData = { brick_id: string; brick: Brick | null; arguments: Partial<{ [key in string]: string }> }
 
 export type Point = { x: number; y: number }
 
