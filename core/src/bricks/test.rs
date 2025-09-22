@@ -1,8 +1,8 @@
-use super::macros::brick_fn;
+use super::macros::brick;
 use super::types::*;
 
 // Define bricks using the new improved macro syntax
-brick_fn! {
+brick! {
     fn hello_world(name: String = "World") -> String {
         id: "hello_world",
         label: "Hello World",
@@ -13,7 +13,7 @@ brick_fn! {
     }
 }
 
-brick_fn! {
+brick! {
     fn add_numbers(first: i32 = 0, second: i32 = 0) -> i32 {
         id: "add_numbers",
         label: "Add Numbers",
@@ -24,7 +24,7 @@ brick_fn! {
     }
 }
 
-brick_fn! {
+brick! {
     fn is_positive(number: i32 = 0) -> bool {
         id: "is_positive",
         label: "Is Positive",
@@ -37,8 +37,8 @@ brick_fn! {
 
 pub fn get_test_bricks() -> Vec<Brick> {
     vec![
-        get_hello_world_brick(),
-        get_add_numbers_brick(),
-        get_is_positive_brick(),
+        hello_world_brick(),
+        add_numbers_brick(),
+        is_positive_brick(),
     ]
 }

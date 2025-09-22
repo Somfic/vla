@@ -1,6 +1,6 @@
 /// Usage:
 /// ```
-/// brick_fn! {
+/// brick! {
 ///     fn hello_world(name: String = "World") -> String {
 ///         id: "hello_world",
 ///         label: "Hello World",
@@ -11,7 +11,7 @@
 ///     }
 /// }
 /// ```
-macro_rules! brick_fn {
+macro_rules! brick {
     (
         fn $fn_name:ident(
             $($param_name:ident: $param_type:ident $(= $default:expr)?),*
@@ -36,8 +36,8 @@ macro_rules! brick_fn {
                 $(
                     let $param_name = arg_iter.next()
                         .and_then(|arg| arg.default_value.clone())
-                        .unwrap_or_else(|| brick_fn!(@default_value $param_type $(, $default)?));
-                    let $param_name = brick_fn!(@parse_value $param_type, $param_name);
+                        .unwrap_or_else(|| brick!(@default_value $param_type $(, $default)?));
+                    let $param_name = brick!(@parse_value $param_type, $param_name);
                 )*
 
                 let _result = $fn_name($($param_name),*);
@@ -45,12 +45,12 @@ macro_rules! brick_fn {
                 vec![crate::bricks::types::BrickOutput {
                     id: "result".to_string(),
                     label: "Result".to_string(),
-                    r#type: brick_fn!(@return_type $return_type),
+                    r#type: brick!(@return_type $return_type),
                 }]
             }
 
             // Define the brick getter function
-            pub fn [<get_ $fn_name _brick>]() -> crate::bricks::types::Brick {
+            pub fn [<$fn_name _brick>]() -> crate::bricks::types::Brick {
                 crate::bricks::types::Brick {
                     id: $id.to_string(),
                     label: $label.to_string(),
@@ -60,9 +60,9 @@ macro_rules! brick_fn {
                             crate::bricks::types::BrickArgument {
                                 id: stringify!($param_name).to_string(),
                                 label: stringify!($param_name).to_string(),
-                                r#type: brick_fn!(@arg_type $param_type),
+                                r#type: brick!(@arg_type $param_type),
                                 enum_options: None,
-                                default_value: Some(brick_fn!(@default_value $param_type $(, $default)?)),
+                                default_value: Some(brick!(@default_value $param_type $(, $default)?)),
                             }
                         ),*
                     ],
@@ -71,7 +71,7 @@ macro_rules! brick_fn {
                         crate::bricks::types::BrickOutput {
                             id: "result".to_string(),
                             label: "Result".to_string(),
-                            r#type: brick_fn!(@return_type $return_type),
+                            r#type: brick!(@return_type $return_type),
                         }
                     ],
                     execution: [<$fn_name _execution>],
@@ -104,4 +104,4 @@ macro_rules! brick_fn {
     (@return_type bool) => { crate::bricks::types::BrickHandleType::Boolean };
 }
 
-pub(crate) use brick_fn;
+pub(crate) use brick;
