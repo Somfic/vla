@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::bricks::macros::brick;
-    use crate::bricks::math_brick;
+    use crate::bricks::{math_brick, get_all_bricks};
 
     // Test brick that demonstrates argument and input parameters - output comes from return value
     brick! {
@@ -102,8 +102,6 @@ mod tests {
             (x + y, x - y)
         }
     }
-
-    use super::*;
 
     // Tests from test_all_types.rs
     #[test]

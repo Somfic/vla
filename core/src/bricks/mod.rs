@@ -1,6 +1,9 @@
 pub mod macros;
 pub mod types;
 
+#[cfg(test)]
+mod tests;
+
 use crate::bricks::macros::brick;
 use types::Brick;
 
