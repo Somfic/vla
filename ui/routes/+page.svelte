@@ -12,6 +12,10 @@
     console.log("Graph loaded:", graph);
   });
 
+  api.get_bricks().then((bricks) => {
+    console.log("Available bricks:", bricks);
+  });
+
   async function handleAutoSave(updatedGraph: Graph) {
     graph = updatedGraph;
     try {

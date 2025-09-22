@@ -3,27 +3,18 @@
     {
       "id": "1",
       "position": {
-        "x": -3600.0,
-        "y": -1340.0
+        "x": 0.0,
+        "y": -180.0
       },
       "data": {
-        "brick_id": "test_hello",
+        "brick_id": "hello_world",
         "brick": null,
         "arguments": {
-          "arg1": "\"Hello world\"",
-          "arg2": "120",
-          "arg3": "false",
-          "arg4": "\"Option 3\""
+          "name": "\"John\""
         }
       },
       "type": "vla"
     }
   ],
-  "edges": [
-    {
-      "id": "xy-edge__1out1-1in1",
-      "source": "1",
-      "target": "1"
-    }
-  ]
+  "edges": []
 }
