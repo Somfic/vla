@@ -7,7 +7,6 @@ pub struct Brick {
     pub inputs: Vec<BrickInput>,
     pub outputs: Vec<BrickOutput>,
     #[serde(skip, default = "default_execution_fn")]
-    #[specta(skip)]
     pub execution: fn(Vec<BrickArgument>, Vec<BrickInput>) -> Vec<BrickOutput>,
 }
 
@@ -17,27 +16,6 @@ fn default_execution(_args: Vec<BrickArgument>, _inputs: Vec<BrickInput>) -> Vec
 
 fn default_execution_fn() -> fn(Vec<BrickArgument>, Vec<BrickInput>) -> Vec<BrickOutput> {
     default_execution
-}
-
-impl Default for Brick {
-    fn default() -> Self {
-        fn default_execution(
-            _args: Vec<BrickArgument>,
-            _inputs: Vec<BrickInput>,
-        ) -> Vec<BrickOutput> {
-            vec![]
-        }
-
-        Brick {
-            id: "".to_string(),
-            label: "".to_string(),
-            description: "".to_string(),
-            arguments: vec![],
-            inputs: vec![],
-            outputs: vec![],
-            execution: default_execution,
-        }
-    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
@@ -64,7 +42,7 @@ pub struct BrickArgument {
     pub default_value: Option<String>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, specta::Type)]
 pub enum BrickArgumentType {
     String,
     Number,
@@ -72,7 +50,7 @@ pub enum BrickArgumentType {
     Enum,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, specta::Type)]
 pub enum BrickHandleType {
     String,
     Number,

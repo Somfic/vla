@@ -19,7 +19,7 @@ brick! {
         #[label("Addition")] i32,
         #[label("Multiplication")] i32
     ) {
-        (first + second, first * second)
+        (first + second  * if invert { -1 } else { 1 }, first * second  * if invert { -1 } else { 1 })
     }
 }
 
