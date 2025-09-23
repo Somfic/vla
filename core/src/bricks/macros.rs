@@ -61,6 +61,91 @@ macro_rules! brick {
                $return_type, $body)
     };
 
+    // Mixed parameter types with single tuple return (1-tuple)
+    (
+        #[id($id:expr)]
+        $(#[label($label:expr)])?
+        $(#[description($description:expr)])?
+        fn $fn_name:ident(
+            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
+        ) -> (
+            $(#[$output_attr:ident$(($($output_attr_content:tt)*))? ])+ $output_type:ident
+        )
+        $body:block
+    ) => {
+        // Validate each parameter has at least one required attribute
+        $(
+            brick!(@ensure_valid_attrs [$(#[$param_attr$(($($param_attr_content)*))? ])+] -> $param_name);
+        )*
+
+        paste::paste! {
+            // Define the actual function
+            fn $fn_name($($param_name: $param_type),*) -> ($output_type,) $body
+
+            // Define the execution wrapper
+            #[allow(unused_variables)]
+            fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgument>,
+                inputs: Vec<crate::bricks::types::BrickInput>
+            ) -> Vec<crate::bricks::types::BrickOutput> {
+                // Extract parameters based on their attributes
+                $(
+                    let $param_name = brick!(@get_param_value_with_attrs
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_type,
+                        &args,
+                        &inputs,
+                        stringify!($param_name),
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Call the function
+                let result = $fn_name($($param_name),*);
+
+                // Return outputs from single tuple element
+                let mut outputs = Vec::new();
+
+                brick!(@add_tuple_outputs outputs, result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
+
+                outputs
+            }
+
+            // Generate the brick structure function
+            pub fn [<$fn_name _brick>]() -> crate::bricks::types::Brick {
+                let mut arguments = Vec::new();
+                let mut inputs = Vec::new();
+                let mut outputs = Vec::new();
+
+                // Process each parameter based on its attributes
+                $(
+                    brick!(@process_param_with_attrs
+                        arguments,
+                        inputs,
+                        outputs,
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_name,
+                        $param_type,
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Add output from single tuple return type
+                brick!(@add_tuple_outputs outputs, dummy_result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
+
+                crate::bricks::types::Brick {
+                    id: $id.to_string(),
+                    label: brick!(@get_label_or_default $($label)?),
+                    description: brick!(@get_description_or_default $($description)?),
+                    arguments,
+                    inputs,
+                    outputs,
+                    execution: [<$fn_name _execution>],
+                }
+            }
+        }
+    };
+
     // Mixed parameter types with tuple return (multiple outputs)
     (
         #[id($id:expr)]
@@ -341,6 +426,32 @@ macro_rules! brick {
                 default_value: Some($default_value),
             });
         }
+    };
+
+    // Helper: Add tuple outputs to outputs vector - handle 1-tuple
+    (@add_tuple_outputs $output_vec:ident, $result:ident, [($attrs0:tt, $type0:ident)]) => {
+        // Single output
+        let id0 = {
+            let attr_id = brick!(@get_attr_id $attrs0);
+            if attr_id.is_empty() {
+                "output_0".to_string()
+            } else {
+                attr_id
+            }
+        };
+        let label0 = {
+            let attr_label = brick!(@get_attr_label $attrs0);
+            if attr_label.is_empty() {
+                "Output".to_string()
+            } else {
+                attr_label
+            }
+        };
+        $output_vec.push(crate::bricks::types::BrickOutput {
+            id: id0,
+            label: label0,
+            r#type: brick!(@get_return_type $type0),
+        });
     };
 
     // Helper: Add tuple outputs to outputs vector - handle 2-tuple
