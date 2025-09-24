@@ -27,7 +27,7 @@
 
   async function addNode() {
     if (!graph) return;
-    console.log("Adding node...");
+    // Optionally, update status to provide user feedback
     graph = await api.insert_node("../graph.json", "addition", { x: 0, y: 0 });
   }
 </script>
