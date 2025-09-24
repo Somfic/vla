@@ -8,7 +8,6 @@ pub mod bricks;
 
 #[taurpc::procedures(export_to = "../ui/lib/core.ts")]
 pub trait Api {
-    async fn hello_world(name: String) -> String;
     async fn save_graph(graph: Graph, filename: String) -> Result<String, String>;
     async fn load_graph(filename: String) -> Result<Graph, String>;
     async fn get_brick(brick_id: String) -> Option<Brick>;
@@ -20,10 +19,6 @@ pub struct ApiImpl;
 
 #[taurpc::resolvers]
 impl Api for ApiImpl {
-    async fn hello_world(self, name: String) -> String {
-        format!("Hello, {}! You've been greeted from Rust!", name)
-    }
-
     async fn save_graph(self, graph: Graph, filename: String) -> Result<String, String> {
         // Create a copy of the graph with brick fields cleared for file storage
         let mut graph_for_file = graph.clone();
@@ -42,7 +37,14 @@ impl Api for ApiImpl {
 
     async fn load_graph(self, filename: String) -> Result<Graph, String> {
         if !Path::new(&filename).exists() {
-            return Err(format!("File {} does not exist", filename));
+            // Create an empty graph if the file does not exist
+            let empty_graph = Graph {
+                nodes: vec![],
+                edges: vec![],
+            };
+
+            self.save_graph(empty_graph.clone(), filename.clone()).await?;
+            return Ok(empty_graph);
         }
 
         match fs::read_to_string(&filename) {
