@@ -27,7 +27,7 @@
     // Set up save callback through api
     setSaveCallback(save);
 
-    let nodeTypes = { vla: Node };
+    let nodeTypes = { v1: Node };
 </script>
 
 <div class="canvas">
