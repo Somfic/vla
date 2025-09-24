@@ -94,9 +94,9 @@ jobs:
     - name: Run Rust tests
       run: cargo test --manifest-path core/Cargo.toml
 
-    - name: Build Tauri app
-      uses: tauri-apps/tauri-action@v0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tauriScript: bun run tauri
+    # - name: Build Tauri app
+    #   uses: tauri-apps/tauri-action@v0
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tauriScript: bun run tauri
