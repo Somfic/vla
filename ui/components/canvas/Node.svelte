@@ -71,6 +71,11 @@
         background-color: $background;
         padding: $gap;
         gap: $gap;
+        transition: all 0.2s ease;
+    }
+
+    :global(.selected > .node) {
+        border-color: $primary;
     }
 
     .handles {
