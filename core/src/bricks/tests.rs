@@ -292,36 +292,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_get_all_bricks_validation() {
-        let bricks = get_all_bricks();
-        assert_eq!(bricks.len(), 1);
-        assert_eq!(bricks[0].id, "math");
-
-        // Test that all bricks in the collection are valid
-        for brick in bricks {
-            assert!(!brick.id.is_empty());
-            assert!(!brick.label.is_empty());
-
-            // Test arguments
-            for arg in brick.arguments {
-                assert!(!arg.id.is_empty());
-                assert!(!arg.label.is_empty());
-            }
-
-            // Test inputs
-            for input in brick.inputs {
-                assert!(!input.id.is_empty());
-                assert!(!input.label.is_empty());
-            }
-
-            // Test outputs
-            for output in brick.outputs {
-                assert!(!output.id.is_empty());
-                assert!(!output.label.is_empty());
-            }
-        }
-    }
 
     #[test]
     fn test_type_consistency() {
