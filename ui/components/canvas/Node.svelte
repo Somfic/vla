@@ -78,7 +78,7 @@
         border-color: $primary;
     }
 
-    .handles {
+    .handles {  
         display: flex;
         justify-content: space-between;
         gap: $gap;

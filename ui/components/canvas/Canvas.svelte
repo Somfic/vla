@@ -39,6 +39,7 @@
         snapGrid={[20, 20]}
         onnodedragstop={save}
         onconnectend={save}
+        ondelete={save}
     >
         <Background />
     </SvelteFlow>
