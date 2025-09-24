@@ -292,7 +292,6 @@ mod tests {
         }
     }
 
-
     #[test]
     fn test_type_consistency() {
         let bricks = get_all_bricks();
