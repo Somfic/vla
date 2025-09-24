@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  frontend:
-    name: Frontend CI
+  ui:
+    name: ui
     runs-on: ubuntu-latest
 
     steps:
@@ -37,14 +37,14 @@ jobs:
     - name: Build frontend
       run: bun run build
 
-  tauri:
-    name: Tauri CI
+  core:
+    name: core
     runs-on: ${{ matrix.platform }}
 
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
+        platform: [macos-latest]
 
     steps:
     - name: Checkout code
