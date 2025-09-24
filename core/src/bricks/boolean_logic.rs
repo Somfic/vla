@@ -22,11 +22,14 @@ mod tests {
     #[test]
     fn test_logical_or_brick_basic() {
         let brick = logical_or_brick();
-        
+
         assert_eq!(brick.id, "logical_or");
         assert_eq!(brick.label, "OR");
-        assert_eq!(brick.description, "Performs logical OR operation on two boolean values");
-        
+        assert_eq!(
+            brick.description,
+            "Performs logical OR operation on two boolean values"
+        );
+
         // Should have 0 arguments, 2 inputs, and 1 output
         assert_eq!(brick.arguments.len(), 0);
         assert_eq!(brick.inputs.len(), 2);

@@ -1,13 +1,13 @@
+pub mod boolean_logic;
 pub mod macros;
 pub mod types;
-pub mod boolean_logic;
 
 #[cfg(test)]
 mod tests;
 
 use crate::bricks::macros::brick;
-use types::Brick;
 use boolean_logic::logical_or_brick;
+use types::Brick;
 
 brick! {
     #[id("addition")]
@@ -41,5 +41,9 @@ brick! {
 }
 
 pub fn get_all_bricks() -> Vec<Brick> {
-    vec![addition_brick(), euclidean_division_brick(), logical_or_brick()]
+    vec![
+        addition_brick(),
+        euclidean_division_brick(),
+        logical_or_brick(),
+    ]
 }
