@@ -27,17 +27,8 @@
 
   async function addNode() {
     if (!graph) return;
-    const newNode: Node = {
-      id: (graph.nodes.length + 1).toString(),
-      position: { x: 0, y: 0 },
-      data: { brick_id: "math", brick: null, arguments: {} },
-      type: "vla",
-    };
-    graph = {
-      ...graph,
-      nodes: [...graph.nodes, newNode],
-    };
-    await handleAutoSave(graph);
+    console.log("Adding node...");
+    graph = await api.insert_node("../graph.json", "addition", { x: 0, y: 0 });
   }
 </script>
 

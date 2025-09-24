@@ -1,0 +1,120 @@
+use crate::bricks;
+use crate::prelude::*;
+use std::collections::BTreeMap;
+use std::fs;
+use std::path::Path;
+use uuid::Uuid;
+
+#[taurpc::ipc_type]
+pub struct Graph {
+    pub nodes: Vec<Node>,
+    pub edges: Vec<Edge>,
+}
+
+#[taurpc::ipc_type]
+pub struct Node {
+    pub id: String,
+    pub position: Point,
+    pub data: NodeData,
+    pub r#type: String,
+}
+
+#[taurpc::ipc_type]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct NodeData {
+    pub brick_id: String,
+    pub brick: Option<Brick>,
+    pub arguments: BTreeMap<String, String>,
+}
+
+#[taurpc::ipc_type]
+pub struct Edge {
+    pub id: String,
+    pub source: String,
+    pub target: String,
+}
+
+pub async fn save_graph(graph: &Graph, graph_path: &str) -> Result<String, String> {
+    // Serialize to JSON value first, then remove brick fields
+    let mut json_value =
+        serde_json::to_value(graph).map_err(|e| format!("Failed to serialize graph: {}", e))?;
+
+    // Remove brick fields from nodes in the JSON
+    if let Some(nodes) = json_value.get_mut("nodes").and_then(|n| n.as_array_mut()) {
+        for node in nodes {
+            if let Some(data) = node.get_mut("data").and_then(|d| d.as_object_mut()) {
+                data.remove("brick");
+            }
+        }
+    }
+
+    let json = serde_json::to_string_pretty(&json_value)
+        .map_err(|e| format!("Failed to format JSON: {}", e))?;
+
+    fs::write(graph_path, json).map_err(|e| format!("Failed to write file: {}", e))?;
+
+    Ok(format!("Graph saved to {}", graph_path))
+}
+
+pub async fn load_graph(graph_path: &str) -> Result<Graph, String> {
+    if !Path::new(graph_path).exists() {
+        let empty_graph = Graph {
+            nodes: vec![],
+            edges: vec![],
+        };
+
+        save_graph(&empty_graph, graph_path).await?;
+        return Ok(empty_graph);
+    }
+
+    let content =
+        fs::read_to_string(graph_path).map_err(|e| format!("Failed to read file: {}", e))?;
+
+    let mut graph: Graph =
+        serde_json::from_str(&content).map_err(|e| format!("Failed to parse graph: {}", e))?;
+
+    // Populate brick data for each node
+    for node in &mut graph.nodes {
+        node.data.brick = get_brick(&node.data.brick_id);
+    }
+
+    Ok(graph)
+}
+
+pub fn get_brick(brick_id: &str) -> Option<bricks::types::Brick> {
+    let bricks = bricks::get_all_bricks();
+    bricks.into_iter().find(|b| b.id == brick_id)
+}
+
+pub async fn insert_node(
+    graph_path: &str,
+    brick_id: &str,
+    position: Point,
+) -> Result<Graph, String> {
+    let mut graph = load_graph(graph_path).await?;
+    let brick = get_brick(brick_id);
+
+    if brick.is_none() {
+        return Err(format!("Brick with id '{}' not found", brick_id));
+    }
+
+    let node = Node {
+        id: Uuid::new_v4().to_string(),
+        position,
+        data: NodeData {
+            brick_id: brick_id.to_string(),
+            brick,
+            arguments: BTreeMap::new(),
+        },
+        r#type: "v1".to_string(),
+    };
+
+    graph.nodes.push(node);
+    save_graph(&graph, graph_path).await?;
+    Ok(graph)
+}
