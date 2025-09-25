@@ -68,7 +68,13 @@ brick! {
     )
     {
         if b.abs() < f32::EPSILON {
-            (0f32,) // Handle division by zero
+            if a == 0f32 {
+                (f32::NAN,)
+            } else if a > 0f32 {
+                (f32::INFINITY,)
+            } else {
+                (f32::NEG_INFINITY,)
+            }
         } else {
             (a / b,)
         }
