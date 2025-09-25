@@ -44,6 +44,21 @@ brick! {
     }
 }
 
+brick! {
+    #[id("logical_xor")]
+    #[label("XOR")]
+    #[description("Performs logical XOR operation on a boolean value")]
+    fn logical_xor(
+        #[input] #[label("A")] a: bool,
+        #[input] #[label("B")] b: bool
+    ) -> (
+        #[label("A ^ B")] bool
+    )
+    {
+        (a ^ b,)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -74,5 +89,15 @@ mod tests {
         assert_eq!(brick.id, "logical_not");
         assert_eq!(logical_not(true), (false,));
         assert_eq!(logical_not(false), (true,));
+    }
+
+    #[test]
+    fn logical_xor_test() {
+        let brick = logical_xor_brick();
+        assert_eq!(brick.id, "logical_xor");
+        assert_eq!(logical_xor(true, true), (false,));
+        assert_eq!(logical_xor(true, false), (true,));
+        assert_eq!(logical_xor(false, true), (true,));
+        assert_eq!(logical_xor(false, false), (false,));
     }
 }
