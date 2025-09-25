@@ -32,7 +32,7 @@ impl Api for ApiImpl {
     }
 
     async fn get_bricks(self) -> Vec<bricks::types::Brick> {
-        bricks::get_all_bricks()
+        bricks::all_bricks()
     }
 
     async fn insert_node(

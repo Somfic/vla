@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::bricks::{get_all_bricks, macros::brick};
+    use crate::bricks::{all_bricks, macros::brick};
 
     brick! {
         #[id("math")]
@@ -221,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_comprehensive_enum_options_validation() {
-        let bricks = get_all_bricks();
+        let bricks = all_bricks();
 
         // Test that enum_options are properly initialized
         for brick in bricks {
@@ -294,7 +294,7 @@ mod tests {
 
     #[test]
     fn test_type_consistency() {
-        let bricks = get_all_bricks();
+        let bricks = all_bricks();
 
         for brick in bricks {
             // Test that all arguments have valid types
