@@ -72,6 +72,8 @@ brick! {
                 (f32::NAN,)
             } else if a > f32::EPSILON {
                 (f32::INFINITY,)
+            } else if a > 0.0 {
+                (f32::INFINITY,)
             } else {
                 (f32::NEG_INFINITY,)
             }
