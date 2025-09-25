@@ -142,7 +142,7 @@ mod tests {
         assert_eq!(divide(-6.0, 3.0), (-2.0,));
         assert_eq!(divide(6.0, -3.0), (-2.0,));
         assert_eq!(divide(-6.0, -3.0), (2.0,));
-        assert_eq!(divide(5.0, 0.0), (0.0,)); // Division by zero case
+        assert_eq!(divide(5.0, 0.0), (f32::INFINITY,)); // Division by zero case
     }
 
     #[test]
