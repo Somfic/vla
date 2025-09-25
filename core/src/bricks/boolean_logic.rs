@@ -47,7 +47,7 @@ brick! {
 brick! {
     #[id("logical_xor")]
     #[label("XOR")]
-    #[description("Performs logical XOR operation on a boolean value")]
+    #[description("Performs logical XOR operation on two boolean values")]
     fn logical_xor(
         #[input] #[label("A")] a: bool,
         #[input] #[label("B")] b: bool
