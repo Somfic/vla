@@ -7,6 +7,7 @@ pub fn all_bricks() -> Vec<Brick> {
         subtract_brick(),
         multiply_brick(),
         divide_brick(),
+        exponent_brick(),
     ]
 }
 
@@ -74,6 +75,21 @@ brick! {
     }
 }
 
+brick! {
+    #[id("exponent")]
+    #[label("Exponent")]
+    #[description("Performs exponentiation on two numbers")]
+    fn exponent(
+        #[input] #[label("A")] a: i32,
+        #[input] #[label("B")] b: i32
+    ) -> (
+        #[label("A ÷ B")] i32
+    )
+    {
+        (a.pow(b as u32),)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,5 +137,15 @@ mod tests {
         assert_eq!(divide(6, -3), (-2,));
         assert_eq!(divide(-6, -3), (2,));
         assert_eq!(divide(5, 0), (0,)); // Division by zero case
+    }
+
+    #[test]
+    fn exponent_test() {
+        let brick = exponent_brick();
+        assert_eq!(brick.id, "exponent");
+        assert_eq!(exponent(2, 3), (8,));
+        assert_eq!(exponent(5, 0), (1,)); // Any number to the power of 0 is 1
+        assert_eq!(exponent(3, 1), (3,)); // Any number to the power of 1 is itself
+        assert_eq!(exponent(2, -2), (0,)); // Negative exponent case
     }
 }
