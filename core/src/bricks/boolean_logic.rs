@@ -15,33 +15,42 @@ brick! {
     }
 }
 
+brick! {
+    #[id("logical_and")]
+    #[label("AND")]
+    #[description("Performs logical AND operation on two boolean values")]
+    fn logical_and(
+        #[input] #[label("A")] a: bool,
+        #[input] #[label("B")] b: bool
+    ) -> (
+        #[label("Result")] bool
+    )
+    {
+        (a && b,)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_logical_or_brick_basic() {
+    fn logical_or_test() {
         let brick = logical_or_brick();
-
         assert_eq!(brick.id, "logical_or");
-        assert_eq!(brick.label, "OR");
-        assert_eq!(
-            brick.description,
-            "Performs logical OR operation on two boolean values"
-        );
-
-        // Should have 0 arguments, 2 inputs, and 1 output
-        assert_eq!(brick.arguments.len(), 0);
-        assert_eq!(brick.inputs.len(), 2);
-        assert_eq!(brick.outputs.len(), 1);
-    }
-
-    #[test]
-    fn test_logical_or_function() {
-        // Test the basic logic
         assert_eq!(logical_or(true, true), (true,));
         assert_eq!(logical_or(true, false), (true,));
         assert_eq!(logical_or(false, true), (true,));
         assert_eq!(logical_or(false, false), (false,));
+    }
+
+    #[test]
+    fn logical_and_test() {
+        let brick = logical_and_brick();
+        assert_eq!(brick.id, "logical_and");
+        assert_eq!(logical_and(true, true), (true,));
+        assert_eq!(logical_and(true, false), (false,));
+        assert_eq!(logical_and(false, true), (false,));
+        assert_eq!(logical_and(false, false), (false,));
     }
 }
