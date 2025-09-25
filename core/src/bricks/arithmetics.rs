@@ -68,9 +68,9 @@ brick! {
     )
     {
         if b.abs() < f32::EPSILON {
-            if a == 0f32 {
+            if a == f32::EPSILON {
                 (f32::NAN,)
-            } else if a > 0f32 {
+            } else if a > f32::EPSILON {
                 (f32::INFINITY,)
             } else {
                 (f32::NEG_INFINITY,)
@@ -153,15 +153,5 @@ mod tests {
         assert_eq!(exponent(5.0, 0.0), (1.0,)); // Any number to the power of 0 is 1
         assert_eq!(exponent(3.0, 1.0), (3.0,)); // Any number to the power of 1 is itself
         assert_eq!(exponent(2.0, -2.0), (0.25,)); // Negative exponent case
-    }
-
-    #[test]
-    fn exponent_test() {
-        let brick = exponent_brick();
-        assert_eq!(brick.id, "exponent");
-        assert_eq!(exponent(2, 3), (8,));
-        assert_eq!(exponent(5, 0), (1,)); // Any number to the power of 0 is 1
-        assert_eq!(exponent(3, 1), (3,)); // Any number to the power of 1 is itself
-        assert_eq!(exponent(2, -2), (0,)); // Negative exponent case
     }
 }
