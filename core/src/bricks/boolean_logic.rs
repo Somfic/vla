@@ -67,4 +67,12 @@ mod tests {
         assert_eq!(logical_and(false, true), (false,));
         assert_eq!(logical_and(false, false), (false,));
     }
+
+    #[test]
+    fn logical_not_test() {
+        let brick = logical_not_brick();
+        assert_eq!(brick.id, "logical_not");
+        assert_eq!(logical_not(true), (false,));
+        assert_eq!(logical_not(false), (true,));
+    }
 }
