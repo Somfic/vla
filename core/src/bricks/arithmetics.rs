@@ -67,7 +67,7 @@ brick! {
         #[label("A ÷ B")] f32
     )
     {
-        if b == 0f32 {
+        if b.abs() < f32::EPSILON {
             (0f32,) // Handle division by zero
         } else {
             (a / b,)
