@@ -349,16 +349,19 @@ macro_rules! brick {
     // Helper: Get default value as string
     (@get_default_value String) => { "".to_string() };
     (@get_default_value i32) => { "0".to_string() };
+    (@get_default_value f32) => { "0".to_string() };
     (@get_default_value bool) => { "false".to_string() };
 
     // Helper: Get default typed value
     (@get_default_typed_value String) => { String::new() };
     (@get_default_typed_value i32) => { 0i32 };
+    (@get_default_typed_value f32) => { 0f32 };
     (@get_default_typed_value bool) => { false };
 
     // Helper: Get return type enum
     (@get_return_type String) => { crate::bricks::types::BrickHandleType::String };
     (@get_return_type i32) => { crate::bricks::types::BrickHandleType::Number };
+    (@get_return_type f32) => { crate::bricks::types::BrickHandleType::Number };
     (@get_return_type bool) => { crate::bricks::types::BrickHandleType::Boolean };
 
     // Helper: Check if attribute list contains a specific attribute
@@ -518,11 +521,13 @@ macro_rules! brick {
     // Helper: Parse value from string
     (@parse_to_type String, $value:expr) => { $value };
     (@parse_to_type i32, $value:expr) => { $value.parse::<i32>().unwrap_or(0) };
+    (@parse_to_type f32, $value:expr) => { $value.parse::<f32>().unwrap_or(0) };
     (@parse_to_type bool, $value:expr) => { $value.parse::<bool>().unwrap_or(false) };
 
     // Helper: Get argument type enum
     (@get_argument_type String) => { crate::bricks::types::BrickArgumentType::String };
     (@get_argument_type i32) => { crate::bricks::types::BrickArgumentType::Number };
+    (@get_argument_type f32) => { crate::bricks::types::BrickArgumentType::Number };
     (@get_argument_type bool) => { crate::bricks::types::BrickArgumentType::Boolean };
 
     // Helper: Ensure parameter has valid attributes

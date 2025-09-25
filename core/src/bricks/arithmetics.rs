@@ -7,6 +7,7 @@ pub fn all_bricks() -> Vec<Brick> {
         subtract_brick(),
         multiply_brick(),
         divide_brick(),
+        exponent_brick(),
     ]
 }
 
@@ -15,10 +16,10 @@ brick! {
     #[label("Addition")]
     #[description("Performs addition on two numbers")]
     fn add(
-        #[input] #[label("A")] a: i32,
-        #[input] #[label("B")] b: i32
+        #[input] #[label("A")] a: f32,
+        #[input] #[label("B")] b: f32
     ) -> (
-        #[label("A + B")] i32
+        #[label("A + B")] f32
     )
     {
         (a + b,)
@@ -30,10 +31,10 @@ brick! {
     #[label("Subtraction")]
     #[description("Performs subtraction on two numbers")]
     fn subtract(
-        #[input] #[label("A")] a: i32,
-        #[input] #[label("B")] b: i32
+        #[input] #[label("A")] a: f32,
+        #[input] #[label("B")] b: f32
     ) -> (
-        #[label("A - B")] i32
+        #[label("A - B")] f32
     )
     {
         (a - b,)
@@ -45,10 +46,10 @@ brick! {
     #[label("Multiplication")]
     #[description("Performs multiplication on two numbers")]
     fn multiply(
-        #[input] #[label("A")] a: i32,
-        #[input] #[label("B")] b: i32
+        #[input] #[label("A")] a: f32,
+        #[input] #[label("B")] b: f32
     ) -> (
-        #[label("A × B")] i32
+        #[label("A × B")] f32
     )
     {
         (a * b,)
@@ -60,20 +61,34 @@ brick! {
     #[label("Division")]
     #[description("Performs division on two numbers")]
     fn divide(
-        #[input] #[label("A")] a: i32,
-        #[input] #[label("B")] b: i32
+        #[input] #[label("A")] a: f32,
+        #[input] #[label("B")] b: f32
     ) -> (
-        #[label("A ÷ B")] i32
+        #[label("A ÷ B")] f32
     )
     {
-        if b == 0 {
-            (0,) // Handle division by zero
+        if b == 0f32 {
+            (0f32,) // Handle division by zero
         } else {
             (a / b,)
         }
     }
 }
 
+brick! {
+    #[id("exponent")]
+    #[label("Exponent")]
+    #[description("Performs exponentiation on two numbers")]
+    fn exponent(
+        #[input] #[label("A")] a: f32,
+        #[input] #[label("B")] b: f32
+    ) -> (
+        #[label("A<sup>B</sup>")] f32
+    )
+    {
+        (a.powf(b),)
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
