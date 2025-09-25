@@ -89,6 +89,7 @@ brick! {
         (a.powf(b),)
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -97,44 +98,54 @@ mod tests {
     fn add_test() {
         let brick = add_brick();
         assert_eq!(brick.id, "add");
-        assert_eq!(add(1, 1), (2,));
-        assert_eq!(add(5, 3), (8,));
-        assert_eq!(add(0, 5), (5,));
-        assert_eq!(add(-2, -3), (-5,));
-        assert_eq!(add(-5, 2), (-3,));
+        assert_eq!(add(1.0, 1.0), (2.0,));
+        assert_eq!(add(5.0, 3.0), (8.0,));
+        assert_eq!(add(0.0, 5.0), (5.0,));
+        assert_eq!(add(-2.0, -3.0), (-5.0,));
+        assert_eq!(add(-5.0, 2.0), (-3.0,));
     }
 
     #[test]
     fn subtract_test() {
         let brick = subtract_brick();
         assert_eq!(brick.id, "subtract");
-        assert_eq!(subtract(1, 1), (0,));
-        assert_eq!(subtract(5, 3), (2,));
-        assert_eq!(subtract(0, 5), (-5,));
-        assert_eq!(subtract(-2, -3), (1,));
-        assert_eq!(subtract(-5, 2), (-7,));
+        assert_eq!(subtract(1.0, 1.0), (0.0,));
+        assert_eq!(subtract(5.0, 3.0), (2.0,));
+        assert_eq!(subtract(0.0, 5.0), (-5.0,));
+        assert_eq!(subtract(-2.0, -3.0), (1.0,));
+        assert_eq!(subtract(-5.0, 2.0), (-7.0,));
     }
 
     #[test]
     fn multiply_test() {
         let brick = multiply_brick();
         assert_eq!(brick.id, "multiply");
-        assert_eq!(multiply(2, 3), (6,));
-        assert_eq!(multiply(-2, 3), (-6,));
-        assert_eq!(multiply(2, -3), (-6,));
-        assert_eq!(multiply(-2, -3), (6,));
-        assert_eq!(multiply(0, 5), (0,));
+        assert_eq!(multiply(2.0, 3.0), (6.0,));
+        assert_eq!(multiply(-2.0, 3.0), (-6.0,));
+        assert_eq!(multiply(2.0, -3.0), (-6.0,));
+        assert_eq!(multiply(-2.0, -3.0), (6.0,));
+        assert_eq!(multiply(0.0, 5.0), (0.0,));
     }
 
     #[test]
     fn divide_test() {
         let brick = divide_brick();
         assert_eq!(brick.id, "divide");
-        assert_eq!(divide(6, 3), (2,));
-        assert_eq!(divide(7, 2), (3,)); // Integer division
-        assert_eq!(divide(-6, 3), (-2,));
-        assert_eq!(divide(6, -3), (-2,));
-        assert_eq!(divide(-6, -3), (2,));
-        assert_eq!(divide(5, 0), (0,)); // Division by zero case
+        assert_eq!(divide(6.0, 3.0), (2.0,));
+        assert_eq!(divide(7.0, 2.0), (3.5,)); // Float division
+        assert_eq!(divide(-6.0, 3.0), (-2.0,));
+        assert_eq!(divide(6.0, -3.0), (-2.0,));
+        assert_eq!(divide(-6.0, -3.0), (2.0,));
+        assert_eq!(divide(5.0, 0.0), (0.0,)); // Division by zero case
+    }
+
+    #[test]
+    fn exponent_test() {
+        let brick = exponent_brick();
+        assert_eq!(brick.id, "exponent");
+        assert_eq!(exponent(2.0, 3.0), (8.0,));
+        assert_eq!(exponent(5.0, 0.0), (1.0,)); // Any number to the power of 0 is 1
+        assert_eq!(exponent(3.0, 1.0), (3.0,)); // Any number to the power of 1 is itself
+        assert_eq!(exponent(2.0, -2.0), (0.25,)); // Negative exponent case
     }
 }
