@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn add_test() {
-        let brick = subtract_brick();
+        let brick = add_brick();
         assert_eq!(brick.id, "add");
         assert_eq!(add(1, 1), (2,));
         assert_eq!(add(5, 3), (8,));
