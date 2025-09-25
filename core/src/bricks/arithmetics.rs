@@ -86,7 +86,11 @@ brick! {
         #[label("A ÷ B")] i32
     )
     {
-        (a.pow(b as u32),)
+        if b < 0 {
+            (0,)
+        } else {
+            (a.pow(b as u32),)
+        }
     }
 }
 
