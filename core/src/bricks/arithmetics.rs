@@ -83,7 +83,7 @@ brick! {
         #[input] #[label("A")] a: i32,
         #[input] #[label("B")] b: i32
     ) -> (
-        #[label("A ÷ B")] i32
+        #[label("A<sup>B</sup>")] i32
     )
     {
         (a.pow(b as u32),)
