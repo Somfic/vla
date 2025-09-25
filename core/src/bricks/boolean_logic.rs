@@ -8,7 +8,7 @@ brick! {
         #[input] #[label("A")] a: bool,
         #[input] #[label("B")] b: bool
     ) -> (
-        #[label("Result")] bool
+        #[label("A | B")] bool
     )
     {
         (a || b,)
@@ -23,10 +23,24 @@ brick! {
         #[input] #[label("A")] a: bool,
         #[input] #[label("B")] b: bool
     ) -> (
-        #[label("Result")] bool
+        #[label("A & B")] bool
     )
     {
         (a && b,)
+    }
+}
+
+brick! {
+    #[id("logical_not")]
+    #[label("NOT")]
+    #[description("Performs logical NOT operation on a boolean value")]
+    fn logical_not(
+        #[input] #[label("A")] a: bool
+    ) -> (
+        #[label("!A")] bool
+    )
+    {
+        (!a,)
     }
 }
 
