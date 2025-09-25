@@ -87,7 +87,7 @@ pub async fn load_graph(graph_path: &str) -> Result<Graph, String> {
 }
 
 pub fn get_brick(brick_id: &str) -> Option<bricks::types::Brick> {
-    let bricks = bricks::get_all_bricks();
+    let bricks = bricks::all_bricks();
     bricks.into_iter().find(|b| b.id == brick_id)
 }
 

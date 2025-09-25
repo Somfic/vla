@@ -1,4 +1,14 @@
 use crate::bricks::macros::brick;
+use crate::prelude::*;
+
+pub fn all_bricks() -> Vec<Brick> {
+    vec![
+        logical_or_brick(),
+        logical_and_brick(),
+        logical_not_brick(),
+        logical_xor_brick(),
+    ]
+}
 
 brick! {
     #[id("logical_or")]
