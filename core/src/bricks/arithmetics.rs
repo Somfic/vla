@@ -2,7 +2,12 @@ use crate::bricks::macros::brick;
 use crate::prelude::*;
 
 pub fn all_bricks() -> Vec<Brick> {
-    vec![add_brick(), subtract_brick(), multiply_brick()]
+    vec![
+        add_brick(),
+        subtract_brick(),
+        multiply_brick(),
+        divide_brick(),
+    ]
 }
 
 brick! {
@@ -50,6 +55,25 @@ brick! {
     }
 }
 
+brick! {
+    #[id("divide")]
+    #[label("Division")]
+    #[description("Performs division on two numbers")]
+    fn divide(
+        #[input] #[label("A")] a: i32,
+        #[input] #[label("B")] b: i32
+    ) -> (
+        #[label("A ÷ B")] i32
+    )
+    {
+        if b == 0 {
+            (0,) // Handle division by zero
+        } else {
+            (a / b,)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -85,5 +109,17 @@ mod tests {
         assert_eq!(multiply(2, -3), (-6,));
         assert_eq!(multiply(-2, -3), (6,));
         assert_eq!(multiply(0, 5), (0,));
+    }
+
+    #[test]
+    fn divide_test() {
+        let brick = divide_brick();
+        assert_eq!(brick.id, "divide");
+        assert_eq!(divide(6, 3), (2,));
+        assert_eq!(divide(7, 2), (3,)); // Integer division
+        assert_eq!(divide(-6, 3), (-2,));
+        assert_eq!(divide(6, -3), (-2,));
+        assert_eq!(divide(-6, -3), (2,));
+        assert_eq!(divide(5, 0), (0,)); // Division by zero case
     }
 }
