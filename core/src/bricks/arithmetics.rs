@@ -8,6 +8,7 @@ pub fn all_bricks() -> Vec<Brick> {
         multiply_brick(),
         divide_brick(),
         exponent_brick(),
+        modulo_brick(),
     ]
 }
 
@@ -70,7 +71,7 @@ brick! {
         if b.abs() < f32::EPSILON {
             if a == f32::EPSILON {
                 (f32::NAN,)
-            } else if a > f32::EPSILON {
+            } else if a > 0.0 {
                 (f32::INFINITY,)
             } else {
                 (f32::NEG_INFINITY,)
@@ -78,6 +79,21 @@ brick! {
         } else {
             (a / b,)
         }
+    }
+}
+
+brick! {
+    #[id("modulo")]
+    #[label("Modulo")]
+    #[description("Performs modulo operation on two numbers")]
+    fn modulo(
+        #[input] #[label("A")] a: f32,
+        #[input] #[label("B")] b: f32
+    ) -> (
+        #[label("A % B")] f32
+    )
+    {
+        (a % b,)
     }
 }
 
@@ -153,5 +169,17 @@ mod tests {
         assert_eq!(exponent(5.0, 0.0), (1.0,)); // Any number to the power of 0 is 1
         assert_eq!(exponent(3.0, 1.0), (3.0,)); // Any number to the power of 1 is itself
         assert_eq!(exponent(2.0, -2.0), (0.25,)); // Negative exponent case
+    }
+
+    #[test]
+    fn modulo_test() {
+        let brick = modulo_brick();
+        assert_eq!(brick.id, "modulo");
+        assert_eq!(modulo(5.0, 3.0), (2.0,));
+        assert_eq!(modulo(10.0, 4.0), (2.0,));
+        assert_eq!(modulo(7.0, 7.0), (0.0,)); // Any number modulo itself is 0
+        assert_eq!(modulo(5.0, 1.0), (0.0,)); // Any number modulo 1 is 0
+        assert_eq!(modulo(-5.0, 3.0), (-2.0,)); // Negative dividend case
+        assert_eq!(modulo(5.0, -3.0), (2.0,)); // Negative divisor case
     }
 }
