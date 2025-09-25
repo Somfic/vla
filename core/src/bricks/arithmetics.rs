@@ -2,7 +2,22 @@ use crate::bricks::macros::brick;
 use crate::prelude::*;
 
 pub fn all_bricks() -> Vec<Brick> {
-    vec![subtract_brick(), multiply_brick()]
+    vec![add_brick(), subtract_brick(), multiply_brick()]
+}
+
+brick! {
+    #[id("add")]
+    #[label("Addition")]
+    #[description("Performs addition on two numbers")]
+    fn add(
+        #[input] #[label("A")] a: i32,
+        #[input] #[label("B")] b: i32
+    ) -> (
+        #[label("A + B")] i32
+    )
+    {
+        (a + b,)
+    }
 }
 
 brick! {
@@ -38,6 +53,17 @@ brick! {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn add_test() {
+        let brick = subtract_brick();
+        assert_eq!(brick.id, "add");
+        assert_eq!(add(1, 1), (2,));
+        assert_eq!(add(5, 3), (8,));
+        assert_eq!(add(0, 5), (5,));
+        assert_eq!(add(-2, -3), (-5,));
+        assert_eq!(add(-5, 2), (-3,));
+    }
 
     #[test]
     fn subtract_test() {
