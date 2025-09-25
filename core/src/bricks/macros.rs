@@ -521,7 +521,7 @@ macro_rules! brick {
     // Helper: Parse value from string
     (@parse_to_type String, $value:expr) => { $value };
     (@parse_to_type i32, $value:expr) => { $value.parse::<i32>().unwrap_or(0) };
-    (@parse_to_type f32, $value:expr) => { $value.parse::<f32>().unwrap_or(0) };
+    (@parse_to_type f32, $value:expr) => { $value.parse::<f32>().unwrap_or(0.0) };
     (@parse_to_type bool, $value:expr) => { $value.parse::<bool>().unwrap_or(false) };
 
     // Helper: Get argument type enum
