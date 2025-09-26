@@ -14,10 +14,9 @@
 
     interface Props {
         shortcuts: ShortcutConfig[];
-        children: any;
     }
 
-    let { shortcuts, children }: Props = $props();
+    let { shortcuts }: Props = $props();
 
     onMount(() => {
         const unregisterFunctions: UnregisterFunction[] = [];
@@ -38,5 +37,3 @@
         };
     });
 </script>
-
-{@render children()}

@@ -47,6 +47,8 @@ class ShortcutManager {
         if (typeof window !== 'undefined') {
             window.addEventListener('keydown', this.handleKeydown);
         }
+
+        console.log('ShortcutManager initialized');
     }
 
     // Normalize key combinations
@@ -78,7 +80,7 @@ class ShortcutManager {
         if (event.shiftKey) modifiers.push('shift');
         if (event.altKey) modifiers.push('alt');
 
-        const key = event.key.toLowerCase();
+        const key = event.key.toLowerCase().replace(' ', 'space');
         return [...modifiers, key].join('+');
     }
 
@@ -125,15 +127,43 @@ class ShortcutManager {
     // Add context
     pushContext(context: string): void {
         this.activeContexts.add(context);
+        console.log('entered context', context, Array.from(this.activeContexts));
     }
 
     // Remove context
     popContext(context: string): void {
         this.activeContexts.delete(context);
+        console.log('exited context', context, Array.from(this.activeContexts));
+    }
+
+    // Check if element is editable (input, textarea, contenteditable)
+    private shouldSkipShortcuts(element: HTMLElement): boolean {
+        if (!element) return false;
+
+        const tagName = element.tagName.toLowerCase();
+
+        // Check for input elements (excluding non-text types)
+        if (tagName === 'input') {
+            const inputType = (element as HTMLInputElement).type.toLowerCase();
+            const nonTextTypes = ['button', 'submit', 'reset', 'checkbox', 'radio', 'file', 'image'];
+            return !nonTextTypes.includes(inputType);
+        }
+
+        // Check for other editable elements
+        if (tagName === 'textarea') return true;
+        if (element.contentEditable === 'true') return true;
+
+        return false;
     }
 
     // Handle keydown events
     private handleKeydown(event: KeyboardEvent): void {
+        // Skip shortcut processing if user is typing in input elements
+        const target = event.target as HTMLElement;
+        if (this.shouldSkipShortcuts(target)) {
+            return;
+        }
+
         const eventKey = this.getEventKey(event);
 
         // Find matching shortcuts in active contexts (reverse order for priority)
@@ -144,6 +174,7 @@ class ShortcutManager {
             if (!contextMap) continue;
 
             const shortcut = contextMap.get(eventKey);
+
             if (shortcut && shortcut.enabled) {
                 if (shortcut.preventDefault) {
                     event.preventDefault();
