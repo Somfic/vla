@@ -52,13 +52,6 @@
   </SvelteFlowProvider>
 </main>
 
-<div class="controls">
-  <button onclick={addNode}>Add Node</button>
-  {#if status}
-    <div class="status">{status}</div>
-  {/if}
-</div>
-
 <style lang="scss">
   @import "$styles/theme";
 

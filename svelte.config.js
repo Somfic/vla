@@ -14,6 +14,7 @@ const config = {
     },
     alias: {
       '$components': 'ui/components',
+      '$actions': 'ui/actions',
       '$styles': 'ui/styles',
     },
     adapter: adapter({
