@@ -10,6 +10,11 @@
     import "@xyflow/svelte/dist/base.css";
     import Node from "$components/canvas/Node.svelte";
     import { setSaveCallback } from "$lib/api";
+    import Spotlight from "$components/Spotlight.svelte";
+    import Shortcuts, {
+        type ShortcutConfig,
+    } from "$components/Shortcuts.svelte";
+    import { shortcutContext } from "$actions/shortcutContext";
 
     const save = () => onSave({ nodes, edges });
 
@@ -28,9 +33,25 @@
     setSaveCallback(save);
 
     let nodeTypes = { v1: Node };
+
+    let showSpotlight = $state(false);
+
+    let shortcuts: ShortcutConfig[] = [
+        {
+            key: "space",
+            options: { context: "canvas" },
+            handler: () => {
+                showSpotlight = true;
+            },
+        },
+    ];
 </script>
 
-<div class="canvas">
+<Shortcuts {shortcuts} />
+
+<div class="canvas" use:shortcutContext={"canvas"}>
+    <Spotlight onClose={() => (showSpotlight = false)} show={showSpotlight} />
+
     <SvelteFlow
         bind:nodes
         bind:edges
@@ -50,6 +71,7 @@
 
     .canvas {
         flex-grow: 1;
+        position: relative;
     }
 
     :global(.svelte-flow__attribution) {
