@@ -66,6 +66,8 @@ macro_rules! brick {
         #[id($id:expr)]
         $(#[label($label:expr)])?
         $(#[description($description:expr)])?
+        $(#[keywords($keywords:expr)])?
+        #[category($category:expr)]
         fn $fn_name:ident(
             $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
         ) -> (
@@ -137,6 +139,8 @@ macro_rules! brick {
                     id: $id.to_string(),
                     label: brick!(@get_label_or_default $($label)?),
                     description: brick!(@get_description_or_default $($description)?),
+                    keywords: brick!(@get_keywords_or_default $($keywords)?),
+                    category: brick!(@get_category_or_default $category),
                     arguments,
                     inputs,
                     outputs,
@@ -151,6 +155,8 @@ macro_rules! brick {
         #[id($id:expr)]
         $(#[label($label:expr)])?
         $(#[description($description:expr)])?
+        $(#[keywords($keywords:expr)])?
+        #[category($category:expr)]
         fn $fn_name:ident(
             $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
         ) -> (
@@ -222,6 +228,8 @@ macro_rules! brick {
                     id: $id.to_string(),
                     label: brick!(@get_label_or_default $($label)?),
                     description: brick!(@get_description_or_default $($description)?),
+                    keywords: brick!(@get_keywords_or_default $($keywords)?),
+                    category: brick!(@get_category_or_default $category),
                     arguments,
                     inputs,
                     outputs,
@@ -236,6 +244,8 @@ macro_rules! brick {
         #[id($id:expr)]
         $(#[label($label:expr)])?
         $(#[description($description:expr)])?
+        $(#[keywords($keywords:expr)])?
+        #[category($category:expr)]
         fn $fn_name:ident(
             $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
         ) -> $return_type:ident
@@ -316,6 +326,8 @@ macro_rules! brick {
                     id: $id.to_string(),
                     label: brick!(@get_label_or_default $($label)?),
                     description: brick!(@get_description_or_default $($description)?),
+                    keywords: brick!(@get_keywords_or_default $($keywords)?),
+                    category: brick!(@get_category_or_default $category),
                     arguments,
                     inputs,
                     outputs,
@@ -332,6 +344,15 @@ macro_rules! brick {
     // Helper: Get description or default
     (@get_description_or_default $desc:expr) => { $desc.to_string() };
     (@get_description_or_default) => { "Default Description".to_string() };
+
+    // Helper: Get keywords or default
+    (@get_keywords_or_default $keywords:expr) => {
+        $keywords.iter().map(|s| s.to_string()).collect::<Vec<String>>()
+    };
+    (@get_keywords_or_default) => { Vec::<String>::new() };
+
+    // Helper: Get category (required, no default)
+    (@get_category_or_default $category:expr) => { $category.to_string() };
 
     // Helper: Get custom default or type default
     (@get_custom_default_or_type_default $param_type:ident, $default:expr) => {

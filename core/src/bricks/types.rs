@@ -3,6 +3,8 @@ pub struct Brick {
     pub id: String,
     pub label: String,
     pub description: String,
+    pub keywords: Vec<String>,
+    pub category: String,
     pub arguments: Vec<BrickArgument>,
     pub inputs: Vec<BrickInput>,
     pub outputs: Vec<BrickOutput>,

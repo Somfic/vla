@@ -4,7 +4,7 @@ import { createTauRPCProxy as createProxy, type InferCommandOutput } from 'taurp
 type TAURI_CHANNEL<T> = (response: T) => void
 
 
-export type Brick = { id: string; label: string; description: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[] }
+export type Brick = { id: string; label: string; description: string; keywords: string[]; category: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[] }
 
 export type BrickArgument = { id: string; label: string; type: BrickArgumentType; enum_options: string[] | null; default_value: string | null }
 
