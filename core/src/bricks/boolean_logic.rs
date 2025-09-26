@@ -14,6 +14,7 @@ brick! {
     #[id("logical_or")]
     #[label("OR")]
     #[description("Performs logical OR operation on two boolean values")]
+    #[category("Boolean Logic")]
     fn logical_or(
         #[input] #[label("A")] a: bool,
         #[input] #[label("B")] b: bool
@@ -29,6 +30,7 @@ brick! {
     #[id("logical_and")]
     #[label("AND")]
     #[description("Performs logical AND operation on two boolean values")]
+    #[category("Boolean Logic")]
     fn logical_and(
         #[input] #[label("A")] a: bool,
         #[input] #[label("B")] b: bool
@@ -44,6 +46,7 @@ brick! {
     #[id("logical_not")]
     #[label("NOT")]
     #[description("Performs logical NOT operation on a boolean value")]
+    #[category("Boolean Logic")]
     fn logical_not(
         #[input] #[label("A")] a: bool
     ) -> (
@@ -58,6 +61,7 @@ brick! {
     #[id("logical_xor")]
     #[label("XOR")]
     #[description("Performs logical XOR operation on two boolean values")]
+    #[category("Boolean Logic")]
     fn logical_xor(
         #[input] #[label("A")] a: bool,
         #[input] #[label("B")] b: bool

@@ -16,6 +16,7 @@ brick! {
     #[id("add")]
     #[label("Addition")]
     #[description("Performs addition on two numbers")]
+    #[category("Arithmetic")]
     fn add(
         #[input] #[label("A")] a: f32,
         #[input] #[label("B")] b: f32
@@ -31,6 +32,7 @@ brick! {
     #[id("subtract")]
     #[label("Subtraction")]
     #[description("Performs subtraction on two numbers")]
+    #[category("Arithmetic")]
     fn subtract(
         #[input] #[label("A")] a: f32,
         #[input] #[label("B")] b: f32
@@ -46,6 +48,7 @@ brick! {
     #[id("multiply")]
     #[label("Multiplication")]
     #[description("Performs multiplication on two numbers")]
+    #[category("Arithmetic")]
     fn multiply(
         #[input] #[label("A")] a: f32,
         #[input] #[label("B")] b: f32
@@ -61,6 +64,7 @@ brick! {
     #[id("divide")]
     #[label("Division")]
     #[description("Performs division on two numbers")]
+    #[category("Arithmetic")]
     fn divide(
         #[input] #[label("A")] a: f32,
         #[input] #[label("B")] b: f32
@@ -86,6 +90,7 @@ brick! {
     #[id("modulo")]
     #[label("Modulo")]
     #[description("Performs modulo operation on two numbers")]
+    #[category("Arithmetic")]
     fn modulo(
         #[input] #[label("A")] a: f32,
         #[input] #[label("B")] b: f32
@@ -101,6 +106,7 @@ brick! {
     #[id("exponent")]
     #[label("Exponent")]
     #[description("Performs exponentiation on two numbers")]
+    #[category("Arithmetic")]
     fn exponent(
         #[input] #[label("A")] a: f32,
         #[input] #[label("B")] b: f32

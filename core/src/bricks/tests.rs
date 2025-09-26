@@ -6,6 +6,7 @@ mod tests {
         #[id("math")]
         #[label("Math Operations")]
         #[description("Performs addition and multiplication on two numbers")]
+        #[category("Test")]
         fn math(
             #[input] #[label("First")] first: i32 = 1,
             #[input] #[label("Second")] second: i32 = 2,
