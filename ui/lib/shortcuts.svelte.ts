@@ -133,7 +133,7 @@ class ShortcutManager {
     // Remove context
     popContext(context: string): void {
         this.activeContexts.delete(context);
-        console.log('exited context', context, Array.from(this.activeContexts));
+        
     }
 
     // Check if element is editable (input, textarea, contenteditable)
