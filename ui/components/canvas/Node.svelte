@@ -9,7 +9,7 @@
 {#if data.brick}
     <div class="node">
         <div class="header">
-            {@html data.brick?.label}
+            {data.brick?.label}
         </div>
 
         <div class="arguments">
@@ -30,7 +30,7 @@
                             />
                         </div>
                         <div class="label">
-                            {@html input.label}
+                            {input.label}
                         </div>
                     </div>
                 {/each}
@@ -40,7 +40,7 @@
                 {#each data.brick.outputs as output}
                     <div class="output">
                         <div class="label">
-                            {@html output.label}
+                            {output.label}
                         </div>
                         <div class="handle">
                             <Handle
