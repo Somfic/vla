@@ -144,16 +144,16 @@
         }
     };
 
-    const executeSelected = async () => {
-        const selected = visibleResults[selectedIndex];
+    const executeIndex = async (index: number) => {
+        const selected = visibleResults[index];
         if (selected) {
             await commands.execute(selected.id);
             onClose();
         }
     };
 
-    const selectIndex = (index: number) => {
-        selectedIndex = Math.max(0, Math.min(index, visibleResults.length - 1));
+    const executeSelected = async () => {
+        await executeIndex(selectedIndex);
     };
 
     const close = () => {
@@ -254,7 +254,7 @@
                             ? 'selected'
                             : ''} {result.score === 0 ? 'irrelevant' : ''}"
                         onclick={() => {
-                            executeSelected();
+                            executeIndex(index);
                         }}
                         in:fly={{ y: 20, duration: 200, delay: index * 50 }}
                         out:fade={{ duration: 150 }}
