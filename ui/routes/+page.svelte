@@ -20,7 +20,6 @@
   async function handleAutoSave(updatedGraph: Graph) {
     graph = updatedGraph;
     try {
-      console.log("Auto-saving graph...", updatedGraph);
       await api.save_graph(updatedGraph, "../graph.json");
     } catch (e) {
       console.error("Auto-save failed:", e);
