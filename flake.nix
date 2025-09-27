@@ -41,6 +41,7 @@
           bun
           pkg-config
           gobject-introspection
+          git
           curl
           wget
           dbus
