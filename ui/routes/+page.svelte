@@ -5,6 +5,7 @@
   import SideBar from "$components/sidebar/SideBar.svelte";
   import MenuBar from "$components/menubar/MenuBar.svelte";
   import { SvelteFlowProvider } from "@xyflow/svelte";
+  import Spotlight from "$components/Spotlight.svelte";
 
   let graph = $state<Graph | null>(null);
   api.load_graph("../graph.json").then((g) => {
