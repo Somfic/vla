@@ -11,12 +11,10 @@
   let graph = $state<Graph | null>(null);
   api.load_graph("../graph.json").then((g) => {
     graph = g;
-    console.log("Graph loaded:", graph);
   });
 
   api.graph_updated.on((updatedGraph) => {
     graph = updatedGraph;
-    console.log("Graph updated from backend:", graph);
   });
 
   async function handleAutoSave(updatedGraph: Graph) {

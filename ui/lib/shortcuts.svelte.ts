@@ -49,8 +49,6 @@ class ShortcutManager {
         if (typeof window !== 'undefined') {
             window.addEventListener('keydown', this.handleKeydown);
         }
-
-        console.log('ShortcutManager initialized');
     }
 
     // Normalize key combinations
@@ -130,7 +128,6 @@ class ShortcutManager {
     // Add context
     pushContext(context: string): void {
         this.activeContexts.add(context);
-        console.log('entered context', context, Array.from(this.activeContexts));
     }
 
     // Remove context
