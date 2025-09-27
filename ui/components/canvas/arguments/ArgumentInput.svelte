@@ -68,7 +68,7 @@
 </script>
 
 <div class="argument">
-    <label for={argument.id}>{@html argument.label}</label>
+    <label for={argument.id}>{argument.label}</label>
 
     {#if argument.type === "Boolean"}
         <button
