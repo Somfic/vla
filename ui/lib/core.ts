@@ -16,13 +16,13 @@ export type BrickInput = { id: string; label: string; type: BrickHandleType; def
 
 export type BrickOutput = { id: string; label: string; type: BrickHandleType }
 
-export type Edge = { id: string; source: string; target: string }
+export type Edge = { id: string; source: string; target: string; sourceHandle: string; targetHandle: string }
 
 export type Graph = { nodes: Node[]; edges: Edge[] }
 
 export type Node = { id: string; position: Point; data: NodeData; type: string }
 
-export type NodeData = { brick_id: string; brick: Brick | null; arguments: Partial<{ [key in string]: string }> }
+export type NodeData = { brickId: string; brick: Brick | null; arguments: Partial<{ [key in string]: string }> }
 
 export type Point = { x: number; y: number }
 

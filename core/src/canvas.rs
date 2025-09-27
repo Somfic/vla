@@ -30,6 +30,7 @@ pub struct Point {
 
 #[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct NodeData {
+    #[serde(rename = "brickId")]
     pub brick_id: String,
     pub brick: Option<Brick>,
     pub arguments: BTreeMap<String, String>,
@@ -40,6 +41,10 @@ pub struct Edge {
     pub id: String,
     pub source: String,
     pub target: String,
+    #[serde(rename = "sourceHandle")]
+    pub source_handle: String,
+    #[serde(rename = "targetHandle")]
+    pub target_handle: String,
 }
 
 pub async fn save_graph<R: Runtime>(
