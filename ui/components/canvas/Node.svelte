@@ -1,34 +1,29 @@
 <script lang="ts">
-    import { type VlaNode } from "$lib/api";
-    import { Handle, Position, type NodeProps } from "@xyflow/svelte";
+    import { Position, type NodeProps } from "@xyflow/svelte";
     import ArgumentInput from "./arguments/ArgumentInput.svelte";
+    import Handle from "./Handle.svelte";
+    import type { CanvasNodeProps } from "$lib/api";
 
-    let { data }: NodeProps<VlaNode> = $props();
+    let node: CanvasNodeProps = $props();
 </script>
 
-{#if data.brick}
+{#if node.data.brick}
     <div class="node">
         <div class="header">
-            {data.brick?.label}
+            {node.data.brick?.label}
         </div>
 
         <div class="arguments">
-            {#each data.brick.arguments as argument}
-                <ArgumentInput {argument} {data} />
+            {#each node.data.brick.arguments as argument}
+                <ArgumentInput {argument} data={node.data} />
             {/each}
         </div>
 
         <div class="handles">
             <div class="inputs">
-                {#each data.brick.inputs as input}
+                {#each node.data.brick.inputs as input}
                     <div class="input">
-                        <div class="handle">
-                            <Handle
-                                type="target"
-                                id={input.id}
-                                position={Position.Left}
-                            />
-                        </div>
+                        <Handle type="input" {node} connection={input} />
                         <div class="label">
                             {input.label}
                         </div>
@@ -37,18 +32,12 @@
             </div>
 
             <div class="outputs">
-                {#each data.brick.outputs as output}
+                {#each node.data.brick.outputs as output}
                     <div class="output">
                         <div class="label">
                             {output.label}
                         </div>
-                        <div class="handle">
-                            <Handle
-                                type="source"
-                                id={output.id}
-                                position={Position.Right}
-                            />
-                        </div>
+                        <Handle type="output" {node} connection={output} />
                     </div>
                 {/each}
             </div>
@@ -102,24 +91,6 @@
             position: relative;
             display: flex;
             align-items: center;
-        }
-
-        $handle-size: 10px;
-
-        :global(.svelte-flow__handle) {
-            background-color: $primary;
-            height: $handle-size;
-            width: $handle-size;
-            border-radius: 50%;
-            z-index: 20000;
-        }
-
-        :global(.input .svelte-flow__handle) {
-            left: calc(-1 * ($gap + 1px));
-        }
-
-        :global(.output .svelte-flow__handle) {
-            right: calc(-1 * ($gap + 1px));
         }
     }
 

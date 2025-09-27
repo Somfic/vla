@@ -1,19 +1,19 @@
 <script lang="ts">
     import Minimap from "$components/canvas/Minimap.svelte";
     import { useNodes } from "@xyflow/svelte";
-    import type { VlaNode } from "$lib/api";
+    import type { CanvasNode } from "$lib/api";
 
     const nodesStore = useNodes();
 
     const selectedNode = $derived(
-        nodesStore.current.find((n) => n.selected) as VlaNode | undefined,
+        nodesStore.current.find((n) => n.selected) as CanvasNode | undefined,
     );
 </script>
 
 <div class="sidebar">
     {#if selectedNode?.data}
         <div class="arguments">
-            <h3>{selectedNode.data.brick_id}</h3>
+            <h3>{selectedNode.data.brickId}</h3>
             <h2>{selectedNode.data.brick?.description}</h2>
             <div class="node-data">
                 <h4>Selected Node: {selectedNode.id}</h4>

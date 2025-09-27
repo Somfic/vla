@@ -1,7 +1,8 @@
 import { createTauRPCProxy, type NodeData } from './core'
-import type { Node } from '@xyflow/svelte';
+import type { Node, NodeProps } from '@xyflow/svelte';
 
-export type VlaNode = Node<NodeData>;
+export type CanvasNode = Node<NodeData>;
+export type CanvasNodeProps = NodeProps<CanvasNode>;
 
 let saveCallback: (() => void) | null = null;
 
