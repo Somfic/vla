@@ -1,6 +1,5 @@
 {
-  description = "Development environment for the Som programming language";
-
+  description = "vla";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     rust-overlay = {
@@ -22,20 +21,29 @@
         };
       in {
         devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            rustToolchain
-            pkg-config
-            cargo-llvm-cov
-            just
-            cargo-edit
-            cargo-watch
-            cargo-deny
-            llvm
-            ripgrep
-            fd
-            bat
-            bun
-          ];
+          buildInputs = with pkgs;
+            [
+              rustToolchain
+              pkg-config
+              cargo-llvm-cov
+              just
+              cargo-edit
+              cargo-watch
+              cargo-deny
+              llvm
+              ripgrep
+              fd
+              bat
+              bun
+            ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+              # Linux-specific dependencies for Tauri
+              glib
+              gtk3
+              webkitgtk_4_1
+              libappindicator-gtk3
+              librsvg
+              openssl
+            ];
 
           RUST_BACKTRACE = "1";
           RUST_LOG = "debug";
