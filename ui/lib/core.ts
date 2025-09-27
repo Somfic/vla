@@ -26,9 +26,10 @@ export type NodeData = { brick_id: string; brick: Brick | null; arguments: Parti
 
 export type Point = { x: number; y: number }
 
-const ARGS_MAP = { '':'{"get_brick":["brick_id"],"get_bricks":[],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"save_graph":["graph","filename"]}' }
+const ARGS_MAP = { '':'{"get_brick":["brick_id"],"get_bricks":[],"graph_updated":["graph"],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"save_graph":["graph","filename"]}' }
 export type Router = { "": {get_brick: (brickId: string) => Promise<Brick | null>, 
 get_bricks: () => Promise<Brick[]>, 
+graph_updated: (graph: Graph) => Promise<void>, 
 insert_node: (graphPath: string, brickId: string, position: Point) => Promise<Graph>, 
 load_graph: (filename: string) => Promise<Graph>, 
 save_graph: (graph: Graph, filename: string) => Promise<string>} };

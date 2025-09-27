@@ -10,7 +10,7 @@ fn main() {
 fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(taurpc::create_ipc_handler(ApiImpl.into_handler()))
+        .invoke_handler(taurpc::create_ipc_handler(CoreApiImpl.into_handler()))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

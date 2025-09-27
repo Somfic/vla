@@ -1,8 +1,11 @@
+use crate::api::ApiEventTrigger;
 use crate::bricks;
 use crate::prelude::*;
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
+use tauri::AppHandle;
+use tauri::Runtime;
 use uuid::Uuid;
 
 #[taurpc::ipc_type]
@@ -39,7 +42,12 @@ pub struct Edge {
     pub target: String,
 }
 
-pub async fn save_graph(graph: &Graph, graph_path: &str) -> Result<String, String> {
+pub async fn save_graph<R: Runtime>(
+    app_handle: AppHandle<R>,
+    graph: &Graph,
+    graph_path: &str,
+    notify_frontend: bool,
+) -> Result<String, String> {
     // Serialize to JSON value first, then remove brick fields
     let mut json_value =
         serde_json::to_value(graph).map_err(|e| format!("Failed to serialize graph: {}", e))?;
@@ -58,17 +66,31 @@ pub async fn save_graph(graph: &Graph, graph_path: &str) -> Result<String, Strin
 
     fs::write(graph_path, json).map_err(|e| format!("Failed to write file: {}", e))?;
 
+    if notify_frontend {
+        ApiEventTrigger::new(app_handle)
+            .graph_updated(graph.clone())
+            .map_err(|e| {
+                format!(
+                    "Failed to notify frontend about graph update: {}",
+                    e.to_string()
+                )
+            })?;
+    }
+
     Ok(format!("Graph saved to {}", graph_path))
 }
 
-pub async fn load_graph(graph_path: &str) -> Result<Graph, String> {
+pub async fn load_graph<R: Runtime>(
+    app_handle: AppHandle<R>,
+    graph_path: &str,
+) -> Result<Graph, String> {
     if !Path::new(graph_path).exists() {
         let empty_graph = Graph {
             nodes: vec![],
             edges: vec![],
         };
 
-        save_graph(&empty_graph, graph_path).await?;
+        save_graph(app_handle, &empty_graph, graph_path, false).await?;
         return Ok(empty_graph);
     }
 
@@ -91,12 +113,13 @@ pub fn get_brick(brick_id: &str) -> Option<bricks::types::Brick> {
     bricks.into_iter().find(|b| b.id == brick_id)
 }
 
-pub async fn insert_node(
+pub async fn insert_node<R: Runtime>(
+    app_handle: AppHandle<R>,
     graph_path: &str,
     brick_id: &str,
     position: Point,
 ) -> Result<Graph, String> {
-    let mut graph = load_graph(graph_path).await?;
+    let mut graph = load_graph(app_handle.clone(), graph_path).await?;
     let brick = get_brick(brick_id);
 
     if brick.is_none() {
@@ -115,6 +138,6 @@ pub async fn insert_node(
     };
 
     graph.nodes.push(node);
-    save_graph(&graph, graph_path).await?;
+    save_graph(app_handle, &graph, graph_path, true).await?;
     Ok(graph)
 }

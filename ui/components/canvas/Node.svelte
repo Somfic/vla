@@ -9,7 +9,7 @@
 {#if data.brick}
     <div class="node">
         <div class="header">
-            {data.brick?.label}
+            {@html data.brick?.label}
         </div>
 
         <div class="arguments">
@@ -30,7 +30,7 @@
                             />
                         </div>
                         <div class="label">
-                            {input.label}
+                            {@html input.label}
                         </div>
                     </div>
                 {/each}
@@ -40,7 +40,7 @@
                 {#each data.brick.outputs as output}
                     <div class="output">
                         <div class="label">
-                            {output.label}
+                            {@html output.label}
                         </div>
                         <div class="handle">
                             <Handle
@@ -78,7 +78,7 @@
         border-color: $primary;
     }
 
-    .handles {  
+    .handles {
         display: flex;
         justify-content: space-between;
         gap: $gap;
