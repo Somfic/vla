@@ -68,14 +68,17 @@
 </script>
 
 <div class="argument">
-    <label for={argument.id}>{argument.label}</label>
+    <label for={argument.id}>{@html argument.label}</label>
 
     {#if argument.type === "Boolean"}
         <button
             type="button"
             id={argument.id}
-            class="nodrag toggle {getValue(argument.id, 'Boolean') ? 'active' : ''}"
-            onclick={() => setValue(argument.id, !getValue(argument.id, "Boolean"))}
+            class="nodrag toggle {getValue(argument.id, 'Boolean')
+                ? 'active'
+                : ''}"
+            onclick={() =>
+                setValue(argument.id, !getValue(argument.id, "Boolean"))}
         >
             <div class="toggle-slider"></div>
         </button>

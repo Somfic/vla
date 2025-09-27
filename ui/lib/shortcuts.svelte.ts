@@ -5,6 +5,7 @@ export interface ShortcutOptions {
     preventDefault?: boolean;
     stopPropagation?: boolean;
     enabled?: boolean;
+    allowInInputs?: boolean;
 }
 
 export interface Shortcut {
@@ -16,6 +17,7 @@ export interface Shortcut {
     preventDefault: boolean;
     stopPropagation: boolean;
     enabled: boolean;
+    allowInInputs: boolean;
 }
 
 export interface Command {
@@ -101,7 +103,8 @@ class ShortcutManager {
             description: options.description || '',
             preventDefault: options.preventDefault !== false,
             stopPropagation: options.stopPropagation !== false,
-            enabled: options.enabled !== false
+            enabled: options.enabled !== false,
+            allowInInputs: options.allowInInputs || false
         };
 
         this.shortcuts.get(context)!.set(normalizedKey, shortcut);
@@ -158,12 +161,7 @@ class ShortcutManager {
 
     // Handle keydown events
     private handleKeydown(event: KeyboardEvent): void {
-        // Skip shortcut processing if user is typing in input elements
         const target = event.target as HTMLElement;
-        if (this.shouldSkipShortcuts(target)) {
-            return;
-        }
-
         const eventKey = this.getEventKey(event);
 
         // Find matching shortcuts in active contexts (reverse order for priority)
@@ -176,6 +174,11 @@ class ShortcutManager {
             const shortcut = contextMap.get(eventKey);
 
             if (shortcut && shortcut.enabled) {
+                // Skip shortcut if user is typing in input elements, unless allowInInputs is true
+                if (this.shouldSkipShortcuts(target) && !shortcut.allowInInputs) {
+                    continue;
+                }
+
                 if (shortcut.preventDefault) {
                     event.preventDefault();
                 }

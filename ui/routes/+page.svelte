@@ -1,11 +1,12 @@
 <script lang="ts">
   import api from "$lib/api";
   import Canvas from "$components/canvas/Canvas.svelte";
-  import type { Graph, Node } from "$lib/core";
+  import type { Graph } from "$lib/core";
   import SideBar from "$components/sidebar/SideBar.svelte";
   import MenuBar from "$components/menubar/MenuBar.svelte";
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import Spotlight from "$components/Spotlight.svelte";
+  import Shortcuts, { type ShortcutConfig } from "$components/Shortcuts.svelte";
 
   let graph = $state<Graph | null>(null);
   api.load_graph("../graph.json").then((g) => {
@@ -13,8 +14,9 @@
     console.log("Graph loaded:", graph);
   });
 
-  api.get_bricks().then((bricks) => {
-    console.log("Available bricks:", bricks);
+  api.graph_updated.on((updatedGraph) => {
+    graph = updatedGraph;
+    console.log("Graph updated from backend:", graph);
   });
 
   async function handleAutoSave(updatedGraph: Graph) {
@@ -26,12 +28,21 @@
     }
   }
 
-  async function addNode() {
-    if (!graph) return;
-    // Optionally, update status to provide user feedback
-    graph = await api.insert_node("../graph.json", "addition", { x: 0, y: 0 });
-  }
+  let showSpotlight = $state(false);
+
+  let shortcuts: ShortcutConfig[] = [
+    {
+      key: "space",
+      options: { context: "global" },
+      handler: () => {
+        showSpotlight = true;
+      },
+    },
+  ];
 </script>
+
+<Shortcuts {shortcuts} />
+<Spotlight onClose={() => (showSpotlight = false)} open={showSpotlight} />
 
 <main>
   <SvelteFlowProvider>

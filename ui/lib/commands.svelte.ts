@@ -1,3 +1,5 @@
+import Fuse from 'fuse.js';
+
 export interface Command {
     id: string;
     title: string;
@@ -23,6 +25,7 @@ export interface CommandCategory {
 class CommandRegistry {
     private commands = $state(new Map<string, Command>());
     private categories = $state(new Map<string, CommandCategory>());
+    private fuse: Fuse<Command> | null = null;
 
     // Register a new command
     register(command: Command): () => void {
@@ -36,6 +39,9 @@ class CommandRegistry {
             });
         }
 
+        // Recreate Fuse index when commands change
+        this.initializeFuse();
+
         // Return unregister function
         return () => this.unregister(command.id);
     }
@@ -43,6 +49,28 @@ class CommandRegistry {
     // Unregister a command
     unregister(commandId: string): void {
         this.commands.delete(commandId);
+        this.initializeFuse();
+    }
+
+    // Initialize Fuse.js instance
+    private initializeFuse(): void {
+        const commandsList = Array.from(this.commands.values());
+
+        this.fuse = new Fuse(commandsList, {
+            keys: [
+                { name: 'title', weight: 0.6 },
+                { name: 'description', weight: 0.2 },
+                { name: 'keywords', weight: 0.15 },
+                { name: 'category', weight: 0.05 }
+            ],
+            threshold: 0.4, // Lower = more strict matching
+            distance: 100,
+            minMatchCharLength: 1,
+            includeScore: true,
+            includeMatches: true,
+            ignoreLocation: true,
+            useExtendedSearch: true
+        });
     }
 
     // Register a category
@@ -57,67 +85,34 @@ class CommandRegistry {
             return this.getRecentCommands();
         }
 
-        const results: CommandWithScore[] = [];
-        const normalizedQuery = query.toLowerCase().trim();
+        if (!this.fuse) {
+            this.initializeFuse();
+        }
 
-        for (const command of this.commands.values()) {
-            const score = this.calculateScore(command, normalizedQuery);
-            if (score > 0) {
-                results.push({ ...command, score });
+        if (!this.fuse) {
+            return [];
+        }
+
+        const results = this.fuse.search(query, { limit: 8 });
+
+        return results.map(result => {
+            const command = result.item;
+            // Convert Fuse score (lower is better) to our score (higher is better)
+            const score = Math.round((1 - (result.score || 0)) * 1000);
+
+            // Add recent usage boost
+            let finalScore = score;
+            if (command.lastUsed) {
+                const daysSinceUsed = (Date.now() - command.lastUsed) / (1000 * 60 * 60 * 24);
+                if (daysSinceUsed < 1) finalScore += 150;
+                else if (daysSinceUsed < 7) finalScore += 100;
+                else if (daysSinceUsed < 30) finalScore += 50;
             }
-        }
 
-        return results.sort((a, b) => b.score - a.score).slice(0, 8); // Limit results
+            return { ...command, score: finalScore };
+        }).sort((a, b) => b.score - a.score);
     }
 
-    private calculateScore(command: Command, query: string): number {
-        const title = command.title.toLowerCase();
-        const description = (command.description || '').toLowerCase();
-        const keywords = (command.keywords || []).join(' ').toLowerCase();
-        const category = (command.category || '').toLowerCase();
-
-        let score = 0;
-
-        // Title matches (highest priority)
-        if (title === query) score += 100;
-        else if (title.startsWith(query)) score += 80;
-        else if (title.includes(query)) score += 60;
-
-        // Description matches
-        if (description.includes(query)) score += 30;
-
-        // Keywords matches
-        if (keywords.includes(query)) score += 40;
-
-        // Category matches
-        if (category.includes(query)) score += 20;
-
-        // Fuzzy matching for partial words
-        if (this.fuzzyMatch(title, query)) score += 25;
-
-        // Recent usage boost
-        if (command.lastUsed) {
-            const daysSinceUsed = (Date.now() - command.lastUsed) / (1000 * 60 * 60 * 24);
-            if (daysSinceUsed < 1) score += 15;
-            else if (daysSinceUsed < 7) score += 10;
-        }
-
-        return score;
-    }
-
-    private fuzzyMatch(text: string, query: string): boolean {
-        let textIndex = 0;
-        let queryIndex = 0;
-
-        while (textIndex < text.length && queryIndex < query.length) {
-            if (text[textIndex].toLowerCase() === query[queryIndex].toLowerCase()) {
-                queryIndex++;
-            }
-            textIndex++;
-        }
-
-        return queryIndex === query.length;
-    }
 
     // Get recently used commands
     private getRecentCommands(): CommandWithScore[] {

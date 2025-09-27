@@ -16,45 +16,25 @@
     } from "$components/Shortcuts.svelte";
     import { shortcutContext } from "$actions/shortcutContext";
 
-    const save = () => onSave({ nodes, edges });
-
     let { graph, onSave }: { graph: Graph; onSave: (graph: Graph) => void } =
         $props();
 
-    $effect(() => {
-        nodes = graph.nodes;
-        edges = graph.edges;
-    });
-
-    let nodes = $state(graph.nodes);
-    let edges = $state(graph.edges);
+    const save = () => onSave(graph);
 
     // Set up save callback through api
     setSaveCallback(save);
 
     let nodeTypes = { v1: Node };
 
-    let showSpotlight = $state(false);
-
-    let shortcuts: ShortcutConfig[] = [
-        {
-            key: "space",
-            options: { context: "canvas" },
-            handler: () => {
-                showSpotlight = true;
-            },
-        },
-    ];
+    let shortcuts: ShortcutConfig[] = [];
 </script>
 
 <Shortcuts {shortcuts} />
 
 <div class="canvas" use:shortcutContext={"canvas"}>
-    <Spotlight onClose={() => (showSpotlight = false)} show={showSpotlight} />
-
     <SvelteFlow
-        bind:nodes
-        bind:edges
+        bind:nodes={graph.nodes}
+        bind:edges={graph.edges}
         {nodeTypes}
         fitView
         snapGrid={[20, 20]}
