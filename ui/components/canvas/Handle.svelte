@@ -66,23 +66,14 @@
     // types
     .type-String :global(.svelte-flow__handle) {
         border-color: $string-color;
-        &.connected {
-            background-color: $string-color;
-        }
     }
 
     .type-Number :global(.svelte-flow__handle) {
         border-color: $number-color;
-        &.connected {
-            background-color: $number-color;
-        }
     }
 
     .type-Boolean :global(.svelte-flow__handle) {
         border-color: $boolean-color;
-        &.connected {
-            background-color: $boolean-color;
-        }
     }
 
     .connected {
