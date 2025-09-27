@@ -9,6 +9,7 @@
     } from "@xyflow/svelte";
     import "@xyflow/svelte/dist/base.css";
     import Node from "$components/canvas/Node.svelte";
+    import Edge from "$components/canvas/Edge.svelte";
     import { setSaveCallback } from "$lib/api";
     import Spotlight from "$components/Spotlight.svelte";
     import Shortcuts, {
@@ -25,6 +26,7 @@
     setSaveCallback(save);
 
     let nodeTypes = { v1: Node };
+    let edgeTypes = { default: Edge };
 
     let shortcuts: ShortcutConfig[] = [];
 </script>
@@ -35,6 +37,7 @@
     <SvelteFlow
         bind:nodes={graph.nodes}
         bind:edges={graph.edges}
+        {edgeTypes}
         {nodeTypes}
         fitView
         snapGrid={[20, 20]}
