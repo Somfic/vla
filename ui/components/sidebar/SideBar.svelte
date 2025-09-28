@@ -36,7 +36,7 @@
 
     .arguments {
         background-color: $background-secondary;
-        border: 2px solid $border-color;
+        border: $border;
         border-radius: $border-radius;
         padding: $gap;
 

@@ -2,16 +2,19 @@ $background: #070707;
 $background-secondary: #1C1D21;
 
 $foreground: #FFFFFF;
+$foreground-secondary: #A1A1AA;
 
 $primary: #6B43FD;
-
 $string-color: hsl(66, 100%, 67%);
 $number-color: hsl(240, 100%, 68%);
 $boolean-color: hsl(0, 100%, 71%);
 
 $border-radius: 10px;
-$border-radius2: calc($border-radius * 2);
-$border-color: #333438;
+$border-radius2: 20px;
+$border-color: #333438a8;
+$border: 2px solid $border-color;
+
+$transition: cubic-bezier(0.4, 0, 0.2, 1);
 
 $gap: 10px;
 $gap2: calc($gap * 2);
@@ -19,3 +22,11 @@ $gap3: calc($gap * 3);
 $gap4: calc($gap * 4);
 $gap5: calc($gap * 5);
 $gap6: calc($gap * 6);
+
+@import url("https://fonts.googleapis.com/css2?family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap");
+$font-family: "Zalando Sans", sans-serif;
+$font-size: 12px;
+$font-size2: 14px;
+$font-size3: 16px;
+$font-weight: 500;
+$font-weight2: 700;

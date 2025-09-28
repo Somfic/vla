@@ -42,7 +42,7 @@
     $handle-size: 10px;
 
     :global(.svelte-flow__handle) {
-        border: 1px solid $border-color;
+        border: $border;
         overflow: hidden;
         height: $handle-size;
         width: $handle-size;

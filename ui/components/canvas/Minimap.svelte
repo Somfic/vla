@@ -17,7 +17,7 @@
         margin: 0;
         padding: 0;
 
-        border: 2px solid $border-color;
+        border: $border;
         border-radius: $border-radius;
         overflow: hidden;
     }

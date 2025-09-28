@@ -80,7 +80,7 @@
     background-color: $background-secondary;
     margin: $gap 0;
     overflow: hidden;
-    border: 2px solid $border-color;
+    border: $border;
     border-radius: $border-radius2;
   }
 
