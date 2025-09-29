@@ -2,7 +2,8 @@
     import { Position, type NodeProps } from "@xyflow/svelte";
     import ArgumentInput from "./arguments/ArgumentInput.svelte";
     import Handle from "./Handle.svelte";
-    import type { CanvasNodeProps } from "$lib/api";
+    import { saveNodeChanges, type CanvasNodeProps } from "$lib/api";
+    import Input from "$components/forms/Input.svelte";
 
     let node: CanvasNodeProps = $props();
 </script>
@@ -21,9 +22,13 @@
 
         <div class="handles">
             <div class="inputs">
-                {#each node.data.brick.inputs as input}
+                {#each node.data.brick.inputs as input, i}
                     <div class="input">
-                        <Handle type="input" {node} connection={input} />
+                        <Handle
+                            bind:input={node.data.brick.inputs[i]}
+                            {node}
+                            onchange={() => saveNodeChanges()}
+                        />
                         <div class="label">
                             {input.label}
                         </div>
@@ -34,17 +39,15 @@
             <div class="outputs">
                 {#each node.data.brick.outputs as output}
                     <div class="output">
+                        <!-- TODO: add output preview to NodeData... -->
+                        <Input type={output.type} value={"0"} disabled />
                         <div class="label">
                             {output.label}
                         </div>
-                        <Handle type="output" {node} connection={output} />
+                        <Handle {node} {output} />
                     </div>
                 {/each}
             </div>
-        </div>
-
-        <div class="preview">
-            <img src="https://via.placeholder.com/500" alt="Node Preview" />
         </div>
     </div>
 {/if}
@@ -90,6 +93,7 @@
         .output {
             position: relative;
             display: flex;
+            gap: $gap;
             align-items: center;
         }
     }

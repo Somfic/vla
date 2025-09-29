@@ -1,38 +1,55 @@
 <script lang="ts">
-    import { Handle, Position, useEdges, type NodeProps } from "@xyflow/svelte";
+    import { Handle, Position, useEdges } from "@xyflow/svelte";
     import type { BrickInput, BrickOutput } from "../../lib/core";
     import type { CanvasNodeProps } from "$lib/api";
+    import Input from "$components/forms/Input.svelte";
 
     let {
-        type,
-        connection,
+        input = $bindable(),
+        output = $bindable(),
         node,
+        onchange,
     }: {
-        type: "input" | "output";
-        connection: BrickInput | BrickOutput;
+        input?: BrickInput;
+        output?: BrickOutput;
         node: CanvasNodeProps;
+        onchange?: () => void;
     } = $props();
+
+    const id = input ? input!.id : output!.id;
+    const connectionType = input ? input!.type : output!.type;
 
     let edges = useEdges();
 
     let edge = $derived(() =>
         edges.current.find((edge) =>
-            type === "input"
-                ? edge.target === node.id && edge.targetHandle === connection.id
-                : edge.source === node.id &&
-                  edge.sourceHandle === connection.id,
+            input
+                ? edge.target === node.id && edge.targetHandle === id
+                : edge.source === node.id && edge.sourceHandle === id,
         ),
     );
 </script>
 
 <div
-    class={`handle ${type} type-${connection.type}`}
+    class={`handle type-${connectionType}`}
+    class:input
+    class:output
     class:connected={!!edge()}
 >
+    {#if input && !edge()}
+        <div class="default">
+            <Input
+                type={input!.type}
+                bind:value={node.data.defaults[input.id]}
+                onchange={() => onchange?.()}
+            />
+        </div>
+    {/if}
+
     <Handle
-        type={type === "input" ? "target" : "source"}
-        id={connection.id}
-        position={type === "input" ? Position.Left : Position.Right}
+        {id}
+        type={input ? "target" : "source"}
+        position={input ? Position.Left : Position.Right}
     />
 </div>
 
@@ -40,6 +57,10 @@
     @import "$styles/theme";
 
     $handle-size: 10px;
+
+    .handle {
+        position: relative;
+    }
 
     :global(.svelte-flow__handle) {
         border: $border;
@@ -64,29 +85,38 @@
     }
 
     // types
-    .type-String :global(.svelte-flow__handle) {
+    .type-string :global(.svelte-flow__handle) {
         border-color: $string-color;
     }
 
-    .type-Number :global(.svelte-flow__handle) {
+    .type-number :global(.svelte-flow__handle) {
         border-color: $number-color;
     }
 
-    .type-Boolean :global(.svelte-flow__handle) {
+    .type-boolean :global(.svelte-flow__handle) {
         border-color: $boolean-color;
     }
 
     .connected {
-        &.type-String :global(.svelte-flow__handle) {
+        &.type-string :global(.svelte-flow__handle) {
             background-color: $string-color;
         }
 
-        &.type-Number :global(.svelte-flow__handle) {
+        &.type-number :global(.svelte-flow__handle) {
             background-color: $number-color;
         }
 
-        &.type-Boolean :global(.svelte-flow__handle) {
+        &.type-boolean :global(.svelte-flow__handle) {
             background-color: $boolean-color;
         }
+    }
+
+    .default {
+        position: absolute;
+        right: $handle-size + $gap;
+        top: -$handle-size / 2;
+        height: $handle-size;
+        display: flex;
+        align-items: center;
     }
 </style>

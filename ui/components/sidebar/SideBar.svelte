@@ -2,23 +2,21 @@
     import Minimap from "$components/canvas/Minimap.svelte";
     import { useNodes } from "@xyflow/svelte";
     import type { CanvasNode } from "$lib/api";
+    import Input from "$components/forms/Input.svelte";
 
     const nodesStore = useNodes();
 
     const selectedNode = $derived(
         nodesStore.current.find((n) => n.selected) as CanvasNode | undefined,
     );
+
+    let value = $state("");
 </script>
 
 <div class="sidebar">
     {#if selectedNode?.data}
         <div class="arguments">
-            <h3>{selectedNode.data.brickId}</h3>
-            <h2>{selectedNode.data.brick?.description}</h2>
-            <div class="node-data">
-                <h4>Selected Node: {selectedNode.id}</h4>
-                <pre>{JSON.stringify(selectedNode.data, null, 2)}</pre>
-            </div>
+            <h3>{selectedNode.data.brick?.label}</h3>
         </div>
     {/if}
 
@@ -32,6 +30,7 @@
         display: flex;
         flex-direction: column;
         gap: $gap;
+        width: 100px;
     }
 
     .arguments {

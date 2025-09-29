@@ -16,8 +16,10 @@
     } from "$components/Shortcuts.svelte";
     import { shortcutContext } from "$actions/shortcutContext";
 
-    let { graph, onSave }: { graph: Graph; onSave: (graph: Graph) => void } =
-        $props();
+    let {
+        graph = $bindable(),
+        onSave,
+    }: { graph: Graph; onSave: (graph: Graph) => void } = $props();
 
     const save = () => onSave(graph);
 
@@ -39,7 +41,6 @@
         {edgeTypes}
         {nodeTypes}
         fitView
-        snapGrid={[20, 20]}
         onnodedragstop={save}
         onconnectend={save}
         ondelete={save}
