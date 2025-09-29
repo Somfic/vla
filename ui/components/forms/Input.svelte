@@ -34,7 +34,7 @@
         class="nodrag toggle {rawValue ? 'active' : ''}"
         class:active={!!rawValue}
         onclick={() => {
-            rawValue = rawValue === "true" ? "false" : "true";
+            rawValue = !rawValue;
             onchange?.(rawValue);
         }}
     >
