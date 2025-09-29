@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn test_serialization_compatibility() {
-        use crate::bricks::types::{Type, Type};
+        use crate::bricks::types::Type;
 
         // Test that our types can be serialized/deserialized properly
         let arg_types = vec![Type::String, Type::Number, Type::Boolean, Type::Enum];
