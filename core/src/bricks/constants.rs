@@ -9,7 +9,7 @@ brick! {
     #[id("number_constant")]
     #[label("Number constant")]
     #[description("Outputs a constant number")]
-    #[category("Boolean Logic")]
+    #[category("Constants")]
     fn number_constant(
         #[argument] #[label("Value")] value: f32
     ) -> (
