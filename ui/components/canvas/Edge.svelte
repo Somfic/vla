@@ -68,15 +68,15 @@
 <style lang="scss">
     @import "$styles/theme";
 
-    .source-type-String :global(.svelte-flow__edge-path) {
+    .source-type-string :global(.svelte-flow__edge-path) {
         stroke: $string-color;
     }
 
-    .source-type-Number :global(.svelte-flow__edge-path) {
+    .source-type-number :global(.svelte-flow__edge-path) {
         stroke: $number-color;
     }
 
-    .source-type-Boolean :global(.svelte-flow__edge-path) {
+    .source-type-boolean :global(.svelte-flow__edge-path) {
         stroke: $boolean-color;
     }
 

@@ -380,10 +380,10 @@ macro_rules! brick {
     (@get_default_typed_value bool) => { false };
 
     // Helper: Get return type enum
-    (@get_return_type String) => { crate::bricks::types::BrickHandleType::String };
-    (@get_return_type i32) => { crate::bricks::types::BrickHandleType::Number };
-    (@get_return_type f32) => { crate::bricks::types::BrickHandleType::Number };
-    (@get_return_type bool) => { crate::bricks::types::BrickHandleType::Boolean };
+    (@get_return_type String) => { crate::bricks::types::Type::String };
+    (@get_return_type i32) => { crate::bricks::types::Type::Number };
+    (@get_return_type f32) => { crate::bricks::types::Type::Number };
+    (@get_return_type bool) => { crate::bricks::types::Type::Boolean };
 
     // Helper: Check if attribute list contains a specific attribute
     (@has_attr argument, [#[argument] $($rest:tt)*]) => { true };
@@ -546,10 +546,10 @@ macro_rules! brick {
     (@parse_to_type bool, $value:expr) => { $value.parse::<bool>().unwrap_or(false) };
 
     // Helper: Get argument type enum
-    (@get_argument_type String) => { crate::bricks::types::BrickArgumentType::String };
-    (@get_argument_type i32) => { crate::bricks::types::BrickArgumentType::Number };
-    (@get_argument_type f32) => { crate::bricks::types::BrickArgumentType::Number };
-    (@get_argument_type bool) => { crate::bricks::types::BrickArgumentType::Boolean };
+    (@get_argument_type String) => { crate::bricks::types::Type::String };
+    (@get_argument_type i32) => { crate::bricks::types::Type::Number };
+    (@get_argument_type f32) => { crate::bricks::types::Type::Number };
+    (@get_argument_type bool) => { crate::bricks::types::Type::Boolean };
 
     // Helper: Ensure parameter has valid attributes
     (@ensure_valid_attrs [$($attrs:tt)*] -> $param_name:ident) => {

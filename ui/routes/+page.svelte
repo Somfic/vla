@@ -52,7 +52,7 @@
       {#if !graph}
         <p>Loading graph...</p>
       {:else}
-        <Canvas {graph} onSave={handleAutoSave} />
+        <Canvas bind:graph onSave={handleAutoSave} />
       {/if}
     </div>
 

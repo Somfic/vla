@@ -18,8 +18,8 @@ brick! {
     #[description("Performs addition on two numbers")]
     #[category("Arithmetic")]
     fn add(
-        #[input] #[label("A")] a: f32,
-        #[input] #[label("B")] b: f32
+        #[input] #[label("A")] a: f32 = 1,
+        #[input] #[label("B")] b: f32 = 1
     ) -> (
         #[label("A + B")] f32
     )

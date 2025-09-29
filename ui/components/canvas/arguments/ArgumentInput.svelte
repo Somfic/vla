@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { NodeData, BrickArgument, Brick } from "$lib/core";
     import { saveNodeChanges } from "$lib/api";
+    import Input from "$components/forms/Input.svelte";
 
     interface Props {
         argument: BrickArgument;
@@ -8,146 +9,16 @@
     }
 
     let { argument, data }: Props = $props();
-
-    function getDefaultValue(type: string) {
-        switch (type) {
-            case "Boolean":
-                return false;
-            case "Number":
-                return 0;
-            case "String":
-                return "";
-            default:
-                return null;
-        }
-    }
-
-    function getValue(argumentId: string, type: string) {
-        const value = data.arguments[argumentId];
-        if (value === undefined) {
-            return getDefaultValue(type);
-        }
-        try {
-            return JSON.parse(value);
-        } catch {
-            return getDefaultValue(type);
-        }
-    }
-
-    function setValue(argumentId: string, value: any) {
-        data.arguments[argumentId] = JSON.stringify(value);
-        saveNodeChanges();
-    }
-
-    let intervalId: number | null = null;
-    let timeoutId: number | null = null;
-
-    function startContinuousChange(argumentId: string, increment: number) {
-        stopContinuousChange();
-
-        timeoutId = window.setTimeout(() => {
-            intervalId = window.setInterval(() => {
-                setValue(
-                    argumentId,
-                    getValue(argumentId, "Number") + increment,
-                );
-            }, 100); // change speed
-        }, 100); // initial delay
-    }
-
-    function stopContinuousChange() {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-        }
-        if (intervalId) {
-            clearInterval(intervalId);
-            intervalId = null;
-        }
-    }
 </script>
 
 <div class="argument">
     <label for={argument.id}>{argument.label}</label>
-
-    {#if argument.type === "Boolean"}
-        <button
-            type="button"
-            id={argument.id}
-            class="nodrag toggle {getValue(argument.id, 'Boolean')
-                ? 'active'
-                : ''}"
-            onclick={() =>
-                setValue(argument.id, !getValue(argument.id, "Boolean"))}
-        >
-            <div class="toggle-slider"></div>
-        </button>
-    {:else if argument.type === "Number"}
-        <div class="number-input nodrag">
-            <input
-                type="text"
-                id={argument.id}
-                class="nodrag"
-                value={getValue(argument.id, "Number")}
-                onchange={(e) => {
-                    const value = e.currentTarget.value;
-                    if (!isNaN(Number(value)) || value === "") {
-                        setValue(argument.id, parseFloat(value) || 0);
-                    }
-                }}
-            />
-            <div class="number-controls">
-                <button
-                    type="button"
-                    class="nodrag"
-                    onclick={() =>
-                        setValue(
-                            argument.id,
-                            getValue(argument.id, "Number") + 1,
-                        )}
-                    onmousedown={() => startContinuousChange(argument.id, 1)}
-                    onmouseup={stopContinuousChange}
-                    onmouseleave={stopContinuousChange}>+</button
-                >
-                <button
-                    type="button"
-                    class="nodrag"
-                    onclick={() =>
-                        setValue(
-                            argument.id,
-                            getValue(argument.id, "Number") - 1,
-                        )}
-                    onmousedown={() => startContinuousChange(argument.id, -1)}
-                    onmouseup={stopContinuousChange}
-                    onmouseleave={stopContinuousChange}>-</button
-                >
-            </div>
-        </div>
-    {:else if argument.type === "String"}
-        <input
-            type="text"
-            id={argument.id}
-            class="nodrag text-input"
-            value={getValue(argument.id, "String")}
-            onchange={(e) => setValue(argument.id, e.currentTarget.value)}
-        />
-    {:else if argument.type === "Enum" && argument.enum_options}
-        <select
-            id={argument.id}
-            class="nodrag text-input"
-            value={getValue(argument.id, "String")}
-            onchange={(e) => setValue(argument.id, e.currentTarget.value)}
-        >
-            {#each argument.enum_options as option}
-                <option
-                    value={option}
-                    selected={option === getValue(argument.id, "String")}
-                >
-                    {option}
-                </option>
-            {/each}
-        </select>
-    {/if}
+    <Input
+        id={argument.id}
+        type={argument.type}
+        bind:value={data.arguments[argument.id]!}
+        onchange={() => saveNodeChanges()}
+    />
 </div>
 
 <style lang="scss">
