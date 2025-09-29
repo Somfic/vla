@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_type_enum_variants_equality() {
-        use crate::bricks::types::{Type, Type};
+        use crate::bricks::types::Type;
 
         // Test Type variants
         let string_arg_type = Type::String;
