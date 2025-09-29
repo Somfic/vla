@@ -19,12 +19,27 @@
           extensions =
             [ "rust-src" "rust-analyzer" "clippy" "llvm-tools-preview" ];
         };
+
+        libraries = with pkgs; [
+          webkitgtk_4_1
+          gtk3
+          cairo
+          gdk-pixbuf
+          glib
+          dbus
+          openssl
+          librsvg
+        ];
       in {
         devShells.default = pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            gobject-introspection
+          ];
+
           buildInputs = with pkgs;
             [
               rustToolchain
-              pkg-config
               cargo-llvm-cov
               just
               cargo-edit
@@ -36,14 +51,27 @@
               bat
               bun
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
-              # Linux-specific dependencies for Tauri
+              # Tauri dependencies from nixos wiki
+              at-spi2-atk
+              atkmm
+              cairo
+              gdk-pixbuf
               glib
               gtk3
-              webkitgtk_4_1
-              libappindicator-gtk3
+              harfbuzz
               librsvg
+              libsoup_3
+              pango
+              webkitgtk_4_1
               openssl
+              dbus
             ];
+
+          shellHook = ''
+            export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath libraries}:$LD_LIBRARY_PATH"
+            export XDG_DATA_DIRS="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:$XDG_DATA_DIRS"
+            export WEBKIT_DISABLE_COMPOSITING_MODE=1
+          '';
 
           RUST_BACKTRACE = "1";
           RUST_LOG = "debug";
