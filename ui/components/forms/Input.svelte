@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type Type } from "../../lib/core";
+    import { type ArgumentType } from "../../lib/core";
 
     let {
         id,
@@ -12,7 +12,7 @@
     }: {
         id?: string;
         value: string | null | undefined;
-        type: Type;
+        type: ArgumentType;
         label?: string;
         disabled?: boolean;
         enumValues?: string[];
