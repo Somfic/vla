@@ -1,6 +1,8 @@
 pub mod arithmetics;
 pub mod boolean_logic;
 pub mod constants;
+pub mod control_flow;
+pub mod execution;
 pub mod macros;
 
 #[cfg(test)]
@@ -14,5 +16,6 @@ pub fn all_bricks() -> Vec<Brick> {
     bricks.extend(arithmetics::all_bricks());
     bricks.extend(boolean_logic::all_bricks());
     bricks.extend(constants::all_bricks());
+    bricks.extend(control_flow::all_bricks());
     bricks
 }

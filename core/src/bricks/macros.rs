@@ -61,6 +61,216 @@ macro_rules! brick {
                $return_type, $body)
     };
 
+    // Pattern with execution inputs and outputs - single tuple return
+    (
+        #[id($id:expr)]
+        $(#[label($label:expr)])?
+        $(#[description($description:expr)])?
+        $(#[keywords($keywords:expr)])?
+        #[category($category:expr)]
+        $(#[execution_input($($exec_input_args:tt)*)])*
+        $(#[execution_output($($exec_output_args:tt)*)])*
+        fn $fn_name:ident(
+            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
+        ) -> (
+            $(#[$output_attr:ident$(($($output_attr_content:tt)*))? ])+ $output_type:ident
+        )
+        $body:block
+    ) => {
+        // Validate each parameter has at least one required attribute
+        $(
+            brick!(@ensure_valid_attrs [$(#[$param_attr$(($($param_attr_content)*))? ])+] -> $param_name);
+        )*
+
+        paste::paste! {
+            // Define the actual function
+            fn $fn_name($($param_name: $param_type),*) -> ($output_type,) $body
+
+            // Define the execution wrapper
+            #[allow(unused_variables)]
+            fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgument>,
+                inputs: Vec<crate::bricks::types::BrickInput>
+            ) -> Vec<crate::bricks::types::BrickOutput> {
+                // Extract parameters based on their attributes
+                $(
+                    let $param_name = brick!(@get_param_value_with_attrs
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_type,
+                        &args,
+                        &inputs,
+                        stringify!($param_name),
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Call the function
+                let result = $fn_name($($param_name),*);
+
+                // Return outputs from single tuple element
+                let mut outputs = Vec::new();
+
+                brick!(@add_tuple_outputs outputs, result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
+
+                outputs
+            }
+
+            // Generate the brick structure function
+            pub fn [<$fn_name _brick>]() -> crate::bricks::types::Brick {
+                let mut arguments = Vec::new();
+                let mut inputs = Vec::new();
+                let mut outputs = Vec::new();
+                let mut execution_inputs = Vec::new();
+                let mut execution_outputs = Vec::new();
+
+                // Process each parameter based on its attributes
+                $(
+                    brick!(@process_param_with_attrs
+                        arguments,
+                        inputs,
+                        outputs,
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_name,
+                        $param_type,
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Add execution inputs
+                $(
+                    brick!(@add_single_execution_input execution_inputs, $($exec_input_args)*);
+                )*
+
+                // Add execution outputs
+                $(
+                    brick!(@add_single_execution_output execution_outputs, $($exec_output_args)*);
+                )*
+
+                // Add output from single tuple return type
+                brick!(@add_tuple_outputs outputs, dummy_result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
+
+                crate::bricks::types::Brick {
+                    id: $id.to_string(),
+                    label: brick!(@get_label_or_default $($label)?),
+                    description: brick!(@get_description_or_default $($description)?),
+                    keywords: brick!(@get_keywords_or_default $($keywords)?),
+                    category: brick!(@get_category_or_default $category),
+                    arguments,
+                    inputs,
+                    outputs,
+                    execution_inputs,
+                    execution_outputs,
+                    execution: [<$fn_name _execution>],
+                }
+            }
+        }
+    };
+
+    // Pattern with execution inputs and outputs - multiple tuple return
+    (
+        #[id($id:expr)]
+        $(#[label($label:expr)])?
+        $(#[description($description:expr)])?
+        $(#[keywords($keywords:expr)])?
+        #[category($category:expr)]
+        $(#[execution_input($($exec_input_args:tt)*)])*
+        $(#[execution_output($($exec_output_args:tt)*)])*
+        fn $fn_name:ident(
+            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
+        ) -> (
+            $($(#[$output_attr:ident$(($($output_attr_content:tt)*))? ])+ $output_type:ident),+
+        )
+        $body:block
+    ) => {
+        // Validate each parameter has at least one required attribute
+        $(
+            brick!(@ensure_valid_attrs [$(#[$param_attr$(($($param_attr_content)*))? ])+] -> $param_name);
+        )*
+
+        paste::paste! {
+            // Define the actual function
+            fn $fn_name($($param_name: $param_type),*) -> ($($output_type),+) $body
+
+            // Define the execution wrapper
+            #[allow(unused_variables)]
+            fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgument>,
+                inputs: Vec<crate::bricks::types::BrickInput>
+            ) -> Vec<crate::bricks::types::BrickOutput> {
+                // Extract parameters based on their attributes
+                $(
+                    let $param_name = brick!(@get_param_value_with_attrs
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_type,
+                        &args,
+                        &inputs,
+                        stringify!($param_name),
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Call the function
+                let result = $fn_name($($param_name),*);
+
+                // Return outputs from tuple elements
+                let mut outputs = Vec::new();
+
+                brick!(@add_tuple_outputs outputs, result, [$(([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)),+]);
+
+                outputs
+            }
+
+            // Generate the brick structure function
+            pub fn [<$fn_name _brick>]() -> crate::bricks::types::Brick {
+                let mut arguments = Vec::new();
+                let mut inputs = Vec::new();
+                let mut outputs = Vec::new();
+                let mut execution_inputs = Vec::new();
+                let mut execution_outputs = Vec::new();
+
+                // Process each parameter based on its attributes
+                $(
+                    brick!(@process_param_with_attrs
+                        arguments,
+                        inputs,
+                        outputs,
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_name,
+                        $param_type,
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Add execution inputs
+                $(
+                    brick!(@add_single_execution_input execution_inputs, $($exec_input_args)*);
+                )*
+
+                // Add execution outputs
+                $(
+                    brick!(@add_single_execution_output execution_outputs, $($exec_output_args)*);
+                )*
+
+                // Add outputs from tuple return type
+                brick!(@add_tuple_outputs outputs, dummy_result, [$(([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)),+]);
+
+                crate::bricks::types::Brick {
+                    id: $id.to_string(),
+                    label: brick!(@get_label_or_default $($label)?),
+                    description: brick!(@get_description_or_default $($description)?),
+                    keywords: brick!(@get_keywords_or_default $($keywords)?),
+                    category: brick!(@get_category_or_default $category),
+                    arguments,
+                    inputs,
+                    outputs,
+                    execution_inputs,
+                    execution_outputs,
+                    execution: [<$fn_name _execution>],
+                }
+            }
+        }
+    };
+
     // Mixed parameter types with single tuple return (1-tuple)
     (
         #[id($id:expr)]
@@ -144,6 +354,8 @@ macro_rules! brick {
                     arguments,
                     inputs,
                     outputs,
+                    execution_inputs: Vec::new(),
+                    execution_outputs: Vec::new(),
                     execution: [<$fn_name _execution>],
                 }
             }
@@ -233,6 +445,8 @@ macro_rules! brick {
                     arguments,
                     inputs,
                     outputs,
+                    execution_inputs: Vec::new(),
+                    execution_outputs: Vec::new(),
                     execution: [<$fn_name _execution>],
                 }
             }
@@ -331,6 +545,8 @@ macro_rules! brick {
                     arguments,
                     inputs,
                     outputs,
+                    execution_inputs: Vec::new(),
+                    execution_outputs: Vec::new(),
                     execution: [<$fn_name _execution>],
                 }
             }
@@ -580,6 +796,34 @@ macro_rules! brick {
     (@has_any_required_attr [] $param_name:ident) => {
         // No required attributes found - compile error
         compile_error!(concat!("Parameter '", stringify!($param_name), "' must have one of: #[input] or #[argument]. Outputs come from the function return value."));
+    };
+
+    // Helper: Add single execution input with optional label
+    (@add_single_execution_input $exec_vec:ident, $id:expr) => {
+        $exec_vec.push(crate::bricks::types::BrickExecutionInput {
+            id: $id.to_string(),
+            label: $id.to_string(), // Use ID as label if no label provided
+        });
+    };
+    (@add_single_execution_input $exec_vec:ident, $id:expr, $label:expr) => {
+        $exec_vec.push(crate::bricks::types::BrickExecutionInput {
+            id: $id.to_string(),
+            label: $label.to_string(), // Use custom label
+        });
+    };
+
+    // Helper: Add single execution output with optional label
+    (@add_single_execution_output $exec_vec:ident, $id:expr) => {
+        $exec_vec.push(crate::bricks::types::BrickExecutionOutput {
+            id: $id.to_string(),
+            label: $id.to_string(), // Use ID as label if no label provided
+        });
+    };
+    (@add_single_execution_output $exec_vec:ident, $id:expr, $label:expr) => {
+        $exec_vec.push(crate::bricks::types::BrickExecutionOutput {
+            id: $id.to_string(),
+            label: $label.to_string(), // Use custom label
+        });
     };
 }
 
