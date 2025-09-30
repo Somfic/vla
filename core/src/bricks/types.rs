@@ -8,6 +8,8 @@ pub struct Brick {
     pub arguments: Vec<BrickArgument>,
     pub inputs: Vec<BrickInput>,
     pub outputs: Vec<BrickOutput>,
+    pub execution_inputs: Vec<BrickExecutionInput>,
+    pub execution_outputs: Vec<BrickExecutionOutput>,
     #[serde(skip, default = "default_execution_fn")]
     pub execution: fn(Vec<BrickArgument>, Vec<BrickInput>) -> Vec<BrickOutput>,
 }
@@ -71,4 +73,16 @@ pub enum ConnectionType {
     Boolean,
     #[serde(rename = "enum")]
     Enum,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct BrickExecutionInput {
+    pub id: String,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct BrickExecutionOutput {
+    pub id: String,
+    pub label: String,
 }
