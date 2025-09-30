@@ -220,49 +220,6 @@ mod tests {
     }
 
     #[test]
-    fn test_serialization_compatibility() {
-        use crate::bricks::types::ArgumentType;
-
-        // Test that our types can be serialized/deserialized properly
-        let arg_types = vec![
-            ArgumentType::String,
-            ArgumentType::Number,
-            ArgumentType::Boolean,
-            ArgumentType::Enum,
-        ];
-
-        let handle_types = vec![
-            ArgumentType::String,
-            ArgumentType::Number,
-            ArgumentType::Boolean,
-            ArgumentType::Enum,
-        ];
-
-        // Test that all types are created successfully
-        assert_eq!(arg_types.len(), 4);
-        assert_eq!(handle_types.len(), 4);
-
-        // Test that types maintain their identity
-        for arg_type in &arg_types {
-            match arg_type {
-                ArgumentType::String => assert_eq!(*arg_type, ArgumentType::String),
-                ArgumentType::Number => assert_eq!(*arg_type, ArgumentType::Number),
-                ArgumentType::Boolean => assert_eq!(*arg_type, ArgumentType::Boolean),
-                ArgumentType::Enum => assert_eq!(*arg_type, ArgumentType::Enum),
-            }
-        }
-
-        for handle_type in &handle_types {
-            match handle_type {
-                ArgumentType::String => assert_eq!(*handle_type, ArgumentType::String),
-                ArgumentType::Number => assert_eq!(*handle_type, ArgumentType::Number),
-                ArgumentType::Boolean => assert_eq!(*handle_type, ArgumentType::Boolean),
-                ArgumentType::Enum => assert_eq!(*handle_type, ArgumentType::Enum),
-            }
-        }
-    }
-
-    #[test]
     fn test_type_consistency() {
         let bricks = all_bricks();
 
