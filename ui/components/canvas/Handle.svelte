@@ -36,7 +36,7 @@
     class:output
     class:connected={!!edge()}
 >
-    {#if input && !edge()}
+    {#if input && !edge() && input.type !== "flow"}
         <div class="default">
             <Input
                 type={input!.type}
@@ -99,6 +99,11 @@
         border-color: $boolean-color;
     }
 
+    .type-flow :global(.svelte-flow__handle) {
+        border-color: $flow-color;
+        border-radius: 0;
+    }
+
     .connected {
         &.type-string :global(.svelte-flow__handle) {
             background-color: $string-color;
@@ -110,6 +115,10 @@
 
         &.type-boolean :global(.svelte-flow__handle) {
             background-color: $boolean-color;
+        }
+
+        &.type-flow :global(.svelte-flow__handle) {
+            background-color: $flow-color;
         }
     }
 
