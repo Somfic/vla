@@ -39,8 +39,9 @@
             <div class="outputs">
                 {#each node.data.brick.outputs as output}
                     <div class="output">
-                        <!-- TODO: add output preview to NodeData... -->
-                        <Input type={output.type} value={"0"} disabled />
+                        {#if output.type !== "flow"}
+                            <Input type={output.type} value={"0"} disabled />
+                        {/if}
                         <div class="label">
                             {output.label}
                         </div>
