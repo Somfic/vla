@@ -36,10 +36,10 @@
     class:output
     class:connected={!!edge()}
 >
-    {#if input && !edge() && input.type !== "flow"}
+    {#if !!input && !edge() && input.type !== "flow"}
         <div class="default">
             <Input
-                type={input!.type}
+                type={input.type}
                 bind:value={node.data.defaults[input.id]}
                 onchange={() => onchange?.()}
             />
