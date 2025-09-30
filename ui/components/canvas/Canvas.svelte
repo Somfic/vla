@@ -1,28 +1,20 @@
 <script lang="ts">
     import type { Graph } from "$lib/core";
-    import {
-        Background,
-        SvelteFlow,
-        Controls,
-        MiniMap,
-        SvelteFlowProvider,
-    } from "@xyflow/svelte";
+    import { Background, SvelteFlow } from "@xyflow/svelte";
     import "@xyflow/svelte/dist/base.css";
     import Node from "$components/canvas/Node.svelte";
     import Edge from "$components/canvas/Edge.svelte";
-    import { setSaveCallback } from "$lib/api";
     import Shortcuts, {
         type ShortcutConfig,
     } from "$components/Shortcuts.svelte";
     import { shortcutContext } from "$actions/shortcutContext";
 
-    let { graph, onSave }: { graph: Graph; onSave: (graph: Graph) => void } =
-        $props();
+    let { graph = $bindable() }: { graph: Graph } = $props();
 
-    const save = () => onSave(graph);
-
-    // Set up save callback through api
-    setSaveCallback(save);
+    function updateGraph() {
+        // Create new graph object to trigger reactivity
+        graph = { ...graph, nodes: [...graph.nodes], edges: [...graph.edges] };
+    }
 
     let nodeTypes = { v1: Node };
     let edgeTypes = { default: Edge };
@@ -40,9 +32,9 @@
         {nodeTypes}
         fitView
         snapGrid={[20, 20]}
-        onnodedragstop={save}
-        onconnectend={save}
-        ondelete={save}
+        onnodedragstop={updateGraph}
+        onconnectend={updateGraph}
+        ondelete={updateGraph}
     >
         <Background />
     </SvelteFlow>

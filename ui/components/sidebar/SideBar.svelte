@@ -13,12 +13,7 @@
 <div class="sidebar">
     {#if selectedNode?.data}
         <div class="arguments">
-            <h3>{selectedNode.data.brickId}</h3>
-            <h2>{selectedNode.data.brick?.description}</h2>
-            <div class="node-data">
-                <h4>Selected Node: {selectedNode.id}</h4>
-                <pre>{JSON.stringify(selectedNode.data, null, 2)}</pre>
-            </div>
+            <h3>{selectedNode.data.brick?.label}</h3>
         </div>
     {/if}
 

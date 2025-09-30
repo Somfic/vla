@@ -82,6 +82,12 @@ pub async fn save_graph<R: Runtime>(
             })?;
     }
 
+    println!(
+        "{}: Graph saved to {}",
+        chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+        graph_path
+    );
+
     Ok(format!("Graph saved to {}", graph_path))
 }
 

@@ -1,30 +1,11 @@
 <script lang="ts">
-  import api from "$lib/api";
   import Canvas from "$components/canvas/Canvas.svelte";
-  import type { Graph } from "$lib/core";
   import SideBar from "$components/sidebar/SideBar.svelte";
   import MenuBar from "$components/menubar/MenuBar.svelte";
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import Spotlight from "$components/Spotlight.svelte";
   import Shortcuts, { type ShortcutConfig } from "$components/Shortcuts.svelte";
-
-  let graph = $state<Graph | null>(null);
-  api.load_graph("../graph.json").then((g) => {
-    graph = g;
-  });
-
-  api.graph_updated.on((updatedGraph) => {
-    graph = updatedGraph;
-  });
-
-  async function handleAutoSave(updatedGraph: Graph) {
-    graph = updatedGraph;
-    try {
-      await api.save_graph(updatedGraph, "../graph.json");
-    } catch (e) {
-      console.error("Auto-save failed:", e);
-    }
-  }
+  import { graphStore } from "$lib/graph.svelte";
 
   let showSpotlight = $state(false);
 
@@ -37,6 +18,13 @@
       },
     },
   ];
+
+  $effect(() => {
+    console.log(graphStore.graph);
+  });
+
+  // Set up auto-save in the store
+  graphStore.setupAutoSave();
 </script>
 
 <Shortcuts {shortcuts} />
@@ -49,10 +37,12 @@
     </div>
 
     <div class="content">
-      {#if !graph}
+      {#if graphStore.isLoading}
         <p>Loading graph...</p>
-      {:else}
-        <Canvas {graph} onSave={handleAutoSave} />
+      {:else if graphStore.error}
+        <p>Error: {graphStore.error}</p>
+      {:else if graphStore.graph}
+        <Canvas bind:graph={graphStore.graph} />
       {/if}
     </div>
 

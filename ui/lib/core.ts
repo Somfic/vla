@@ -6,13 +6,13 @@ type TAURI_CHANNEL<T> = (response: T) => void
 
 export type Brick = { id: string; label: string; description: string; keywords: string[]; category: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[] }
 
-export type BrickArgument = { id: string; label: string; type: BrickArgumentType; enum_options: string[] | null; default_value: string | null }
+export type BrickArgument = { id: string; label: string; type: BrickArgumentType; enumOptions: string[] | null; defaultValue: string | null }
 
-export type BrickArgumentType = "String" | "Number" | "Boolean" | "Enum"
+export type BrickArgumentType = "string" | "number" | "boolean" | "enum"
 
-export type BrickHandleType = "String" | "Number" | "Boolean" | "Enum"
+export type BrickHandleType = "string" | "number" | "boolean" | "enum"
 
-export type BrickInput = { id: string; label: string; type: BrickHandleType; default_value: string | null }
+export type BrickInput = { id: string; label: string; type: BrickHandleType; defaultValue: string | null }
 
 export type BrickOutput = { id: string; label: string; type: BrickHandleType }
 

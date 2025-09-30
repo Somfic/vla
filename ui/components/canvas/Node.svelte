@@ -85,6 +85,7 @@
     .outputs {
         display: flex;
         flex-direction: column;
+        gap: $gap / 2;
 
         .input,
         .output {
