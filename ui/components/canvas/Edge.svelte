@@ -3,7 +3,6 @@
     import {
         BaseEdge,
         getBezierPath,
-        getStraightPath,
         Position,
         useEdges,
         useNodes,
@@ -78,6 +77,18 @@
 
     .source-type-boolean :global(.svelte-flow__edge-path) {
         stroke: $boolean-color;
+    }
+
+    .source-type-flow :global(.svelte-flow__edge-path) {
+        stroke: $flow-color;
+        stroke-dasharray: 5, 5;
+        animation: dash 1s linear infinite;
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -20;
+            }
+        }
     }
 
     :global(.svelte-flow__edge-path) {
