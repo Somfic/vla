@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { NodeData, BrickArgument, Brick } from "$lib/core";
+    import type { NodeData, BrickArgument } from "$lib/core";
     import { saveNodeChanges } from "$lib/api";
     import Input from "$components/forms/Input.svelte";
 

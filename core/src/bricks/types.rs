@@ -24,7 +24,7 @@ fn default_execution_fn() -> fn(Vec<BrickArgument>, Vec<BrickInput>) -> Vec<Bric
 pub struct BrickInput {
     pub id: String,
     pub label: String,
-    pub r#type: Type,
+    pub r#type: ConnectionType,
     #[serde(rename = "defaultValue")]
     pub default_value: Option<String>,
 }
@@ -33,14 +33,14 @@ pub struct BrickInput {
 pub struct BrickOutput {
     pub id: String,
     pub label: String,
-    pub r#type: Type,
+    pub r#type: ConnectionType,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct BrickArgument {
     pub id: String,
     pub label: String,
-    pub r#type: Type,
+    pub r#type: ArgumentType,
     #[serde(rename = "enumOptions")]
     pub enum_options: Option<Vec<String>>,
     #[serde(rename = "defaultValue")]
@@ -48,7 +48,21 @@ pub struct BrickArgument {
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, specta::Type)]
-pub enum Type {
+pub enum ArgumentType {
+    #[serde(rename = "string")]
+    String,
+    #[serde(rename = "number")]
+    Number,
+    #[serde(rename = "boolean")]
+    Boolean,
+    #[serde(rename = "enum")]
+    Enum,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, specta::Type)]
+pub enum ConnectionType {
+    #[serde(rename = "flow")]
+    Flow,
     #[serde(rename = "string")]
     String,
     #[serde(rename = "number")]

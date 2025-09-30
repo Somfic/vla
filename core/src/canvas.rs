@@ -8,13 +8,13 @@ use tauri::AppHandle;
 use tauri::Runtime;
 use uuid::Uuid;
 
-#[taurpc::ipc_type]
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct Graph {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
 }
 
-#[taurpc::ipc_type]
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct Node {
     pub id: String,
     pub position: Point,
@@ -22,7 +22,7 @@ pub struct Node {
     pub r#type: String,
 }
 
-#[taurpc::ipc_type]
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -37,7 +37,7 @@ pub struct NodeData {
     pub defaults: BTreeMap<String, String>,
 }
 
-#[taurpc::ipc_type]
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct Edge {
     pub id: String,
     pub source: String,

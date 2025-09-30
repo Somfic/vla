@@ -4,13 +4,17 @@ import { createTauRPCProxy as createProxy, type InferCommandOutput } from 'taurp
 type TAURI_CHANNEL<T> = (response: T) => void
 
 
+export type ArgumentType = "string" | "number" | "boolean" | "enum"
+
 export type Brick = { id: string; label: string; description: string; keywords: string[]; category: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[] }
 
-export type BrickArgument = { id: string; label: string; type: Type; enumOptions: string[] | null; defaultValue: string | null }
+export type BrickArgument = { id: string; label: string; type: ArgumentType; enumOptions: string[] | null; defaultValue: string | null }
 
-export type BrickInput = { id: string; label: string; type: Type; defaultValue: string | null }
+export type BrickInput = { id: string; label: string; type: ConnectionType; defaultValue: string | null }
 
-export type BrickOutput = { id: string; label: string; type: Type }
+export type BrickOutput = { id: string; label: string; type: ConnectionType }
+
+export type ConnectionType = "flow" | "string" | "number" | "boolean" | "enum"
 
 export type Edge = { id: string; source: string; target: string; sourceHandle: string; targetHandle: string }
 
@@ -21,8 +25,6 @@ export type Node = { id: string; position: Point; data: NodeData; type: string }
 export type NodeData = { brickId: string; brick: Brick | null; arguments: Partial<{ [key in string]: string }>; defaults: Partial<{ [key in string]: string }> }
 
 export type Point = { x: number; y: number }
-
-export type Type = "string" | "number" | "boolean" | "enum"
 
 const ARGS_MAP = { '':'{"get_brick":["brick_id"],"get_bricks":[],"graph_updated":["graph"],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"save_graph":["graph","filename"]}' }
 export type Router = { "": {get_brick: (brickId: string) => Promise<Brick | null>, 
