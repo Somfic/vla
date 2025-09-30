@@ -6,12 +6,14 @@
         value = $bindable(),
         type,
         enumValues,
+        label,
         disabled,
         onchange,
     }: {
         id?: string;
         value: string | null | undefined;
         type: Type;
+        label?: string;
         disabled?: boolean;
         enumValues?: string[];
         onchange?: (value: any) => void;
@@ -25,23 +27,27 @@
     });
 </script>
 
-{#if type === "boolean"}
-    <!-- svelte-ignore a11y_consider_explicit_label -->
-    <button
-        {id}
-        {disabled}
-        type="button"
-        class="nodrag toggle {rawValue ? 'active' : ''}"
-        class:active={!!rawValue}
-        onclick={() => {
-            rawValue = !rawValue;
-            onchange?.(rawValue);
-        }}
-    >
-        <div class="toggle-slider"></div>
-    </button>
-{:else if type === "number"}
-    <div class="number-input nodrag">
+<div class={`input ${type} no-drag`} class:disabled class:labeled={!!label}>
+    {#if label}
+        <label for={id}>{label}</label>
+    {/if}
+
+    {#if type === "boolean"}
+        <!-- svelte-ignore a11y_consider_explicit_label -->
+        <button
+            {id}
+            {disabled}
+            type="button"
+            class="nodrag toggle"
+            class:active={!!rawValue}
+            onclick={() => {
+                rawValue = !rawValue;
+                onchange?.(rawValue);
+            }}
+        >
+            <div class="toggle-slider"></div>
+        </button>
+    {:else if type === "number"}
         <input
             {id}
             {disabled}
@@ -50,33 +56,72 @@
             bind:value={rawValue}
             onchange={() => onchange?.(rawValue)}
         />
-    </div>
-{:else if type === "string"}
-    <input
-        {id}
-        {disabled}
-        type="text"
-        class="nodrag text-input"
-        bind:value={rawValue}
-    />
-{:else if type === "enum" && enumValues}
-    <select
-        {id}
-        {disabled}
-        class="nodrag text-input"
-        bind:value={rawValue}
-        onchange={() => onchange?.(rawValue)}
-    >
-        {#each enumValues as option}
-            <option value={option} selected={option === rawValue}>
-                {option}
-            </option>
-        {/each}
-    </select>
-{/if}
+    {:else if type === "string"}
+        <input
+            {id}
+            {disabled}
+            type="text"
+            class="nodrag"
+            bind:value={rawValue}
+        />
+    {:else if type === "enum" && enumValues}
+        <select
+            {id}
+            {disabled}
+            class="nodrag"
+            bind:value={rawValue}
+            onchange={() => onchange?.(rawValue)}
+        >
+            {#each enumValues as option}
+                <option value={option} selected={option === rawValue}>
+                    {option}
+                </option>
+            {/each}
+        </select>
+    {/if}
+</div>
 
 <style lang="scss">
     @import "$styles/theme";
+
+    .input {
+        display: flex;
+        flex-grow: 1;
+        align-items: center;
+        gap: $gap;
+        border: $border;
+        border-radius: 200px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        color: $foreground-secondary;
+
+        input,
+        select {
+            display: flex;
+            flex-grow: 1;
+            font-weight: $font-weight-medium;
+            text-align: right;
+            max-width: 80px;
+        }
+
+        &.labeled {
+            padding: $gap / 2 $gap;
+        }
+
+        &:not(.disabled) {
+            cursor: pointer;
+
+            input,
+            select {
+                color: $foreground;
+            }
+
+            &:hover,
+            &:focus-within {
+                border-color: $primary;
+            }
+        }
+    }
 
     .toggle {
         width: 32px;

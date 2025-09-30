@@ -93,6 +93,7 @@
         .output {
             position: relative;
             display: flex;
+            flex-grow: 1;
             gap: $gap;
             align-items: center;
         }

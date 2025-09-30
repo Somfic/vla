@@ -12,10 +12,10 @@
 </script>
 
 <div class="argument">
-    <label for={argument.id}>{argument.label}</label>
     <Input
         id={argument.id}
         type={argument.type}
+        label={argument.label}
         bind:value={data.arguments[argument.id]!}
         onchange={() => saveNodeChanges()}
     />

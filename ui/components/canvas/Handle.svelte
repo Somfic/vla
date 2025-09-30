@@ -57,9 +57,11 @@
     @import "$styles/theme";
 
     $handle-size: 10px;
+    $handle-size-gap: 15px;
 
     .handle {
         position: relative;
+        padding: $handle-size-gap 0;
     }
 
     :global(.svelte-flow__handle) {
@@ -114,7 +116,7 @@
     .default {
         position: absolute;
         right: $handle-size + $gap;
-        top: -$handle-size / 2;
+        top: calc(50% - $handle-size / 2);
         height: $handle-size;
         display: flex;
         align-items: center;
