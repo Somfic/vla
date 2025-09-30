@@ -12,3 +12,4 @@ vite.config.ts.timestamp-*
 graph.json
 .direnv
 bun.lockb
+.claude/

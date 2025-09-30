@@ -34,6 +34,7 @@ pub struct NodeData {
     pub brick_id: String,
     pub brick: Option<Brick>,
     pub arguments: BTreeMap<String, String>,
+    pub defaults: BTreeMap<String, String>,
 }
 
 #[taurpc::ipc_type]
@@ -131,13 +132,25 @@ pub async fn insert_node<R: Runtime>(
         return Err(format!("Brick with id '{}' not found", brick_id));
     }
 
+    let brick = brick.unwrap();
+
     let node = Node {
         id: Uuid::new_v4().to_string(),
         position,
         data: NodeData {
             brick_id: brick_id.to_string(),
-            brick,
+            brick: Some(brick.clone()),
             arguments: BTreeMap::new(),
+            defaults: brick
+                .inputs
+                .iter()
+                .filter_map(|input| {
+                    input
+                        .default_value
+                        .as_ref()
+                        .map(|v| (input.id.clone(), v.clone()))
+                })
+                .collect(),
         },
         r#type: "v1".to_string(),
     };

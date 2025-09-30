@@ -49,10 +49,7 @@ mod tests {
         let invert_arg = &brick.arguments[0];
         assert_eq!(invert_arg.id, "invert");
         assert_eq!(invert_arg.label, "Invert");
-        assert_eq!(
-            invert_arg.r#type,
-            crate::bricks::types::BrickArgumentType::Boolean
-        );
+        assert_eq!(invert_arg.r#type, crate::bricks::types::Type::Boolean);
         assert_eq!(invert_arg.default_value, Some("true".to_string()));
         assert!(
             invert_arg.enum_options.is_none(),
@@ -70,19 +67,13 @@ mod tests {
         let first_input = &brick.inputs[0];
         assert_eq!(first_input.id, "first");
         assert_eq!(first_input.label, "First");
-        assert_eq!(
-            first_input.r#type,
-            crate::bricks::types::BrickHandleType::Number
-        );
+        assert_eq!(first_input.r#type, crate::bricks::types::Type::Number);
         assert_eq!(first_input.default_value, Some("1".to_string()));
 
         let second_input = &brick.inputs[1];
         assert_eq!(second_input.id, "second");
         assert_eq!(second_input.label, "Second");
-        assert_eq!(
-            second_input.r#type,
-            crate::bricks::types::BrickHandleType::Number
-        );
+        assert_eq!(second_input.r#type, crate::bricks::types::Type::Number);
         assert_eq!(second_input.default_value, Some("2".to_string()));
     }
 
@@ -96,45 +87,42 @@ mod tests {
         let addition_output = &brick.outputs[0];
         assert_eq!(addition_output.id, "output_0");
         assert_eq!(addition_output.label, "Addition");
-        assert_eq!(
-            addition_output.r#type,
-            crate::bricks::types::BrickHandleType::Number
-        );
+        assert_eq!(addition_output.r#type, crate::bricks::types::Type::Number);
 
         let multiplication_output = &brick.outputs[1];
         assert_eq!(multiplication_output.id, "output_1");
         assert_eq!(multiplication_output.label, "Multiplication");
         assert_eq!(
             multiplication_output.r#type,
-            crate::bricks::types::BrickHandleType::Number
+            crate::bricks::types::Type::Number
         );
     }
 
     #[test]
     fn test_type_enum_variants_equality() {
-        use crate::bricks::types::{BrickArgumentType, BrickHandleType};
+        use crate::bricks::types::Type;
 
-        // Test BrickArgumentType variants
-        let string_arg_type = BrickArgumentType::String;
-        let number_arg_type = BrickArgumentType::Number;
-        let boolean_arg_type = BrickArgumentType::Boolean;
-        let enum_arg_type = BrickArgumentType::Enum;
+        // Test Type variants
+        let string_arg_type = Type::String;
+        let number_arg_type = Type::Number;
+        let boolean_arg_type = Type::Boolean;
+        let enum_arg_type = Type::Enum;
 
-        assert_eq!(string_arg_type, BrickArgumentType::String);
-        assert_eq!(number_arg_type, BrickArgumentType::Number);
-        assert_eq!(boolean_arg_type, BrickArgumentType::Boolean);
-        assert_eq!(enum_arg_type, BrickArgumentType::Enum);
+        assert_eq!(string_arg_type, Type::String);
+        assert_eq!(number_arg_type, Type::Number);
+        assert_eq!(boolean_arg_type, Type::Boolean);
+        assert_eq!(enum_arg_type, Type::Enum);
 
-        // Test BrickHandleType variants
-        let string_handle_type = BrickHandleType::String;
-        let number_handle_type = BrickHandleType::Number;
-        let boolean_handle_type = BrickHandleType::Boolean;
-        let enum_handle_type = BrickHandleType::Enum;
+        // Test Type variants
+        let string_handle_type = Type::String;
+        let number_handle_type = Type::Number;
+        let boolean_handle_type = Type::Boolean;
+        let enum_handle_type = Type::Enum;
 
-        assert_eq!(string_handle_type, BrickHandleType::String);
-        assert_eq!(number_handle_type, BrickHandleType::Number);
-        assert_eq!(boolean_handle_type, BrickHandleType::Boolean);
-        assert_eq!(enum_handle_type, BrickHandleType::Enum);
+        assert_eq!(string_handle_type, Type::String);
+        assert_eq!(number_handle_type, Type::Number);
+        assert_eq!(boolean_handle_type, Type::Boolean);
+        assert_eq!(enum_handle_type, Type::Enum);
 
         // Test that they are different types
         assert_ne!(string_arg_type, number_arg_type);
@@ -192,7 +180,7 @@ mod tests {
         for input in &brick.inputs {
             assert_eq!(
                 input.r#type,
-                crate::bricks::types::BrickHandleType::Number,
+                crate::bricks::types::Type::Number,
                 "Math brick inputs should be Numbers, but {} is not",
                 input.id
             );
@@ -202,7 +190,7 @@ mod tests {
         for output in &brick.outputs {
             assert_eq!(
                 output.r#type,
-                crate::bricks::types::BrickHandleType::Number,
+                crate::bricks::types::Type::Number,
                 "Math brick outputs should be Numbers, but {} is not",
                 output.id
             );
@@ -213,7 +201,7 @@ mod tests {
             if arg.id == "invert" {
                 assert_eq!(
                     arg.r#type,
-                    crate::bricks::types::BrickArgumentType::Boolean,
+                    crate::bricks::types::Type::Boolean,
                     "Invert argument should be Boolean"
                 );
             }
@@ -228,7 +216,7 @@ mod tests {
         for brick in bricks {
             for arg in brick.arguments {
                 match arg.r#type {
-                    crate::bricks::types::BrickArgumentType::Enum => {
+                    crate::bricks::types::Type::Enum => {
                         assert!(
                             arg.enum_options.is_some(),
                             "Enum argument should have options"
@@ -252,22 +240,12 @@ mod tests {
 
     #[test]
     fn test_serialization_compatibility() {
-        use crate::bricks::types::{BrickArgumentType, BrickHandleType};
+        use crate::bricks::types::Type;
 
         // Test that our types can be serialized/deserialized properly
-        let arg_types = vec![
-            BrickArgumentType::String,
-            BrickArgumentType::Number,
-            BrickArgumentType::Boolean,
-            BrickArgumentType::Enum,
-        ];
+        let arg_types = vec![Type::String, Type::Number, Type::Boolean, Type::Enum];
 
-        let handle_types = vec![
-            BrickHandleType::String,
-            BrickHandleType::Number,
-            BrickHandleType::Boolean,
-            BrickHandleType::Enum,
-        ];
+        let handle_types = vec![Type::String, Type::Number, Type::Boolean, Type::Enum];
 
         // Test that all types are created successfully
         assert_eq!(arg_types.len(), 4);
@@ -276,19 +254,19 @@ mod tests {
         // Test that types maintain their identity
         for arg_type in &arg_types {
             match arg_type {
-                BrickArgumentType::String => assert_eq!(*arg_type, BrickArgumentType::String),
-                BrickArgumentType::Number => assert_eq!(*arg_type, BrickArgumentType::Number),
-                BrickArgumentType::Boolean => assert_eq!(*arg_type, BrickArgumentType::Boolean),
-                BrickArgumentType::Enum => assert_eq!(*arg_type, BrickArgumentType::Enum),
+                Type::String => assert_eq!(*arg_type, Type::String),
+                Type::Number => assert_eq!(*arg_type, Type::Number),
+                Type::Boolean => assert_eq!(*arg_type, Type::Boolean),
+                Type::Enum => assert_eq!(*arg_type, Type::Enum),
             }
         }
 
         for handle_type in &handle_types {
             match handle_type {
-                BrickHandleType::String => assert_eq!(*handle_type, BrickHandleType::String),
-                BrickHandleType::Number => assert_eq!(*handle_type, BrickHandleType::Number),
-                BrickHandleType::Boolean => assert_eq!(*handle_type, BrickHandleType::Boolean),
-                BrickHandleType::Enum => assert_eq!(*handle_type, BrickHandleType::Enum),
+                Type::String => assert_eq!(*handle_type, Type::String),
+                Type::Number => assert_eq!(*handle_type, Type::Number),
+                Type::Boolean => assert_eq!(*handle_type, Type::Boolean),
+                Type::Enum => assert_eq!(*handle_type, Type::Enum),
             }
         }
     }

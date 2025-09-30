@@ -201,6 +201,8 @@
     const shortcuts: ShortcutConfig[] = [];
 
     api.get_bricks().then((bricks) => {
+        console.log("Loaded bricks:", bricks);
+
         bricks.forEach((brick) => {
             commands.register({
                 id: brick.id,
