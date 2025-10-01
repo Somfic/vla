@@ -17,9 +17,7 @@ pub fn add_trigger(output_id: &str) {
 /// Collect and clear all triggers set during brick execution
 /// Called by ExecutionEngine after each brick execution
 pub fn collect_and_clear_triggers() -> Vec<String> {
-    EXECUTION_TRIGGERS.with(|triggers| {
-        triggers.borrow_mut().drain(..).collect()
-    })
+    EXECUTION_TRIGGERS.with(|triggers| triggers.borrow_mut().drain(..).collect())
 }
 
 /// Clear triggers without collecting (for cleanup)
@@ -31,16 +29,12 @@ pub fn clear_triggers() {
 
 /// Check if any triggers are currently set (for testing/debugging)
 pub fn has_triggers() -> bool {
-    EXECUTION_TRIGGERS.with(|triggers| {
-        !triggers.borrow().is_empty()
-    })
+    EXECUTION_TRIGGERS.with(|triggers| !triggers.borrow().is_empty())
 }
 
 /// Get the number of triggers currently set (for testing/debugging)
 pub fn trigger_count() -> usize {
-    EXECUTION_TRIGGERS.with(|triggers| {
-        triggers.borrow().len()
-    })
+    EXECUTION_TRIGGERS.with(|triggers| triggers.borrow().len())
 }
 
 #[cfg(test)]
