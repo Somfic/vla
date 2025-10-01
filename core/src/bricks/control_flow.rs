@@ -37,10 +37,7 @@ mod tests {
 }
 
 pub fn all_bricks() -> Vec<Brick> {
-    vec![
-        if_else_brick(),
-        start_brick(),
-    ]
+    vec![if_else_brick(), start_brick()]
 }
 
 // Test brick with execution flow
