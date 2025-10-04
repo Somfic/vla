@@ -34,14 +34,13 @@
     }
 
     .arguments {
-        background-color: $background-secondary;
         border: $border;
         border-radius: $border-radius;
         padding: $gap;
 
         h3 {
             margin: 0 0 $gap 0;
-            color: $foreground;
+
             font-size: 16px;
         }
 
@@ -52,13 +51,10 @@
         }
 
         p {
-            color: $foreground;
             margin: 0;
         }
 
         pre {
-            background-color: $background;
-            color: $foreground;
             padding: 8px;
             border-radius: 4px;
             font-size: 12px;

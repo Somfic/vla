@@ -62,6 +62,6 @@
     }
 
     :global(.svelte-flow__background) {
-        background: $background-secondary;
+        background: $bg-bottom;
     }
 </style>

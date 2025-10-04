@@ -3,7 +3,7 @@
 
 * {
     font-family: $font-family;
-    font-weight: $font-weight;
+    font-weight: $weight;
     font-size: $font-size;
     font-optical-sizing: auto;
     font-style: normal;
@@ -17,7 +17,7 @@ main {
     width: 100%;
     margin: 0;
     padding: 0;
-    background-color: $background;
-    color: $foreground;
+    background-color: $bg-bottom;
+    color: $fg;
     scroll-behavior: smooth;
 }

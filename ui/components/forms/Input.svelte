@@ -85,40 +85,30 @@
     @import "$styles/theme";
 
     .input {
-        display: flex;
-        flex-grow: 1;
-        align-items: center;
-        gap: $gap;
-        border: $border;
-        border-radius: 200px;
-        padding: 4px 8px;
-        font-size: 0.75rem;
-        color: $foreground-secondary;
-
         input,
         select {
             display: flex;
             flex-grow: 1;
-            font-weight: $font-weight-medium;
+            background-color: $bg-top;
+            font-weight: $weight;
             text-align: right;
             max-width: 80px;
-        }
-
-        &.labeled {
-            padding: $gap / 2 $gap;
+            padding: 4px 8px;
+            border: $border;
+            border-radius: 200px;
+            font-size: 0.75rem;
+            transition: all $transition;
         }
 
         &:not(.disabled) {
-            cursor: pointer;
-
             input,
             select {
-                color: $foreground;
-            }
+                cursor: pointer;
 
-            &:hover,
-            &:focus-within {
-                border-color: $primary;
+                &:hover,
+                &:focus-within {
+                    border-color: $primary;
+                }
             }
         }
     }
@@ -127,17 +117,17 @@
         width: 32px;
         height: 16px;
         cursor: pointer;
-        background-color: $background-secondary;
         border: $border;
         border-radius: 8px;
         position: relative;
         padding: 0;
         transition: all 0.2s ease;
+        background-color: $bg;
 
         .toggle-slider {
             width: 12px;
             height: 12px;
-            background-color: $foreground;
+            background-color: $fg;
             border-radius: 50%;
             position: absolute;
             top: 50%;
@@ -162,10 +152,9 @@
     }
 
     .text-input {
-        background-color: $background-secondary;
         border: $border;
         border-radius: 3px;
-        color: $foreground;
+
         padding: 4px 8px;
         font-size: 12px;
         min-width: 80px;
@@ -186,10 +175,8 @@
         gap: $gap;
 
         input {
-            background-color: $background-secondary;
             border: $border;
             border-radius: 3px;
-            color: $foreground;
             padding: 4px 8px;
             font-size: 12px;
             width: 60px;
@@ -211,9 +198,8 @@
             gap: 1px;
 
             button {
-                background-color: $background-secondary;
                 border: $border;
-                color: $foreground;
+
                 width: 16px;
                 height: 12px;
                 font-size: 10px;

@@ -72,7 +72,7 @@
         border-radius: 50%;
         z-index: 20000;
         border-width: 2px;
-        background-color: $background;
+        background-color: $bg-top;
         transition:
             background-color 0.3s,
             border-color 0.3s;

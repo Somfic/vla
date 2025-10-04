@@ -30,6 +30,6 @@
 
     :global(.svelte-flow__minimap-node) {
         border-radius: $border-radius;
-        fill: $foreground;
+        fill: $fg;
     }
 </style>

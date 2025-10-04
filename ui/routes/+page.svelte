@@ -77,7 +77,6 @@
   .content {
     display: flex;
     flex-grow: 1;
-    background-color: $background-secondary;
     margin: $gap 0;
     overflow: hidden;
     border: $border;

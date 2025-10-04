@@ -61,10 +61,15 @@
         flex-direction: column;
         border: $border;
         border-radius: $border-radius;
-        background-color: $background;
+        background-color: $bg;
         padding: $gap;
         gap: $gap;
         transition: all 0.2s ease;
+
+        .header {
+            font-weight: $weight-bold;
+            color: $fg-prio;
+        }
     }
 
     :global(.selected > .node) {

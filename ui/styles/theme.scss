@@ -1,8 +1,15 @@
-$background: #070707;
-$background-secondary: #1C1D21;
+$bg-bottom: hsl(240, 2%, 0%);
+$bg: hsl(240, 2%, 5%);
+$bg-top: hsl(240, 2%, 10%);
 
-$foreground: #FFFFFF;
-$foreground-secondary: #A1A1AA;
+$fg-prio: hsl(0, 0%, 95%);
+$fg: hsl(0, 0%, 60%);
+
+$weight-thin: 500;
+$weight: 600;
+$weight-bold: 900;
+
+$border-color: hsl(0, 0%, 30%);
 
 $primary: #6B43FD;
 $string-color: hsl(66, 100%, 67%);
@@ -15,7 +22,7 @@ $border-radius2: 20px;
 $border-color: #333438a8;
 $border: 2px solid $border-color;
 
-$transition: cubic-bezier(0.4, 0, 0.2, 1);
+$transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 
 $gap: 10px;
 $gap2: calc($gap * 2);
@@ -30,6 +37,4 @@ $font-size: 12px;
 $font-size2: 14px;
 $font-size3: 16px;
 
-$font-weight: 500;
-$font-weight-medium: 700;
-$font-weight-bold: 900;
+
