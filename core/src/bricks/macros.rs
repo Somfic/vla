@@ -88,10 +88,10 @@ macro_rules! brick {
 
             // Define the execution wrapper
             #[allow(unused_variables)]
-            fn [<$fn_name _execution>](
-                args: Vec<crate::bricks::types::BrickArgument>,
-                inputs: Vec<crate::bricks::types::BrickInput>
-            ) -> Vec<crate::bricks::types::BrickOutput> {
+            pub fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgumentValue>,
+                inputs: Vec<crate::bricks::types::BrickInputValue>
+            ) -> Vec<crate::bricks::types::BrickOutputValue> {
                 // Extract parameters based on their attributes
                 $(
                     let $param_name = brick!(@get_param_value_with_attrs
@@ -110,7 +110,7 @@ macro_rules! brick {
                 // Return outputs from single tuple element
                 let mut outputs = Vec::new();
 
-                brick!(@add_tuple_outputs outputs, result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
+                brick!(@add_tuple_execution_outputs outputs, result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
 
                 outputs
             }
@@ -193,10 +193,10 @@ macro_rules! brick {
 
             // Define the execution wrapper
             #[allow(unused_variables)]
-            fn [<$fn_name _execution>](
-                args: Vec<crate::bricks::types::BrickArgument>,
-                inputs: Vec<crate::bricks::types::BrickInput>
-            ) -> Vec<crate::bricks::types::BrickOutput> {
+            pub fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgumentValue>,
+                inputs: Vec<crate::bricks::types::BrickInputValue>
+            ) -> Vec<crate::bricks::types::BrickOutputValue> {
                 // Extract parameters based on their attributes
                 $(
                     let $param_name = brick!(@get_param_value_with_attrs
@@ -215,7 +215,7 @@ macro_rules! brick {
                 // Return outputs from tuple elements
                 let mut outputs = Vec::new();
 
-                brick!(@add_tuple_outputs outputs, result, [$(([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)),+]);
+                brick!(@add_tuple_execution_outputs outputs, result, [$(([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)),+]);
 
                 outputs
             }
@@ -296,10 +296,10 @@ macro_rules! brick {
 
             // Define the execution wrapper
             #[allow(unused_variables)]
-            fn [<$fn_name _execution>](
-                args: Vec<crate::bricks::types::BrickArgument>,
-                inputs: Vec<crate::bricks::types::BrickInput>
-            ) -> Vec<crate::bricks::types::BrickOutput> {
+            pub fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgumentValue>,
+                inputs: Vec<crate::bricks::types::BrickInputValue>
+            ) -> Vec<crate::bricks::types::BrickOutputValue> {
                 // Extract parameters based on their attributes
                 $(
                     let $param_name = brick!(@get_param_value_with_attrs
@@ -318,7 +318,7 @@ macro_rules! brick {
                 // Return outputs from single tuple element
                 let mut outputs = Vec::new();
 
-                brick!(@add_tuple_outputs outputs, result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
+                brick!(@add_tuple_execution_outputs outputs, result, [([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)]);
 
                 outputs
             }
@@ -387,10 +387,10 @@ macro_rules! brick {
 
             // Define the execution wrapper
             #[allow(unused_variables)]
-            fn [<$fn_name _execution>](
-                args: Vec<crate::bricks::types::BrickArgument>,
-                inputs: Vec<crate::bricks::types::BrickInput>
-            ) -> Vec<crate::bricks::types::BrickOutput> {
+            pub fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgumentValue>,
+                inputs: Vec<crate::bricks::types::BrickInputValue>
+            ) -> Vec<crate::bricks::types::BrickOutputValue> {
                 // Extract parameters based on their attributes
                 $(
                     let $param_name = brick!(@get_param_value_with_attrs
@@ -409,7 +409,7 @@ macro_rules! brick {
                 // Return outputs from tuple elements
                 let mut outputs = Vec::new();
 
-                brick!(@add_tuple_outputs outputs, result, [$(([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)),+]);
+                brick!(@add_tuple_execution_outputs outputs, result, [$(([$(#[$output_attr$(($($output_attr_content)*))? ])+], $output_type)),+]);
 
                 outputs
             }
@@ -476,10 +476,10 @@ macro_rules! brick {
 
             // Define the execution wrapper
             #[allow(unused_variables)]
-            fn [<$fn_name _execution>](
-                args: Vec<crate::bricks::types::BrickArgument>,
-                inputs: Vec<crate::bricks::types::BrickInput>
-            ) -> Vec<crate::bricks::types::BrickOutput> {
+            pub fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgumentValue>,
+                inputs: Vec<crate::bricks::types::BrickInputValue>
+            ) -> Vec<crate::bricks::types::BrickOutputValue> {
                 // Extract parameters based on their attributes
                 $(
                     let $param_name = brick!(@get_param_value_with_attrs
@@ -498,11 +498,11 @@ macro_rules! brick {
                 // Return outputs (including function return value and any output parameters)
                 let mut outputs = Vec::new();
 
-                // Add the function return value
-                outputs.push(crate::bricks::types::BrickOutput {
+                // Add the function return value (JSON encoded)
+                let json_value = serde_json::to_string(&result).unwrap_or_else(|_| "null".to_string());
+                outputs.push(crate::bricks::types::BrickOutputValue {
                     id: "result".to_string(),
-                    label: "Result".to_string(),
-                    r#type: brick!(@get_return_type $return_type),
+                    value: json_value,
                 });
 
                 // Outputs only come from function return value, not from parameters
@@ -622,17 +622,23 @@ macro_rules! brick {
     // Helper: Get parameter value based on attributes
     (@get_param_value_with_attrs $attrs:tt, $param_type:ident, $args:expr, $inputs:expr, $param_name:expr, $custom_default:expr) => {
         if brick!(@has_attr argument, $attrs) {
-            // Look in arguments
-            let value = $args.iter().find(|arg| arg.id == $param_name)
-                .and_then(|arg| arg.default_value.clone())
-                .unwrap_or_else(|| $custom_default);
-            brick!(@parse_to_type $param_type, value)
+            // Look in arguments - values are JSON encoded
+            let json_value = $args.iter().find(|arg| arg.id == $param_name)
+                .map(|arg| arg.value.clone())
+                .unwrap_or_else(|| {
+                    // Use the custom default directly as JSON value
+                    $custom_default
+                });
+            brick!(@parse_json_to_type $param_type, json_value)
         } else if brick!(@has_attr input, $attrs) {
-            // Look in inputs
-            let value = $inputs.iter().find(|input| input.id == $param_name)
-                .and_then(|input| input.default_value.clone())
-                .unwrap_or_else(|| $custom_default);
-            brick!(@parse_to_type $param_type, value)
+            // Look in inputs - values are JSON encoded
+            let json_value = $inputs.iter().find(|input| input.id == $param_name)
+                .map(|input| input.value.clone())
+                .unwrap_or_else(|| {
+                    // Use the custom default directly as JSON value
+                    $custom_default
+                });
+            brick!(@parse_json_to_type $param_type, json_value)
         } else {
             // For outputs, use default value (outputs are set by function execution)
             brick!(@get_default_typed_value $param_type)
@@ -761,6 +767,20 @@ macro_rules! brick {
     (@parse_to_type f32, $value:expr) => { $value.parse::<f32>().unwrap_or(0.0) };
     (@parse_to_type bool, $value:expr) => { $value.parse::<bool>().unwrap_or(false) };
 
+    // Helper: Parse value from JSON string
+    (@parse_json_to_type String, $json_value:expr) => {
+        serde_json::from_str::<String>(&$json_value).unwrap_or_else(|_| $json_value)
+    };
+    (@parse_json_to_type i32, $json_value:expr) => {
+        serde_json::from_str::<i32>(&$json_value).unwrap_or(0)
+    };
+    (@parse_json_to_type f32, $json_value:expr) => {
+        serde_json::from_str::<f32>(&$json_value).unwrap_or(0.0)
+    };
+    (@parse_json_to_type bool, $json_value:expr) => {
+        serde_json::from_str::<bool>(&$json_value).unwrap_or(false)
+    };
+
     // Helper: Get argument type enum
     (@get_argument_type String) => { crate::bricks::types::ArgumentType::String };
     (@get_argument_type i32) => { crate::bricks::types::ArgumentType::Number };
@@ -823,6 +843,97 @@ macro_rules! brick {
         $exec_vec.push(crate::bricks::types::BrickExecutionOutput {
             id: $id.to_string(),
             label: $label.to_string(), // Use custom label
+        });
+    };
+
+    // Helper: Add tuple execution outputs (with JSON values) - handle 1-tuple
+    (@add_tuple_execution_outputs $output_vec:ident, $result:ident, [($attrs0:tt, $type0:ident)]) => {
+        // Single output
+        let id0 = {
+            let attr_id = brick!(@get_attr_id $attrs0);
+            if attr_id.is_empty() {
+                "output_0".to_string()
+            } else {
+                attr_id
+            }
+        };
+        let json_value0 = serde_json::to_string(&$result.0).unwrap_or_else(|_| "null".to_string());
+        $output_vec.push(crate::bricks::types::BrickOutputValue {
+            id: id0,
+            value: json_value0,
+        });
+    };
+
+    // Helper: Add tuple execution outputs (with JSON values) - handle 2-tuple
+    (@add_tuple_execution_outputs $output_vec:ident, $result:ident, [($attrs0:tt, $type0:ident), ($attrs1:tt, $type1:ident)]) => {
+        // First output
+        let id0 = {
+            let attr_id = brick!(@get_attr_id $attrs0);
+            if attr_id.is_empty() {
+                "output_0".to_string()
+            } else {
+                attr_id
+            }
+        };
+        let json_value0 = serde_json::to_string(&$result.0).unwrap_or_else(|_| "null".to_string());
+        $output_vec.push(crate::bricks::types::BrickOutputValue {
+            id: id0,
+            value: json_value0,
+        });
+
+        // Second output
+        let id1 = {
+            let attr_id = brick!(@get_attr_id $attrs1);
+            if attr_id.is_empty() {
+                "output_1".to_string()
+            } else {
+                attr_id
+            }
+        };
+        let json_value1 = serde_json::to_string(&$result.1).unwrap_or_else(|_| "null".to_string());
+        $output_vec.push(crate::bricks::types::BrickOutputValue {
+            id: id1,
+            value: json_value1,
+        });
+    };
+
+    // Helper: Add tuple execution outputs (with JSON values) - handle 3-tuple
+    (@add_tuple_execution_outputs $output_vec:ident, $result:ident, [($attrs0:tt, $type0:ident), ($attrs1:tt, $type1:ident), ($attrs2:tt, $type2:ident)]) => {
+        brick!(@add_tuple_execution_outputs $output_vec, $result, [($attrs0, $type0), ($attrs1, $type1)]);
+
+        // Third output
+        let id2 = {
+            let attr_id = brick!(@get_attr_id $attrs2);
+            if attr_id.is_empty() {
+                "output_2".to_string()
+            } else {
+                attr_id
+            }
+        };
+        let json_value2 = serde_json::to_string(&$result.2).unwrap_or_else(|_| "null".to_string());
+        $output_vec.push(crate::bricks::types::BrickOutputValue {
+            id: id2,
+            value: json_value2,
+        });
+    };
+
+    // Helper: Add tuple execution outputs (with JSON values) - handle 4-tuple (add more as needed)
+    (@add_tuple_execution_outputs $output_vec:ident, $result:ident, [($attrs0:tt, $type0:ident), ($attrs1:tt, $type1:ident), ($attrs2:tt, $type2:ident), ($attrs3:tt, $type3:ident)]) => {
+        brick!(@add_tuple_execution_outputs $output_vec, $result, [($attrs0, $type0), ($attrs1, $type1), ($attrs2, $type2)]);
+
+        // Fourth output
+        let id3 = {
+            let attr_id = brick!(@get_attr_id $attrs3);
+            if attr_id.is_empty() {
+                "output_3".to_string()
+            } else {
+                attr_id
+            }
+        };
+        let json_value3 = serde_json::to_string(&$result.3).unwrap_or_else(|_| "null".to_string());
+        $output_vec.push(crate::bricks::types::BrickOutputValue {
+            id: id3,
+            value: json_value3,
         });
     };
 }

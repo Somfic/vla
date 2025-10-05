@@ -2,9 +2,7 @@ pub mod arithmetics;
 pub mod boolean_logic;
 pub mod constants;
 pub mod control_flow;
-pub mod execution;
 pub mod macros;
-
 #[cfg(test)]
 mod tests;
 pub mod types;
