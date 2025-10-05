@@ -11,14 +11,14 @@ pub struct Brick {
     pub execution_inputs: Vec<BrickExecutionInput>,
     pub execution_outputs: Vec<BrickExecutionOutput>,
     #[serde(skip, default = "default_execution_fn")]
-    pub execution: fn(Vec<BrickArgument>, Vec<BrickInput>) -> Vec<BrickOutput>,
+    pub execution: fn(Vec<BrickArgumentValue>, Vec<BrickInputValue>) -> Vec<BrickOutputValue>,
 }
 
-fn default_execution(_args: Vec<BrickArgument>, _inputs: Vec<BrickInput>) -> Vec<BrickOutput> {
+fn default_execution(_args: Vec<BrickArgumentValue>, _inputs: Vec<BrickInputValue>) -> Vec<BrickOutputValue> {
     vec![]
 }
 
-fn default_execution_fn() -> fn(Vec<BrickArgument>, Vec<BrickInput>) -> Vec<BrickOutput> {
+fn default_execution_fn() -> fn(Vec<BrickArgumentValue>, Vec<BrickInputValue>) -> Vec<BrickOutputValue> {
     default_execution
 }
 
@@ -85,4 +85,22 @@ pub struct BrickExecutionInput {
 pub struct BrickExecutionOutput {
     pub id: String,
     pub label: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct BrickArgumentValue {
+    pub id: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct BrickInputValue {
+    pub id: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct BrickOutputValue {
+    pub id: String,
+    pub value: String,
 }
