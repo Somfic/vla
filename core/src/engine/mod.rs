@@ -1,8 +1,9 @@
 use std::collections::{HashMap, VecDeque};
 
-use crate::{bricks::types::BrickOutputValue, prelude::*};
+use crate::{bricks::types::BrickOutputValue, prelude::*, trigger};
 #[cfg(test)]
 mod tests;
+pub mod topological;
 pub mod trigger;
 
 pub struct Engine {
@@ -38,20 +39,12 @@ impl Engine {
     }
 
     pub fn start(&mut self) {
-        //let start_nodes = self.find_start_nodes();
-        let start_nodes = self
-            .graph
-            .nodes
-            .iter()
-            .map(|n| n.id.clone())
-            .collect::<Vec<_>>();
-        for node_id in start_nodes {
-            self.queue.push_back(node_id);
-        }
+       trigger!("begin");
     }
 
     fn execute_node(&mut self, node_id: String) -> Result<(), String> {
         // trigger::clear_triggers();
+        trigger::set_current_node_id(&node_id);
         self.state.insert(node_id.clone(), ExecutionState::Running);
 
         let node = self
@@ -71,6 +64,7 @@ impl Engine {
         let inputs = vec![]; // TODO: Build BrickInputValue from node inputs
         let outputs = (brick.execution)(arguments.clone(), inputs.clone());
         let triggered = trigger::collect_and_clear_triggers();
+        trigger::clear_current_node_id();
 
         println!("Executed node: {}", node_id);
         println!("Inputs: {:?}", inputs);

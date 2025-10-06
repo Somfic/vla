@@ -453,6 +453,104 @@ macro_rules! brick {
         }
     };
 
+    // Mixed parameter types with unit return (no output)
+    (
+        #[id($id:expr)]
+        $(#[label($label:expr)])?
+        $(#[description($description:expr)])?
+        $(#[keywords($keywords:expr)])?
+        #[category($category:expr)]
+        $(#[execution_input($($exec_input_args:tt)*)])*
+        $(#[execution_output($($exec_output_args:tt)*)])*
+        fn $fn_name:ident(
+            $($(#[$param_attr:ident$(($($param_attr_content:tt)*))? ])+ $param_name:ident: $param_type:ident $(= $default:expr)?),*
+        ) -> ()
+        $body:block
+    ) => {
+        // Validate each parameter has at least one required attribute
+        $(
+            brick!(@ensure_valid_attrs [$(#[$param_attr$(($($param_attr_content)*))? ])+] -> $param_name);
+        )*
+
+        paste::paste! {
+            // Define the actual function
+            fn $fn_name($($param_name: $param_type),*) -> () $body
+
+            // Define the execution wrapper
+            #[allow(unused_variables)]
+            pub fn [<$fn_name _execution>](
+                args: Vec<crate::bricks::types::BrickArgumentValue>,
+                inputs: Vec<crate::bricks::types::BrickInputValue>
+            ) -> Vec<crate::bricks::types::BrickOutputValue> {
+                // Extract parameters based on their attributes
+                $(
+                    let $param_name = brick!(@get_param_value_with_attrs
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_type,
+                        &args,
+                        &inputs,
+                        stringify!($param_name),
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Call the function
+                $fn_name($($param_name),*);
+
+                // Return empty outputs vector since function returns ()
+                Vec::new()
+            }
+
+            // Generate the brick structure function
+            pub fn [<$fn_name _brick>]() -> crate::bricks::types::Brick {
+                let mut arguments = Vec::new();
+                let mut inputs = Vec::new();
+                let mut outputs = Vec::new();
+                let mut execution_inputs = Vec::new();
+                let mut execution_outputs = Vec::new();
+
+                // Process each parameter based on its attributes
+                $(
+                    brick!(@process_param_with_attrs
+                        arguments,
+                        inputs,
+                        outputs,
+                        [$(#[$param_attr$(($($param_attr_content)*))? ])+],
+                        $param_name,
+                        $param_type,
+                        brick!(@get_custom_default_or_type_default $param_type, $($default)?)
+                    );
+                )*
+
+                // Add execution inputs
+                $(
+                    brick!(@add_single_execution_input execution_inputs, $($exec_input_args)*);
+                )*
+
+                // Add execution outputs
+                $(
+                    brick!(@add_single_execution_output execution_outputs, $($exec_output_args)*);
+                )*
+
+                // No outputs since function returns ()
+
+                crate::bricks::types::Brick {
+                    id: $id.to_string(),
+                    label: brick!(@get_label_or_default $($label)?),
+                    description: brick!(@get_description_or_default $($description)?),
+                    keywords: brick!(@get_keywords_or_default $($keywords)?),
+                    category: brick!(@get_category_or_default $category),
+                    arguments,
+                    inputs,
+                    outputs,
+                    execution_inputs,
+                    execution_outputs,
+                    execution: [<$fn_name _execution>],
+                }
+            }
+        }
+    };
+
     // Mixed parameter types with single return (single output)
     (
         #[id($id:expr)]
