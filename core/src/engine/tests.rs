@@ -50,8 +50,8 @@ fn test_engine_execution() {
     let mut engine = Engine::new(graph);
     engine.start();
 
-    while let Some(result) = engine.next() {
-        assert!(result.is_ok());
+    for result in engine {
+        assert!(result.is_ok(), "Execution failed: {:?}", result);
     }
 }
 

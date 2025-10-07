@@ -22,6 +22,21 @@ export type ConnectionType = "flow" | "string" | "number" | "boolean" | "enum"
 
 export type Edge = { id: string; source: string; target: string; sourceHandle: string; targetHandle: string }
 
+/**
+ * Result of executing the entire graph
+ */
+export type ExecutionResult = { steps: ExecutionStep[]; total_steps: number; success: boolean; error: string | null }
+
+/**
+ * Current state of execution
+ */
+export type ExecutionState = { is_initialized: boolean; is_complete: boolean; steps_executed: number }
+
+/**
+ * Result of executing a single step in the engine
+ */
+export type ExecutionStep = { node_id: string; success: boolean; error: string | null }
+
 export type Graph = { nodes: Node[]; edges: Edge[] }
 
 export type Node = { id: string; position: Point; data: NodeData; type: string }
@@ -30,13 +45,18 @@ export type NodeData = { brickId: string; brick: Brick | null; arguments: Partia
 
 export type Point = { x: number; y: number }
 
-const ARGS_MAP = { '':'{"get_brick":["brick_id"],"get_bricks":[],"graph_updated":["graph"],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"save_graph":["graph","filename"]}' }
-export type Router = { "": {get_brick: (brickId: string) => Promise<Brick | null>, 
+const ARGS_MAP = { '':'{"execute_graph":["graph"],"get_brick":["brick_id"],"get_bricks":[],"get_execution_state":[],"graph_updated":["graph"],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"reset_execution":[],"save_graph":["graph","filename"],"start_execution":["graph"],"step_execution":[]}' }
+export type Router = { "": {execute_graph: (graph: Graph) => Promise<ExecutionResult>, 
+get_brick: (brickId: string) => Promise<Brick | null>, 
 get_bricks: () => Promise<Brick[]>, 
+get_execution_state: () => Promise<ExecutionState>, 
 graph_updated: (graph: Graph) => Promise<void>, 
 insert_node: (graphPath: string, brickId: string, position: Point) => Promise<Graph>, 
 load_graph: (filename: string) => Promise<Graph>, 
-save_graph: (graph: Graph, filename: string) => Promise<string>} };
+reset_execution: () => Promise<null>, 
+save_graph: (graph: Graph, filename: string) => Promise<string>, 
+start_execution: (graph: Graph) => Promise<ExecutionState>, 
+step_execution: () => Promise<ExecutionStep>} };
 
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)
