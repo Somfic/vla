@@ -5,11 +5,11 @@ use crate::{
     prelude::*,
     set_current_node_id, trigger,
 };
-#[cfg(test)]
-mod tests;
+pub mod data_dfs;
 #[cfg(test)]
 mod flow_test;
-pub mod data_dfs;
+#[cfg(test)]
+mod tests;
 pub mod topological;
 pub mod trigger;
 
@@ -68,18 +68,6 @@ impl Engine {
         }
     }
 
-    /// Check if an edge is a data edge (not an execution edge)
-    /// Data edges have handles starting with "data_" or other non-"exec_" prefixes
-    fn is_data_edge(edge: &Edge) -> bool {
-        !edge.source_handle.starts_with("exec_") && !edge.target_handle.starts_with("exec_")
-    }
-
-    /// Check if an edge is an execution edge
-    /// Execution edges have handles starting with "exec_"
-    fn is_execution_edge(edge: &Edge) -> bool {
-        edge.source_handle.starts_with("exec_") || edge.target_handle.starts_with("exec_")
-    }
-
     pub fn start(&mut self) {
         // Find nodes that have execution outputs but no execution inputs (start nodes)
         // These are the entry points for execution flow
@@ -99,12 +87,8 @@ impl Engine {
 
         // If no flow start nodes found, treat all nodes with no incoming edges as start nodes
         if start_nodes.is_empty() {
-            let nodes_with_incoming: std::collections::HashSet<String> = self
-                .graph
-                .edges
-                .iter()
-                .map(|e| e.target.clone())
-                .collect();
+            let nodes_with_incoming: std::collections::HashSet<String> =
+                self.graph.edges.iter().map(|e| e.target.clone()).collect();
 
             for node in &self.graph.nodes {
                 if !nodes_with_incoming.contains(&node.id) {
@@ -221,21 +205,16 @@ impl Engine {
     }
 
     /// Find the value for an input by traversing data edges
-    fn find_connected_input_value(&self, target_node_id: &str, target_input_id: &str) -> Option<String> {
-        // Find data edge targeting this input
-        let target_handle = format!("data_{}", target_input_id);
-
+    fn find_connected_input_value(
+        &self,
+        target_node_id: &str,
+        target_input_id: &str,
+    ) -> Option<String> {
         for edge in &self.graph.edges {
-            if edge.target == target_node_id && edge.target_handle == target_handle {
-                // Found the edge, now get the source node's cached output
+            if edge.target == target_node_id && edge.target_handle == target_input_id {
                 if let Some(cached_outputs) = self.cache.get(&edge.source) {
-                    // Extract output ID from source handle (e.g., "data_result" -> "result")
-                    let source_output_id = edge
-                        .source_handle
-                        .strip_prefix("data_")
-                        .unwrap_or(&edge.source_handle);
+                    let source_output_id = edge.source_handle.as_str();
 
-                    // Find the matching output
                     return cached_outputs
                         .iter()
                         .find(|output| output.id == source_output_id)
@@ -262,9 +241,7 @@ impl Engine {
         self.graph
             .edges
             .iter()
-            .filter(|edge| {
-                edge.source == trigger.source_node && edge.source_handle == exec_handle
-            })
+            .filter(|edge| edge.source == trigger.source_node && edge.source_handle == exec_handle)
             .map(|edge| edge.target.clone())
             .collect()
     }
@@ -274,7 +251,6 @@ impl Iterator for Engine {
     type Item = Result<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Explicit state machine loop - clearer than recursive calls
         loop {
             // State 1: Process pending data dependencies
             if let Some(data_node_id) = self.pending_data_deps.pop_front() {
@@ -286,7 +262,6 @@ impl Iterator for Engine {
 
             // State 2: Execute current flow node
             if let Some(flow_node_id) = self.current_flow_node.take() {
-                // Execute the flow node
                 if let Err(e) = self.execute_node_internal(&flow_node_id) {
                     return Some(Err(e));
                 }
@@ -310,9 +285,6 @@ impl Iterator for Engine {
             // Queue data dependencies and set current flow node
             self.pending_data_deps.extend(data_deps);
             self.current_flow_node = Some(next_flow_node);
-
-            // Loop continues to process the pending state
-            // (will either execute data deps or the flow node itself)
         }
     }
 }

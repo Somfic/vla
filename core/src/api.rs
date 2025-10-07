@@ -68,9 +68,7 @@ pub trait CoreApi {
         graph: Graph,
     ) -> Result<ExecutionState, String>;
 
-    async fn step_execution<R: Runtime>(
-        app_handle: AppHandle<R>,
-    ) -> Result<ExecutionStep, String>;
+    async fn step_execution<R: Runtime>(app_handle: AppHandle<R>) -> Result<ExecutionStep, String>;
 
     async fn get_execution_state<R: Runtime>(
         app_handle: AppHandle<R>,
@@ -126,10 +124,15 @@ impl CoreApi for CoreApiImpl {
     async fn execute_graph<R: Runtime>(
         self,
         app_handle: AppHandle<R>,
-        graph: Graph,
+        mut graph: Graph,
     ) -> Result<ExecutionResult, String> {
+        // Re-attach brick definitions (execution functions are skipped during serialization)
+        for node in &mut graph.nodes {
+            node.data.brick = canvas::get_brick(&node.data.brick_id);
+        }
+
         // Create engine with the graph
-        let mut engine = Engine::new(graph);
+        let mut engine = Engine::with_debug(graph, true);
         engine.start();
 
         let mut steps = Vec::new();
@@ -171,9 +174,14 @@ impl CoreApi for CoreApiImpl {
     async fn start_execution<R: Runtime>(
         self,
         app_handle: AppHandle<R>,
-        graph: Graph,
+        mut graph: Graph,
     ) -> Result<ExecutionState, String> {
         let state = app_handle.state::<AppState>();
+
+        // Re-attach brick definitions (execution functions are skipped during serialization)
+        for node in &mut graph.nodes {
+            node.data.brick = canvas::get_brick(&node.data.brick_id);
+        }
 
         // Create new engine and start it
         let mut engine = Engine::new(graph);
@@ -234,10 +242,7 @@ impl CoreApi for CoreApiImpl {
         })
     }
 
-    async fn reset_execution<R: Runtime>(
-        self,
-        app_handle: AppHandle<R>,
-    ) -> Result<(), String> {
+    async fn reset_execution<R: Runtime>(self, app_handle: AppHandle<R>) -> Result<(), String> {
         let state = app_handle.state::<AppState>();
         *state.engine.lock().unwrap() = None;
         Ok(())
