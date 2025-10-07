@@ -56,33 +56,54 @@
             targetPosition: Position.Left,
         }),
     );
+
+    const typeColors: Record<string, string> = {
+        string: "hsl(66, 100%, 67%)",
+        number: "hsl(240, 100%, 68%)",
+        boolean: "hsl(0, 100%, 71%)",
+        flow: "hsl(0, 0%, 49%)",
+    };
+
+    let sourceColor = $derived(
+        typeColors[sourceHandle()?.type ?? "flow"] ?? typeColors.flow,
+    );
+    let targetColor = $derived(
+        typeColors[targetHandle()?.type ?? "flow"] ?? typeColors.flow,
+    );
+
+    let gradientId = $derived(`edge-gradient-${id}`);
+    let blurId = $derived(`edge-blur-${id}`);
+    let isFlowEdge = $derived(!sourceHandle());
 </script>
 
-<g
-    class={`source-type-${sourceHandle()?.type} target-type-${targetHandle()?.type}`}
->
-    <BaseEdge {id} {path} />
+<svg>
+    <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color={sourceColor} />
+            <stop offset="100%" stop-color={targetColor} />
+        </linearGradient>
+        <filter id={blurId} x="-50%" y="-50%" width="500%" height="500%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="6" />
+        </filter>
+    </defs>
+</svg>
+
+<g class={isFlowEdge ? "flow-edge" : "data-edge"}>
+    <g class="glow-layer" filter="url(#{blurId})">
+        <BaseEdge {id} {path} />
+    </g>
+
+    <BaseEdge {id} {path} style="stroke: url(#{gradientId})" />
 </g>
 
 <style lang="scss">
-    @import "$styles/theme";
-
-    .source-type-string :global(.svelte-flow__edge-path) {
-        stroke: $string-color;
+    :global(.svelte-flow__edge-path) {
+        stroke-width: 2px;
     }
 
-    .source-type-number :global(.svelte-flow__edge-path) {
-        stroke: $number-color;
-    }
-
-    .source-type-boolean :global(.svelte-flow__edge-path) {
-        stroke: $boolean-color;
-    }
-
-    .source-type-flow :global(.svelte-flow__edge-path) {
-        stroke: $flow-color;
+    .flow-edge :global(.svelte-flow__edge-path) {
         stroke-dasharray: 5, 5;
-        animation: dash 1s linear infinite;
+        animation: dash 2s linear infinite;
 
         @keyframes dash {
             to {
@@ -91,7 +112,17 @@
         }
     }
 
-    :global(.svelte-flow__edge-path) {
-        stroke-width: 2px;
+    .glow-layer :global(.svelte-flow__edge-path) {
+        stroke: hsla(0, 0%, 100%, 1);
+        stroke-width: 0.5px;
+        stroke-dasharray: 60, 20;
+        animation: glow 3s linear infinite;
+        stroke-linecap: round;
+
+        @keyframes glow {
+            to {
+                stroke-dashoffset: -80;
+            }
+        }
     }
 </style>

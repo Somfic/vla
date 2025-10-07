@@ -94,6 +94,7 @@
         padding: 4px 8px;
         font-size: 0.75rem;
         color: $foreground-secondary;
+        backdrop-filter: blur(10px);
 
         input,
         select {
