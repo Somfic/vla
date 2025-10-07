@@ -25,7 +25,7 @@ jobs:
 
     - name: Setup Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@main
-      
+
     - name: Run flake checks
       uses: DeterminateSystems/flake-checker-action@main
 
@@ -38,9 +38,9 @@ jobs:
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('core/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-v2-${{ hashFiles('core/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-
+          ${{ runner.os }}-cargo-v2
 
     - name: Cache frontend dependencies
       uses: actions/cache@v4
