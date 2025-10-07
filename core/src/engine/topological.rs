@@ -38,7 +38,7 @@ pub fn sort(nodes: Vec<String>, connections: Vec<(String, String)>) -> Vec<Strin
     }
 
     if sorted.len() != nodes.len() {
-        panic!("Graph has at least one cycle");
+        panic!("Topological sort failed: the graph may contain a cycle or reference missing nodes");
     }
 
     sorted
