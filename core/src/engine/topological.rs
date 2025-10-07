@@ -58,7 +58,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Topological sort failed: the graph may contain a cycle or reference missing nodes")]
+    #[should_panic(
+        expected = "Topological sort failed: the graph may contain a cycle or reference missing nodes"
+    )]
     fn test_cycle_detection() {
         let nodes = vec!["a".into(), "b".into(), "c".into()];
         let connections = vec![
