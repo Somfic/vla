@@ -9,7 +9,7 @@ on:
 jobs:
   check:
     name: check
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
