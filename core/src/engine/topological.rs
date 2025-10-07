@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_topological_sort() {
-        let nodes = vec!["b".into(), "b".into(), "a".into()];
+        let nodes = vec!["a".into(), "b".into(), "c".into()];
         let connections = vec![("a".into(), "b".into()), ("b".into(), "c".into())];
 
         let sorted = sort(nodes, connections);
