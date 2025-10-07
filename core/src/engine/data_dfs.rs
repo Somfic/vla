@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::prelude::*;
+use std::collections::HashSet;
 
 /// A depth-first search iterator for resolving data node dependencies.
 ///
@@ -65,16 +65,41 @@ impl<'a> DataNodeDfsIterator<'a> {
             .edges
             .iter()
             .filter(|edge| {
-                // Only consider data edges (edges where handles don't start with "exec_")
+                // Only consider data edges (not execution edges)
                 edge.target == node_id && self.is_data_edge(edge)
             })
             .map(|edge| edge.source.clone())
             .collect()
     }
 
-    /// Check if an edge is a data edge (not an execution edge)
+    /// Check if an edge is a data edge by examining if the handles
+    /// match execution inputs/outputs on the connected nodes
     fn is_data_edge(&self, edge: &Edge) -> bool {
-        crate::engine::Engine::is_data_edge(edge)
+        if let Some(source_node) = self.graph.nodes.iter().find(|n| n.id == edge.source) {
+            if let Some(brick) = &source_node.data.brick {
+                if brick
+                    .execution_outputs
+                    .iter()
+                    .any(|out| out.id == edge.source_handle)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if let Some(target_node) = self.graph.nodes.iter().find(|n| n.id == edge.target) {
+            if let Some(brick) = &target_node.data.brick {
+                if brick
+                    .execution_inputs
+                    .iter()
+                    .any(|inp| inp.id == edge.target_handle)
+                {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 
     /// Check if a node is a data node (has no execution inputs/outputs)
@@ -98,7 +123,8 @@ impl<'a> Iterator for DataNodeDfsIterator<'a> {
                 // Now we can yield this node (if it's a data node and not cached)
                 if !self.yielded.contains(&node_id)
                     && !self.cached.contains(&node_id)
-                    && self.is_data_node(&node_id) {
+                    && self.is_data_node(&node_id)
+                {
                     self.yielded.insert(node_id.clone());
                     return Some(node_id);
                 }
@@ -122,12 +148,15 @@ impl<'a> Iterator for DataNodeDfsIterator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::prelude::*;
     use crate::bricks::types::{Brick, BrickInput, BrickOutput, ConnectionType};
+    use crate::prelude::*;
     use std::collections::BTreeMap;
 
     fn create_test_brick(id: &str, has_exec: bool) -> Brick {
-        use crate::bricks::types::{BrickExecutionInput, BrickExecutionOutput, BrickArgumentValue, BrickInputValue, BrickOutputValue};
+        use crate::bricks::types::{
+            BrickArgumentValue, BrickExecutionInput, BrickExecutionOutput, BrickInputValue,
+            BrickOutputValue,
+        };
 
         Brick {
             id: id.to_string(),
@@ -136,21 +165,17 @@ mod tests {
             keywords: vec![],
             category: "test".to_string(),
             arguments: vec![],
-            inputs: vec![
-                BrickInput {
-                    id: "input".to_string(),
-                    label: "Input".to_string(),
-                    r#type: ConnectionType::Number,
-                    default_value: None,
-                }
-            ],
-            outputs: vec![
-                BrickOutput {
-                    id: "output".to_string(),
-                    label: "Output".to_string(),
-                    r#type: ConnectionType::Number,
-                }
-            ],
+            inputs: vec![BrickInput {
+                id: "input".to_string(),
+                label: "Input".to_string(),
+                r#type: ConnectionType::Number,
+                default_value: None,
+            }],
+            outputs: vec![BrickOutput {
+                id: "output".to_string(),
+                label: "Output".to_string(),
+                r#type: ConnectionType::Number,
+            }],
             execution_inputs: if has_exec {
                 vec![BrickExecutionInput {
                     id: "execute".to_string(),
@@ -281,7 +306,7 @@ mod tests {
         assert!(result.len() == 4);
         assert_eq!(result[0], "A"); // A has no dependencies
         assert_eq!(result[3], "D"); // D is last
-        // B and C should be in positions 1 and 2 (order doesn't matter)
+                                    // B and C should be in positions 1 and 2 (order doesn't matter)
         assert!(result[1..3].contains(&"B".to_string()));
         assert!(result[1..3].contains(&"C".to_string()));
     }
@@ -339,8 +364,8 @@ mod tests {
                     id: "e1".to_string(),
                     source: "A".to_string(),
                     target: "B".to_string(),
-                    source_handle: "exec_done".to_string(), // execution edge
-                    target_handle: "exec_execute".to_string(),
+                    source_handle: "done".to_string(), // execution edge
+                    target_handle: "execute".to_string(),
                 },
                 Edge {
                     id: "e2".to_string(),

@@ -15,9 +15,9 @@ impl Trigger {
         }
     }
 
-    /// Format for execution handle matching (e.g., "exec_begin")
+    /// Returns the execution output handle for matching edges
     pub fn to_handle(&self) -> String {
-        format!("exec_{}", self.output_id)
+        self.output_id.clone()
     }
 }
 
@@ -139,7 +139,10 @@ mod tests {
         // Test without node context
         add_trigger("output1");
         let triggers = collect_and_clear_triggers();
-        assert_eq!(triggers, vec![Trigger::new(String::new(), "output1".to_string())]);
+        assert_eq!(
+            triggers,
+            vec![Trigger::new(String::new(), "output1".to_string())]
+        );
 
         // Test with node context
         set_current_node_id("node123");
@@ -158,15 +161,18 @@ mod tests {
         clear_current_node_id();
         add_trigger("output3");
         let triggers = collect_and_clear_triggers();
-        assert_eq!(triggers, vec![Trigger::new(String::new(), "output3".to_string())]);
+        assert_eq!(
+            triggers,
+            vec![Trigger::new(String::new(), "output3".to_string())]
+        );
     }
 
     #[test]
     fn test_trigger_to_handle() {
         let trigger = Trigger::new("node1".to_string(), "begin".to_string());
-        assert_eq!(trigger.to_handle(), "exec_begin");
+        assert_eq!(trigger.to_handle(), "begin");
 
         let trigger2 = Trigger::new("node2".to_string(), "true_branch".to_string());
-        assert_eq!(trigger2.to_handle(), "exec_true_branch");
+        assert_eq!(trigger2.to_handle(), "true_branch");
     }
 }

@@ -132,15 +132,15 @@ fn test_sequential_flow_with_data_dependencies() {
                 id: "exec1".to_string(),
                 source: "start".to_string(),
                 target: "print".to_string(),
-                source_handle: "exec_begin".to_string(),
-                target_handle: "exec_execute".to_string(),
+                source_handle: "begin".to_string(),
+                target_handle: "execute".to_string(),
             },
             Edge {
                 id: "exec2".to_string(),
                 source: "print".to_string(),
                 target: "end".to_string(),
-                source_handle: "exec_done".to_string(),
-                target_handle: "exec_execute".to_string(),
+                source_handle: "done".to_string(),
+                target_handle: "execute".to_string(),
             },
             // Data flow edges
             Edge {
@@ -187,7 +187,10 @@ fn test_sequential_flow_with_data_dependencies() {
     // 2. add (data node - dependency of print)
     // 3. print (flow node)
     // 4. end (flow node)
-    assert_eq!(step_count, 4, "Expected 4 node executions (1 data + 3 flow)");
+    assert_eq!(
+        step_count, 4,
+        "Expected 4 node executions (1 data + 3 flow)"
+    );
     assert_eq!(executed_nodes, vec!["start", "add", "print", "end"]);
 }
 
@@ -290,22 +293,22 @@ fn test_conditional_flow() {
                 id: "exec1".to_string(),
                 source: "start".to_string(),
                 target: "if".to_string(),
-                source_handle: "exec_begin".to_string(),
-                target_handle: "exec_execute".to_string(),
+                source_handle: "begin".to_string(),
+                target_handle: "execute".to_string(),
             },
             Edge {
                 id: "exec_true".to_string(),
                 source: "if".to_string(),
                 target: "true_node".to_string(),
-                source_handle: "exec_true_branch".to_string(),
-                target_handle: "exec_execute".to_string(),
+                source_handle: "true_branch".to_string(),
+                target_handle: "execute".to_string(),
             },
             Edge {
                 id: "exec_false".to_string(),
                 source: "if".to_string(),
                 target: "false_node".to_string(),
-                source_handle: "exec_false_branch".to_string(),
-                target_handle: "exec_execute".to_string(),
+                source_handle: "false_branch".to_string(),
+                target_handle: "execute".to_string(),
             },
         ],
     };
@@ -329,11 +332,17 @@ fn test_conditional_flow() {
         }
     }
 
-    println!("\n✓ Conditional execution completed in {} steps", step_count);
+    println!(
+        "\n✓ Conditional execution completed in {} steps",
+        step_count
+    );
     println!("  Execution order: {:?}", executed_nodes);
 
     // Should execute: start, if, true_node (false_node is NOT executed)
     assert_eq!(step_count, 3, "Expected 3 node executions");
     assert_eq!(executed_nodes, vec!["start", "if", "true_node"]);
-    assert!(!executed_nodes.contains(&"false_node".to_string()), "False branch should not execute");
+    assert!(
+        !executed_nodes.contains(&"false_node".to_string()),
+        "False branch should not execute"
+    );
 }
