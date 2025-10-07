@@ -7,96 +7,58 @@ on:
     branches: [ main ]
 
 jobs:
-  ui:
-    name: ui
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Install Bun
-      uses: oven-sh/setup-bun@v2
-      with:
-        bun-version: latest
-
-    - name: Cache Bun dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.bun/install/cache
-        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
-        restore-keys: |
-          ${{ runner.os }}-bun-
-
-    - name: Install dependencies
-      run: bun install
-
-    - name: Type check
-      run: bun run check
-
-    - name: Build frontend
-      run: bun run build
-
-  core:
-    name: core
+  check:
+    name: check
     runs-on: ${{ matrix.platform }}
 
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest]
+        platform: [ubuntu-latest, macos-latest]
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
 
-    - name: Install Bun
-      uses: oven-sh/setup-bun@v2
-      with:
-        bun-version: latest
+    - name: Install Nix
+      uses: nixbuild/nix-quick-install-action@v28
 
-    - name: Install Rust toolchain
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        components: rustfmt, clippy
-
-    - name: Cache Rust dependencies
-      uses: Swatinem/rust-cache@v2
-      with:
-        workspaces: "core -> target"
-
-    - name: Cache Bun dependencies
+    - name: Cache Nix store
       uses: actions/cache@v4
       with:
-        path: ~/.bun/install/cache
-        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+        path: |
+          /nix/store
+          ~/.cache/nix
+        key: ${{ runner.os }}-nix-${{ hashFiles('flake.lock') }}
         restore-keys: |
-          ${{ runner.os }}-bun-
+          ${{ runner.os }}-nix-
 
-    - name: Install dependencies (ubuntu only)
-      if: matrix.platform == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+    - name: Cache Rust dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          core/target
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('core/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
 
-    - name: Install frontend dependencies
-      run: bun install
+    - name: Cache frontend dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          frontend/node_modules
+          frontend/.svelte-kit
+          ~/.bun/install/cache
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
 
-    - name: Build frontend
-      run: bun run build
-
-    - name: Check Rust formatting
-      run: cargo fmt --all --manifest-path core/Cargo.toml -- --check
-
-    - name: Run Rust linter
-      run: cargo clippy --manifest-path core/Cargo.toml --all-targets --all-features
-
-    - name: Run Rust tests
-      run: cargo test --manifest-path core/Cargo.toml
+    - name: Run checks
+      run: nix develop --command just check
 
     # - name: Build Tauri app
-    #   uses: tauri-apps/tauri-action@v0
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tauriScript: bun run tauri
+    #   run: nix develop --command just build
