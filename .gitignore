@@ -11,6 +11,5 @@ vite.config.ts.timestamp-*
 /.vscode
 graph.json
 .direnv
-bun.lockb
 .claude/
 /frontend/build
