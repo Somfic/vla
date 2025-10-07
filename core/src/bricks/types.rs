@@ -14,11 +14,15 @@ pub struct Brick {
     pub execution: fn(Vec<BrickArgumentValue>, Vec<BrickInputValue>) -> Vec<BrickOutputValue>,
 }
 
-fn default_execution(_args: Vec<BrickArgumentValue>, _inputs: Vec<BrickInputValue>) -> Vec<BrickOutputValue> {
+fn default_execution(
+    _args: Vec<BrickArgumentValue>,
+    _inputs: Vec<BrickInputValue>,
+) -> Vec<BrickOutputValue> {
     vec![]
 }
 
-fn default_execution_fn() -> fn(Vec<BrickArgumentValue>, Vec<BrickInputValue>) -> Vec<BrickOutputValue> {
+fn default_execution_fn(
+) -> fn(Vec<BrickArgumentValue>, Vec<BrickInputValue>) -> Vec<BrickOutputValue> {
     default_execution
 }
 
