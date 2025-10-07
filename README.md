@@ -1,4 +1,4 @@
-<img src="banner.png" title="Vla by Somfic">
+<img src="./static/banner.png" title="Vla by Somfic">
 
 <div text-align="center">
 <h1 align="center">Vla</h1>
