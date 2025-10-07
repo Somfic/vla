@@ -7,6 +7,7 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import Spotlight from "$components/Spotlight.svelte";
   import Shortcuts, { type ShortcutConfig } from "$components/Shortcuts.svelte";
+  import ExecutionControls from "$components/ExecutionControls.svelte";
 
   let graph = $state<Graph | null>(null);
   api.load_graph("../graph.json").then((g) => {
@@ -52,6 +53,7 @@
       {#if !graph}
         <p>Loading graph...</p>
       {:else}
+        <ExecutionControls {graph} />
         <Canvas bind:graph onSave={handleAutoSave} />
       {/if}
     </div>

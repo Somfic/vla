@@ -10,3 +10,10 @@ macro_rules! trigger {
         $crate::engine::trigger::add_trigger($output_id);
     };
 }
+
+#[macro_export]
+macro_rules! set_current_node_id {
+    ($node_id:expr) => {
+        $crate::engine::trigger::set_current_node_id($node_id);
+    };
+}

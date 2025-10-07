@@ -22,6 +22,19 @@
 
         <div class="handles">
             <div class="inputs">
+                {#each node.data.brick.execution_inputs as input}
+                    <div class="input">
+                        <Handle
+                            input={{
+                                ...input,
+                                type: "flow",
+                                defaultValue: null,
+                            }}
+                            {node}
+                            onchange={() => saveNodeChanges()}
+                        />
+                    </div>
+                {/each}
                 {#each node.data.brick.inputs as input, i}
                     <div class="input">
                         <Handle
@@ -37,6 +50,18 @@
             </div>
 
             <div class="outputs">
+                {#each node.data.brick.execution_outputs as output}
+                    <div class="output">
+                        <div class="label">
+                            {output.label}
+                        </div>
+                        <Handle
+                            output={{ ...output, type: "flow" }}
+                            {node}
+                            onchange={() => saveNodeChanges()}
+                        />
+                    </div>
+                {/each}
                 {#each node.data.brick.outputs as output}
                     <div class="output">
                         {#if output.type !== "flow"}

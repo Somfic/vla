@@ -1,9 +1,28 @@
 use std::cell::RefCell;
 
-/// Thread-local storage for execution triggers
-/// This stores the execution output IDs that should be triggered when a brick executes
+/// Represents an execution trigger from a flow node
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Trigger {
+    pub source_node: String,
+    pub output_id: String,
+}
+
+impl Trigger {
+    pub fn new(source_node: String, output_id: String) -> Self {
+        Self {
+            source_node,
+            output_id,
+        }
+    }
+
+    /// Format for execution handle matching (e.g., "exec_begin")
+    pub fn to_handle(&self) -> String {
+        format!("exec_{}", self.output_id)
+    }
+}
+
 thread_local! {
-    static EXECUTION_TRIGGERS: RefCell<Vec<String>> = RefCell::new(Vec::new());
+    static EXECUTION_TRIGGERS: RefCell<Vec<Trigger>> = RefCell::new(Vec::new());
     static CURRENT_NODE_ID: RefCell<Option<String>> = RefCell::new(None);
 }
 
@@ -23,26 +42,33 @@ pub fn clear_current_node_id() {
     });
 }
 
+/// Collect and clear the current node ID
+/// Returns the current node ID before clearing it
+pub fn collect_and_clear_current_node_id() -> Option<String> {
+    CURRENT_NODE_ID.with(|current| current.borrow_mut().take())
+}
+
 /// Internal function called by trigger! macro
 /// Adds an execution output ID to the list of triggers for the current execution
-/// Automatically prefixes with the current node ID if available
+/// Automatically uses the current node ID if available
 pub fn add_trigger(output_id: &str) {
-    let prefixed_id = CURRENT_NODE_ID.with(|current| {
+    let trigger = CURRENT_NODE_ID.with(|current| {
         if let Some(node_id) = current.borrow().as_ref() {
-            format!("{}:{}", node_id, output_id)
+            Trigger::new(node_id.clone(), output_id.to_string())
         } else {
-            output_id.to_string()
+            // Fallback if no node context (shouldn't happen in normal execution)
+            Trigger::new(String::new(), output_id.to_string())
         }
     });
 
     EXECUTION_TRIGGERS.with(|triggers| {
-        triggers.borrow_mut().push(prefixed_id);
+        triggers.borrow_mut().push(trigger);
     });
 }
 
 /// Collect and clear all triggers set during brick execution
 /// Called by ExecutionEngine after each brick execution
-pub fn collect_and_clear_triggers() -> Vec<String> {
+pub fn collect_and_clear_triggers() -> Vec<Trigger> {
     EXECUTION_TRIGGERS.with(|triggers| triggers.borrow_mut().drain(..).collect())
 }
 
@@ -71,10 +97,12 @@ mod tests {
     fn test_trigger_functions() {
         // Clear any existing triggers
         clear_triggers();
+        clear_current_node_id();
         assert_eq!(trigger_count(), 0);
         assert!(!has_triggers());
 
-        // Add some triggers
+        // Add some triggers (with node context)
+        set_current_node_id("test_node");
         add_trigger("test1");
         add_trigger("test2");
         assert_eq!(trigger_count(), 2);
@@ -82,7 +110,13 @@ mod tests {
 
         // Collect and clear
         let triggers = collect_and_clear_triggers();
-        assert_eq!(triggers, vec!["test1", "test2"]);
+        assert_eq!(
+            triggers,
+            vec![
+                Trigger::new("test_node".to_string(), "test1".to_string()),
+                Trigger::new("test_node".to_string(), "test2".to_string())
+            ]
+        );
         assert_eq!(trigger_count(), 0);
         assert!(!has_triggers());
     }
@@ -105,19 +139,34 @@ mod tests {
         // Test without node context
         add_trigger("output1");
         let triggers = collect_and_clear_triggers();
-        assert_eq!(triggers, vec!["output1"]);
+        assert_eq!(triggers, vec![Trigger::new(String::new(), "output1".to_string())]);
 
         // Test with node context
         set_current_node_id("node123");
         add_trigger("output1");
         add_trigger("output2");
         let triggers = collect_and_clear_triggers();
-        assert_eq!(triggers, vec!["node123:output1", "node123:output2"]);
+        assert_eq!(
+            triggers,
+            vec![
+                Trigger::new("node123".to_string(), "output1".to_string()),
+                Trigger::new("node123".to_string(), "output2".to_string())
+            ]
+        );
 
         // Test clearing node context
         clear_current_node_id();
         add_trigger("output3");
         let triggers = collect_and_clear_triggers();
-        assert_eq!(triggers, vec!["output3"]);
+        assert_eq!(triggers, vec![Trigger::new(String::new(), "output3".to_string())]);
+    }
+
+    #[test]
+    fn test_trigger_to_handle() {
+        let trigger = Trigger::new("node1".to_string(), "begin".to_string());
+        assert_eq!(trigger.to_handle(), "exec_begin");
+
+        let trigger2 = Trigger::new("node2".to_string(), "true_branch".to_string());
+        assert_eq!(trigger2.to_handle(), "exec_true_branch");
     }
 }
