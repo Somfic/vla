@@ -13,3 +13,4 @@ graph.json
 .direnv
 bun.lockb
 .claude/
+/frontend/build
