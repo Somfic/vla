@@ -37,10 +37,17 @@
         isExecuting = false;
       }
     } catch (e) {
-      // Execution complete
+      // Distinguish between normal completion and actual errors
       isExecuting = false;
-      error = null;
-      currentStep = null;
+      if (e && typeof e === "object" && "message" in e && (e as Error).message === "Execution complete") {
+        // Normal completion
+        error = null;
+        currentStep = null;
+      } else {
+        // Actual error
+        error = `Execution error: ${e instanceof Error ? e.message : e}`;
+        console.error(e);
+      }
     }
   }
 
