@@ -41,7 +41,6 @@
             [
               rustToolchain
               cargo-llvm-cov
-              cargo-nextest
               just
               cargo-edit
               cargo-watch
@@ -52,7 +51,6 @@
               bat
               bun
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
-              mold
               # Tauri dependencies from nixos wiki
               at-spi2-atk
               atkmm

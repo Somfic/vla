@@ -79,10 +79,10 @@
 <svg>
     <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color={sourceColor} />
-            <stop offset="100%" stop-color={targetColor} />
+            <stop offset="20%" stop-color={sourceColor} />
+            <stop offset="80%" stop-color={targetColor} />
         </linearGradient>
-        <filter id={blurId} x="-50%" y="-50%" width="500%" height="500%">
+        <filter id={blurId} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="6" />
         </filter>
     </defs>
