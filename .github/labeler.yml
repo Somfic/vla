@@ -1,0 +1,46 @@
+# Auto-label PRs based on changed files
+
+core:
+  - changed-files:
+    - any-glob-to-any-file: 'core/**/*.rs'
+    - any-glob-to-any-file: 'core/Cargo.toml'
+    - any-glob-to-any-file: 'core/Cargo.lock'
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: 'frontend/**/*.svelte'
+    - any-glob-to-any-file: 'frontend/**/*.ts'
+    - any-glob-to-any-file: 'frontend/**/*.js'
+    - any-glob-to-any-file: 'frontend/**/*.css'
+    - any-glob-to-any-file: 'frontend/**/*.scss'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**/*'
+    - any-glob-to-any-file: '*.md'
+    - any-glob-to-any-file: 'README.md'
+
+ci/cd:
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**'
+    - any-glob-to-any-file: 'justfile'
+
+tauri:
+  - changed-files:
+    - any-glob-to-any-file: 'core/tauri.conf.json'
+    - any-glob-to-any-file: 'core/build.rs'
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file: '**/*test*.rs'
+    - any-glob-to-any-file: '**/*test*.ts'
+    - any-glob-to-any-file: 'core/src/engine/tests.rs'
+    - any-glob-to-any-file: 'core/src/bricks/tests.rs'
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file: 'core/Cargo.toml'
+    - any-glob-to-any-file: 'core/Cargo.lock'
+    - any-glob-to-any-file: 'frontend/package.json'
+    - any-glob-to-any-file: 'frontend/package-lock.json'
+    - any-glob-to-any-file: 'frontend/bun.lock'

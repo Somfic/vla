@@ -35,7 +35,7 @@ pub struct ExecutionState {
     pub steps_executed: u32,
 }
 
-#[taurpc::procedures(export_to = "../ui/lib/core.ts", event_trigger = ApiEventTrigger)]
+#[taurpc::procedures(export_to = "../frontend/src/lib/core.ts", event_trigger = ApiEventTrigger)]
 pub trait CoreApi {
     #[taurpc(event)]
     async fn graph_updated(graph: Graph);
