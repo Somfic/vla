@@ -15,4 +15,4 @@ check:
     cd frontend && bun run check
     cargo fmt --all --manifest-path core/Cargo.toml -- --check
     cargo clippy --all --manifest-path core/Cargo.toml
-    cargo nextest run --all --manifest-path core/Cargo.toml
+    cargo test --all --manifest-path core/Cargo.toml
