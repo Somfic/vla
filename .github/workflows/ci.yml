@@ -58,7 +58,7 @@ jobs:
           ${{ runner.os }}-frontend-
 
     - name: Install nix dependencies
-      run: nix flake update
+      run: nix develop --command true
 
     - name: Run checks
       run: nix develop --command just check
