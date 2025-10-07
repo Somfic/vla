@@ -57,6 +57,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-frontend-
 
+    - name: Install nix dependencies
+      run: nix flake update
+
     - name: Run checks
       run: nix develop --command just check
 
