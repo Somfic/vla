@@ -11,6 +11,7 @@ build:
     cd frontend && bun install && cd .. && frontend/node_modules/.bin/tauri build
 
 check:
+    cd frontend && bun install
     cd frontend && bun run check
     cargo check --manifest-path core/Cargo.toml
     cargo fmt --all --manifest-path core/Cargo.toml -- --check
