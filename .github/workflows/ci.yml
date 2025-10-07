@@ -20,18 +20,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v5
 
-    - name: Install Nix
-      uses: nixbuild/nix-quick-install-action@v28
+    - name: Setup Nix
+      uses: DeterminateSystems/nix-installer-action@main
 
-    - name: Cache Nix store
-      uses: actions/cache@v4
-      with:
-        path: |
-          /nix/store
-          ~/.cache/nix
-        key: ${{ runner.os }}-nix-${{ hashFiles('flake.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-nix-
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+      
+    - name: Run flake checks
+      uses: DeterminateSystems/flake-checker-action@main
 
     - name: Cache Rust dependencies
       uses: actions/cache@v4
