@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 
 use crate::bricks::macros::brick;
 use crate::bricks::types::BrickInputValue;
@@ -47,7 +47,7 @@ fn sample_graph() -> Graph {
 fn test_engine_execution() {
     let graph = sample_graph();
 
-    let mut engine = Engine::new(graph);
+    let mut engine = Engine::new_test(graph);
     engine.start();
 
     for result in engine {

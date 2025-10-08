@@ -1,10 +1,12 @@
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::time::Instant;
 
 use crate::{
+    api::ApiEventTrigger,
     bricks::types::{BrickArgumentValue, BrickInputValue, BrickOutputValue},
     prelude::*,
-    set_current_node_id, trigger,
 };
+use tauri::{AppHandle, Runtime};
 pub mod data_dfs;
 #[cfg(test)]
 mod flow_test;
@@ -13,7 +15,26 @@ mod tests;
 pub mod topological;
 pub mod trigger;
 
-pub struct Engine {
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub enum ExecutionMode {
+    Normal,  // Run until completion
+    Stepped, // Manual step-by-step
+}
+
+impl Default for ExecutionMode {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct ExecutionStateUpdate {
+    pub node_id: String,
+    pub state: NodeExecutionState,
+    pub execution_mode: ExecutionMode,
+}
+
+pub struct Engine<R: Runtime = tauri::Wry> {
     graph: Graph,
     /// Queue of flow nodes waiting to execute
     queue: VecDeque<String>,
@@ -27,9 +48,59 @@ pub struct Engine {
     node_index: HashMap<String, usize>,
     /// Enable debug output
     debug: bool,
+    /// AppHandle for event broadcasting
+    app_handle: Option<AppHandle<R>>,
+    /// Execution mode (Normal or Stepped)
+    execution_mode: ExecutionMode,
+    /// Per-node execution states
+    node_states: HashMap<String, NodeExecutionState>,
+    /// Per-node execution start times
+    node_start_times: HashMap<String, Instant>,
 }
 
+// Test-friendly implementation for default runtime
 impl Engine {
+    /// Create a test engine without app handle (for testing only)
+    #[cfg(test)]
+    pub fn new_test(graph: Graph) -> Self {
+        Self::with_debug_test(graph, false)
+    }
+
+    /// Create a test engine with debug (for testing only)
+    #[cfg(test)]
+    pub fn with_debug_test(graph: Graph, debug: bool) -> Self {
+        // Build node index for O(1) lookups
+        let node_index: HashMap<String, usize> = graph
+            .nodes
+            .iter()
+            .enumerate()
+            .map(|(idx, node)| (node.id.clone(), idx))
+            .collect();
+
+        // Initialize node states
+        let node_states: HashMap<String, NodeExecutionState> = graph
+            .nodes
+            .iter()
+            .map(|node| (node.id.clone(), NodeExecutionState::default()))
+            .collect();
+
+        Self {
+            graph,
+            queue: VecDeque::new(),
+            cache: HashMap::new(),
+            current_flow_node: None,
+            pending_data_deps: VecDeque::new(),
+            node_index,
+            debug,
+            app_handle: None,
+            execution_mode: ExecutionMode::Normal,
+            node_states,
+            node_start_times: HashMap::new(),
+        }
+    }
+}
+
+impl<R: Runtime> Engine<R> {
     pub fn new(graph: Graph) -> Self {
         Self::with_debug(graph, false)
     }
@@ -43,6 +114,13 @@ impl Engine {
             .map(|(idx, node)| (node.id.clone(), idx))
             .collect();
 
+        // Initialize node states
+        let node_states: HashMap<String, NodeExecutionState> = graph
+            .nodes
+            .iter()
+            .map(|node| (node.id.clone(), NodeExecutionState::default()))
+            .collect();
+
         Self {
             graph,
             queue: VecDeque::new(),
@@ -51,6 +129,69 @@ impl Engine {
             pending_data_deps: VecDeque::new(),
             node_index,
             debug,
+            app_handle: None,
+            execution_mode: ExecutionMode::Normal,
+            node_states,
+            node_start_times: HashMap::new(),
+        }
+    }
+
+    /// Create engine with AppHandle for event broadcasting
+    pub fn with_app_handle(graph: Graph, app_handle: AppHandle<R>) -> Self {
+        let mut engine = Self::new(graph);
+        engine.app_handle = Some(app_handle);
+        engine
+    }
+
+    /// Set execution mode
+    pub fn set_execution_mode(&mut self, mode: ExecutionMode) {
+        self.execution_mode = mode;
+    }
+
+    /// Update node state and broadcast change
+    fn update_node_state(&mut self, node_id: &str, phase: ExecutionPhase) {
+        if let Some(node_state) = self.node_states.get_mut(node_id) {
+            match phase {
+                ExecutionPhase::Running => {
+                    // Record start time when execution begins
+                    self.node_start_times.insert(node_id.to_string(), Instant::now());
+                    node_state.phase = phase.clone();
+                    node_state.elapsed_ms = 0;
+                }
+                ExecutionPhase::Completed | ExecutionPhase::Errored => {
+                    // Calculate elapsed time when execution finishes
+                    if let Some(start_time) = self.node_start_times.get(node_id) {
+                        let elapsed = start_time.elapsed();
+                        node_state.elapsed_ms = elapsed.as_millis() as u32;
+                        self.node_start_times.remove(node_id);
+                    }
+                    node_state.phase = phase.clone();
+                }
+                _ => {
+                    // For other phases (Waiting, Queued), just update phase
+                    node_state.phase = phase.clone();
+                    node_state.elapsed_ms = 0;
+                }
+            }
+
+            let state_copy = node_state.clone();
+            self.broadcast_execution_state_update(node_id, state_copy);
+        }
+    }
+
+    /// Broadcast execution state update event
+    fn broadcast_execution_state_update(&self, node_id: &str, state: NodeExecutionState) {
+        if let Some(app_handle) = &self.app_handle {
+            let update = ExecutionStateUpdate {
+                node_id: node_id.to_string(),
+                state,
+                execution_mode: self.execution_mode.clone(),
+            };
+
+            if let Err(e) = ApiEventTrigger::new(app_handle.clone()).node_execution_updated(update)
+            {
+                eprintln!("Failed to broadcast node execution state update: {}", e);
+            }
         }
     }
 
@@ -90,14 +231,22 @@ impl Engine {
             let nodes_with_incoming: std::collections::HashSet<String> =
                 self.graph.edges.iter().map(|e| e.target.clone()).collect();
 
-            for node in &self.graph.nodes {
-                if !nodes_with_incoming.contains(&node.id) {
-                    self.queue.push_back(node.id.clone());
-                }
+            let nodes_to_queue: Vec<String> = self
+                .graph
+                .nodes
+                .iter()
+                .filter(|node| !nodes_with_incoming.contains(&node.id))
+                .map(|node| node.id.clone())
+                .collect();
+
+            for node_id in nodes_to_queue {
+                self.update_node_state(&node_id, ExecutionPhase::Queued);
+                self.queue.push_back(node_id);
             }
         } else {
             // Queue all start nodes for execution
             for node_id in start_nodes {
+                self.update_node_state(&node_id, ExecutionPhase::Queued);
                 self.queue.push_back(node_id);
             }
         }
@@ -105,6 +254,7 @@ impl Engine {
 
     /// Manually enqueue a flow node for execution
     pub fn enqueue(&mut self, node_id: String) {
+        self.update_node_state(&node_id, ExecutionPhase::Queued);
         self.queue.push_back(node_id);
     }
 
@@ -122,6 +272,9 @@ impl Engine {
 
     /// Execute a single node (data or flow) and cache its outputs
     fn execute_node_internal(&mut self, node_id: &str) -> Result<(), String> {
+        // Mark node as running
+        self.update_node_state(node_id, ExecutionPhase::Running);
+
         trigger::set_current_node_id(node_id);
 
         let node = self
@@ -138,13 +291,40 @@ impl Engine {
         let arguments = self.build_arguments(node, brick);
 
         // Build inputs from connected edges and cached data
-        let inputs = self.build_inputs(node, brick)?;
+        let inputs = match self.build_inputs(node, brick) {
+            Ok(inputs) => inputs,
+            Err(e) => {
+                // Mark as errored on input failure and set error message
+                self.update_node_state(node_id, ExecutionPhase::Errored);
+                if let Some(node_state) = self.node_states.get_mut(node_id) {
+                    node_state.error_message = Some(e.clone());
+                }
+                trigger::clear_current_node_id();
+                return Err(e);
+            }
+        };
 
         // Execute the brick
-        let outputs = (brick.execution)(arguments, inputs);
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            (brick.execution)(arguments, inputs)
+        }));
 
-        // Cache outputs
-        self.cache.insert(node_id.to_string(), outputs.clone());
+        match result {
+            Ok(outputs) => {
+                // Cache outputs and mark as completed
+                self.cache.insert(node_id.to_string(), outputs.clone());
+                self.update_node_state(node_id, ExecutionPhase::Completed);
+            }
+            Err(_) => {
+                // Mark as errored on execution failure and set error message
+                self.update_node_state(node_id, ExecutionPhase::Errored);
+                if let Some(node_state) = self.node_states.get_mut(node_id) {
+                    node_state.error_message = Some(format!("Node '{}' execution panicked", node_id));
+                }
+                trigger::clear_current_node_id();
+                return Err(format!("Node '{}' execution panicked", node_id));
+            }
+        }
 
         trigger::clear_current_node_id();
 
@@ -247,7 +427,7 @@ impl Engine {
     }
 }
 
-impl Iterator for Engine {
+impl<R: Runtime> Iterator for Engine<R> {
     type Item = Result<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -270,6 +450,9 @@ impl Iterator for Engine {
                 let triggers = trigger::collect_and_clear_triggers();
                 for trigger in &triggers {
                     let next_nodes = self.find_triggered_nodes(trigger);
+                    for node_id in &next_nodes {
+                        self.update_node_state(node_id, ExecutionPhase::Queued);
+                    }
                     self.queue.extend(next_nodes);
                 }
 
@@ -283,8 +466,35 @@ impl Iterator for Engine {
             let data_deps = self.resolve_data_dependencies(&next_flow_node);
 
             // Queue data dependencies and set current flow node
+            for dep_node in &data_deps {
+                self.update_node_state(dep_node, ExecutionPhase::Queued);
+            }
             self.pending_data_deps.extend(data_deps);
             self.current_flow_node = Some(next_flow_node);
         }
+    }
+}
+
+#[derive(Default, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub struct NodeExecutionState {
+    pub phase: ExecutionPhase,
+    #[serde(rename = "errorMessage")]
+    pub error_message: Option<String>,
+    #[serde(rename = "elapsedMs")]
+    pub elapsed_ms: u32,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+pub enum ExecutionPhase {
+    Waiting,
+    Queued,
+    Running,
+    Completed,
+    Errored,
+}
+
+impl Default for ExecutionPhase {
+    fn default() -> Self {
+        Self::Waiting
     }
 }

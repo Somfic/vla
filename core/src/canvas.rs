@@ -1,6 +1,7 @@
 use crate::api::ApiEventTrigger;
 use crate::bricks;
 use crate::prelude::*;
+use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
@@ -12,6 +13,28 @@ use uuid::Uuid;
 pub struct Graph {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
+}
+impl Graph {
+    fn to_json(&self) -> Result<String, String> {
+        let json_value =
+            serde_json::to_value(self).map_err(|e| format!("Failed to serialize graph: {}", e))?;
+
+        let json_value = remove_json_fields_from_node(json_value, vec!["brick"]);
+
+        serde_json::to_string_pretty(&json_value)
+            .map_err(|e| format!("Failed to format JSON: {}", e))
+    }
+
+    fn from_json(json: String) -> Result<Self, String> {
+        let mut graph: Graph =
+            serde_json::from_str(&json).map_err(|e| format!("Failed to parse graph: {}", e))?;
+
+        for node in &mut graph.nodes {
+            node.data.brick = get_brick(&node.data.brick_id);
+        }
+
+        Ok(graph)
+    }
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
@@ -54,21 +77,7 @@ pub async fn save_graph<R: Runtime>(
     graph_path: &str,
     notify_frontend: bool,
 ) -> Result<String, String> {
-    // Serialize to JSON value first, then remove brick fields
-    let mut json_value =
-        serde_json::to_value(graph).map_err(|e| format!("Failed to serialize graph: {}", e))?;
-
-    // Remove brick fields from nodes in the JSON
-    if let Some(nodes) = json_value.get_mut("nodes").and_then(|n| n.as_array_mut()) {
-        for node in nodes {
-            if let Some(data) = node.get_mut("data").and_then(|d| d.as_object_mut()) {
-                data.remove("brick");
-            }
-        }
-    }
-
-    let json = serde_json::to_string_pretty(&json_value)
-        .map_err(|e| format!("Failed to format JSON: {}", e))?;
+    let json = graph.to_json()?;
 
     fs::write(graph_path, json).map_err(|e| format!("Failed to write file: {}", e))?;
 
@@ -86,6 +95,20 @@ pub async fn save_graph<R: Runtime>(
     Ok(format!("Graph saved to {}", graph_path))
 }
 
+fn remove_json_fields_from_node(mut json_value: Value, fields: Vec<&str>) -> Value {
+    if let Some(nodes) = json_value.get_mut("nodes").and_then(|n| n.as_array_mut()) {
+        for node in nodes {
+            if let Some(data) = node.get_mut("data").and_then(|d| d.as_object_mut()) {
+                for field in &fields {
+                    data.remove(*field);
+                }
+            }
+        }
+    }
+
+    json_value
+}
+
 pub async fn load_graph<R: Runtime>(
     app_handle: AppHandle<R>,
     graph_path: &str,
@@ -100,18 +123,9 @@ pub async fn load_graph<R: Runtime>(
         return Ok(empty_graph);
     }
 
-    let content =
-        fs::read_to_string(graph_path).map_err(|e| format!("Failed to read file: {}", e))?;
+    let json = fs::read_to_string(graph_path).map_err(|e| format!("Failed to read file: {}", e))?;
 
-    let mut graph: Graph =
-        serde_json::from_str(&content).map_err(|e| format!("Failed to parse graph: {}", e))?;
-
-    // Populate brick data for each node
-    for node in &mut graph.nodes {
-        node.data.brick = get_brick(&node.data.brick_id);
-    }
-
-    Ok(graph)
+    Graph::from_json(json)
 }
 
 pub fn get_brick(brick_id: &str) -> Option<bricks::types::Brick> {
