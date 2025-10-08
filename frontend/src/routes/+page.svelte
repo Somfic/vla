@@ -18,10 +18,6 @@
     graph = updatedGraph;
   });
 
-  api.node_execution_updated.on((state) => {
-    console.log("Execution state updated:", state);
-  });
-
   async function handleAutoSave(updatedGraph: Graph) {
     graph = updatedGraph;
     try {
