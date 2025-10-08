@@ -50,6 +50,7 @@
               fd
               bat
               bun
+              nodejs
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               # Tauri dependencies from nixos wiki
               at-spi2-atk
