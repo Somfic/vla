@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Graph } from "$lib/core";
+    import type { Graph, NodeExecutionState } from "$lib/core";
     import {
         Background,
         SvelteFlow,
@@ -10,7 +10,7 @@
     import "@xyflow/svelte/dist/base.css";
     import Node from "$components/canvas/Node.svelte";
     import Edge from "$components/canvas/Edge.svelte";
-    import { setSaveCallback } from "$lib/api";
+    import api, { setSaveCallback } from "$lib/api";
     import Shortcuts, {
         type ShortcutConfig,
     } from "$components/Shortcuts.svelte";

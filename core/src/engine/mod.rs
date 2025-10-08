@@ -154,7 +154,8 @@ impl<R: Runtime> Engine<R> {
             match phase {
                 ExecutionPhase::Running => {
                     // Record start time when execution begins
-                    self.node_start_times.insert(node_id.to_string(), Instant::now());
+                    self.node_start_times
+                        .insert(node_id.to_string(), Instant::now());
                     node_state.phase = phase.clone();
                     node_state.elapsed_ms = 0;
                 }
@@ -210,6 +211,19 @@ impl<R: Runtime> Engine<R> {
     }
 
     pub fn start(&mut self) {
+        // Clear previous execution state
+        self.cache.clear();
+        self.queue.clear();
+        self.current_flow_node = None;
+        self.pending_data_deps.clear();
+        self.node_start_times.clear();
+
+        // Reset all node states to Waiting
+        let node_ids: Vec<String> = self.graph.nodes.iter().map(|n| n.id.clone()).collect();
+        for node_id in node_ids {
+            self.update_node_state(&node_id, ExecutionPhase::Waiting);
+        }
+
         // Find nodes that have execution outputs but no execution inputs (start nodes)
         // These are the entry points for execution flow
         let start_nodes: Vec<String> = self
@@ -275,6 +289,8 @@ impl<R: Runtime> Engine<R> {
         // Mark node as running
         self.update_node_state(node_id, ExecutionPhase::Running);
 
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
         trigger::set_current_node_id(node_id);
 
         let node = self
@@ -319,7 +335,8 @@ impl<R: Runtime> Engine<R> {
                 // Mark as errored on execution failure and set error message
                 self.update_node_state(node_id, ExecutionPhase::Errored);
                 if let Some(node_state) = self.node_states.get_mut(node_id) {
-                    node_state.error_message = Some(format!("Node '{}' execution panicked", node_id));
+                    node_state.error_message =
+                        Some(format!("Node '{}' execution panicked", node_id));
                 }
                 trigger::clear_current_node_id();
                 return Err(format!("Node '{}' execution panicked", node_id));
