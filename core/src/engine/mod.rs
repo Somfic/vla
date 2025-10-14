@@ -149,8 +149,10 @@ impl<R: Runtime> Engine<R> {
     }
 
     /// Update node state and broadcast change
-    fn update_node_state(&mut self, node_id: &str, phase: ExecutionPhase) {
+    fn update_node_state(&mut self, node_id: &str, phase: ExecutionPhase, outputs: Option<Vec<BrickOutputValue>>) {
         if let Some(node_state) = self.node_states.get_mut(node_id) {
+            node_state.outputs = outputs;
+
             match phase {
                 ExecutionPhase::Running => {
                     // Record start time when execution begins
@@ -221,7 +223,7 @@ impl<R: Runtime> Engine<R> {
         // Reset all node states to Waiting
         let node_ids: Vec<String> = self.graph.nodes.iter().map(|n| n.id.clone()).collect();
         for node_id in node_ids {
-            self.update_node_state(&node_id, ExecutionPhase::Waiting);
+            self.update_node_state(&node_id, ExecutionPhase::Waiting, None);
         }
 
         // Find nodes that have execution outputs but no execution inputs (start nodes)
@@ -254,13 +256,13 @@ impl<R: Runtime> Engine<R> {
                 .collect();
 
             for node_id in nodes_to_queue {
-                self.update_node_state(&node_id, ExecutionPhase::Queued);
+                self.update_node_state(&node_id, ExecutionPhase::Queued, None);
                 self.queue.push_back(node_id);
             }
         } else {
             // Queue all start nodes for execution
             for node_id in start_nodes {
-                self.update_node_state(&node_id, ExecutionPhase::Queued);
+                self.update_node_state(&node_id, ExecutionPhase::Queued, None);
                 self.queue.push_back(node_id);
             }
         }
@@ -268,7 +270,7 @@ impl<R: Runtime> Engine<R> {
 
     /// Manually enqueue a flow node for execution
     pub fn enqueue(&mut self, node_id: String) {
-        self.update_node_state(&node_id, ExecutionPhase::Queued);
+        self.update_node_state(&node_id, ExecutionPhase::Queued, None);
         self.queue.push_back(node_id);
     }
 
@@ -287,7 +289,7 @@ impl<R: Runtime> Engine<R> {
     /// Execute a single node (data or flow) and cache its outputs
     fn execute_node_internal(&mut self, node_id: &str) -> Result<(), String> {
         // Mark node as running
-        self.update_node_state(node_id, ExecutionPhase::Running);
+        self.update_node_state(node_id, ExecutionPhase::Running, None);
 
         std::thread::sleep(std::time::Duration::from_millis(100));
 
@@ -311,7 +313,7 @@ impl<R: Runtime> Engine<R> {
             Ok(inputs) => inputs,
             Err(e) => {
                 // Mark as errored on input failure and set error message
-                self.update_node_state(node_id, ExecutionPhase::Errored);
+                self.update_node_state(node_id, ExecutionPhase::Errored, None);
                 if let Some(node_state) = self.node_states.get_mut(node_id) {
                     node_state.error_message = Some(e.clone());
                 }
@@ -329,11 +331,11 @@ impl<R: Runtime> Engine<R> {
             Ok(outputs) => {
                 // Cache outputs and mark as completed
                 self.cache.insert(node_id.to_string(), outputs.clone());
-                self.update_node_state(node_id, ExecutionPhase::Completed);
+                self.update_node_state(node_id, ExecutionPhase::Completed, Some(outputs));
             }
             Err(_) => {
                 // Mark as errored on execution failure and set error message
-                self.update_node_state(node_id, ExecutionPhase::Errored);
+                self.update_node_state(node_id, ExecutionPhase::Errored, None);
                 if let Some(node_state) = self.node_states.get_mut(node_id) {
                     node_state.error_message =
                         Some(format!("Node '{}' execution panicked", node_id));
@@ -468,7 +470,7 @@ impl<R: Runtime> Iterator for Engine<R> {
                 for trigger in &triggers {
                     let next_nodes = self.find_triggered_nodes(trigger);
                     for node_id in &next_nodes {
-                        self.update_node_state(node_id, ExecutionPhase::Queued);
+                        self.update_node_state(node_id, ExecutionPhase::Queued, None);
                     }
                     self.queue.extend(next_nodes);
                 }
@@ -484,7 +486,7 @@ impl<R: Runtime> Iterator for Engine<R> {
 
             // Queue data dependencies and set current flow node
             for dep_node in &data_deps {
-                self.update_node_state(dep_node, ExecutionPhase::Queued);
+                self.update_node_state(dep_node, ExecutionPhase::Queued, None);
             }
             self.pending_data_deps.extend(data_deps);
             self.current_flow_node = Some(next_flow_node);
@@ -499,6 +501,7 @@ pub struct NodeExecutionState {
     pub error_message: Option<String>,
     #[serde(rename = "elapsedMs")]
     pub elapsed_ms: u32,
+    pub outputs: Option<Vec<BrickOutputValue>>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
