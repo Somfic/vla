@@ -18,6 +18,8 @@ export type BrickInput = { id: string; label: string; type: ConnectionType; defa
 
 export type BrickOutput = { id: string; label: string; type: ConnectionType }
 
+export type BrickOutputValue = { id: string; value: string }
+
 export type ConnectionType = "flow" | "string" | "number" | "boolean" | "enum"
 
 export type Edge = { id: string; source: string; target: string; sourceHandle: string; targetHandle: string }
@@ -39,7 +41,7 @@ export type Node = { id: string; position: Point; data: NodeData; type: string }
 
 export type NodeData = { brickId: string; brick: Brick | null; arguments: Partial<{ [key in string]: string }>; defaults: Partial<{ [key in string]: string }> }
 
-export type NodeExecutionState = { phase: ExecutionPhase; errorMessage: string | null; elapsedMs: number }
+export type NodeExecutionState = { phase: ExecutionPhase; errorMessage: string | null; elapsedMs: number; outputs: BrickOutputValue[] | null }
 
 export type Point = { x: number; y: number }
 

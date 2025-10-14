@@ -4,6 +4,7 @@
     import api, { saveNodeChanges, type CanvasNodeProps } from "$lib/api";
     import Input from "$components/forms/Input.svelte";
     import type { NodeExecutionState } from "$lib/core";
+    import Value from "$components/forms/Value.svelte";
 
     let node: CanvasNodeProps = $props();
 
@@ -12,6 +13,7 @@
     api.node_execution_updated.on((state) => {
         if (state.node_id === node.id) {
             executionState = state.state;
+            console.log("Node execution state updated:", state);
         }
     });
 </script>
@@ -72,13 +74,10 @@
                 {/each}
                 {#each node.data.brick.outputs as output}
                     <div class="output">
-                        {#if output.type !== "flow"}
-                            <Input type={output.type} value={"0"} disabled />
-                        {/if}
                         <div class="label">
                             {output.label}
                         </div>
-                        <Handle {node} {output} />
+                        <Handle {node} {output} {executionState} />
                     </div>
                 {/each}
             </div>
