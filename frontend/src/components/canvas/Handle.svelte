@@ -1,6 +1,10 @@
 <script lang="ts">
     import { Handle, Position, useEdges } from "@xyflow/svelte";
-    import type { BrickInput, BrickOutput } from "../../lib/core";
+    import type {
+        BrickInput,
+        BrickOutput,
+        NodeExecutionState,
+    } from "../../lib/core";
     import type { CanvasNodeProps } from "$lib/api";
     import Input from "$components/forms/Input.svelte";
 
@@ -9,11 +13,13 @@
         output = $bindable(),
         node,
         onchange,
+        executionState,
     }: {
         input?: BrickInput;
         output?: BrickOutput;
         node: CanvasNodeProps;
         onchange?: () => void;
+        executionState?: NodeExecutionState | null;
     } = $props();
 
     const id = input ? input!.id : output!.id;

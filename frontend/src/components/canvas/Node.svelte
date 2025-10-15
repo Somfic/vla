@@ -1,15 +1,25 @@
 <script lang="ts">
-    import { Position, type NodeProps } from "@xyflow/svelte";
     import ArgumentInput from "./arguments/ArgumentInput.svelte";
     import Handle from "./Handle.svelte";
-    import { saveNodeChanges, type CanvasNodeProps } from "$lib/api";
+    import api, { saveNodeChanges, type CanvasNodeProps } from "$lib/api";
     import Input from "$components/forms/Input.svelte";
+    import type { NodeExecutionState } from "$lib/core";
+    import Value from "$components/forms/Value.svelte";
 
     let node: CanvasNodeProps = $props();
+
+    let executionState: NodeExecutionState | null = $state(null);
+
+    api.node_execution_updated.on((state) => {
+        if (state.node_id === node.id) {
+            executionState = state.state;
+            console.log("Node execution state updated:", state);
+        }
+    });
 </script>
 
 {#if node.data.brick}
-    <div class="node">
+    <div class="node phase-{executionState?.phase.toLowerCase() ?? 'waiting'}">
         <div class="header">
             {node.data.brick?.label}
         </div>
@@ -64,13 +74,10 @@
                 {/each}
                 {#each node.data.brick.outputs as output}
                     <div class="output">
-                        {#if output.type !== "flow"}
-                            <Input type={output.type} value={"0"} disabled />
-                        {/if}
                         <div class="label">
                             {output.label}
                         </div>
-                        <Handle {node} {output} />
+                        <Handle {node} {output} {executionState} />
                     </div>
                 {/each}
             </div>
@@ -90,6 +97,21 @@
         padding: $gap;
         gap: $gap;
         transition: all 0.2s ease;
+        outline: 2px solid transparent;
+
+        &.phase-queued {
+            outline-color: rgba($primary, 0.3);
+            outline-style: dashed;
+            outline-offset: 4px;
+        }
+
+        &.phase-running {
+            outline-color: $primary;
+        }
+
+        &.phase-completed {
+            outline-color: rgba($primary, 0.3);
+        }
     }
 
     :global(.selected > .node) {

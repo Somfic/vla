@@ -160,7 +160,7 @@ fn test_sequential_flow_with_data_dependencies() {
         ],
     };
 
-    let mut engine = Engine::with_debug(graph, true);
+    let mut engine = Engine::with_debug_test(graph, true);
     engine.start();
 
     println!("Starting execution...\n");
@@ -313,7 +313,7 @@ fn test_conditional_flow() {
         ],
     };
 
-    let mut engine = Engine::with_debug(graph, true);
+    let mut engine = Engine::with_debug_test(graph, true);
     engine.start();
 
     println!("Starting conditional execution...\n");
