@@ -7,7 +7,6 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import Spotlight from "$components/Spotlight.svelte";
   import Shortcuts, { type ShortcutConfig } from "$components/Shortcuts.svelte";
-  import ExecutionControls from "$components/ExecutionControls.svelte";
 
   let graph = $state<Graph | null>(null);
   api.load_graph("../graph.json").then((g) => {
@@ -53,34 +52,28 @@
       {#if !graph}
         <p>Loading graph...</p>
       {:else}
-        <ExecutionControls {graph} />
         <Canvas bind:graph onSave={handleAutoSave} />
       {/if}
     </div>
 
     <div class="sidebar">
-      <SideBar />
+      <!-- <SideBar /> -->
     </div>
   </SvelteFlowProvider>
 </main>
 
 <style lang="scss">
-  @import "$styles/theme";
+  @import "../styles/theme";
 
   main {
     display: flex;
-  }
-
-  .menubar,
-  .sidebar {
-    padding: $gap;
   }
 
   .content {
     display: flex;
     flex-grow: 1;
     background-color: $background-secondary;
-    margin: $gap 0;
+    margin: $gap;
     overflow: hidden;
     border: $border;
     border-radius: $border-radius2;

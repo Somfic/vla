@@ -273,7 +273,7 @@
 {/if}
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../styles/theme";
 
     .wrapper {
         position: fixed;
@@ -285,8 +285,8 @@
         height: 100vh;
         width: 100vw;
         padding-top: 30vh;
-        backdrop-filter: blur(24px) brightness(1.05) saturate(1.2);
-        background: rgba(0, 0, 0, 0.01);
+        backdrop-filter: $blur;
+        background: $blur-background;
         z-index: 9999;
     }
 
@@ -297,10 +297,9 @@
         z-index: 10000;
         display: flex;
         flex-direction: column;
-        transition: height 0.3s ease;
-        backdrop-filter: blur(32px) brightness(1.1) saturate(1.3);
-        -webkit-backdrop-filter: blur(32px) brightness(1.1) saturate(1.3);
-        background: rgba(30, 30, 30, 0.95);
+        transition: height $transition;
+        backdrop-filter: $blur;
+        background: $blur-background;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
         box-shadow:
@@ -314,10 +313,9 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             padding: $gap;
-            background: rgba(40, 40, 40, 0.8);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            transition: all 0.3s ease;
+            backdrop-filter: $blur;
+            background: $blur-background;
+            transition: all $transition;
             box-shadow:
                 0 2px 8px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -374,11 +372,11 @@
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 12px;
                 padding: $gap;
-                background: rgba(45, 45, 45, 0.7);
+
                 cursor: pointer;
-                transition: all 0.25s ease;
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
+                transition: all $transition;
+                backdrop-filter: $blur;
+                background: $blur-background;
                 box-shadow:
                     0 1px 4px rgba(0, 0, 0, 0.3),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1);

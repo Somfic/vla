@@ -86,7 +86,7 @@
 {/if}
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../styles/theme";
 
     .node {
         display: flex;
@@ -96,7 +96,7 @@
         background-color: $background;
         padding: $gap;
         gap: $gap;
-        transition: all 0.2s ease;
+        transition: all $transition;
         outline: 2px solid transparent;
 
         &.phase-queued {

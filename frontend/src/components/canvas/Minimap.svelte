@@ -5,7 +5,7 @@
 <MiniMap />
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../styles/theme";
 
     :global(.svelte-flow__minimap) {
         position: relative;
