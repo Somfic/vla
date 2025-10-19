@@ -24,7 +24,7 @@
 </div>
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../styles/theme";
 
     .sidebar {
         display: flex;

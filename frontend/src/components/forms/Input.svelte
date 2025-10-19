@@ -82,7 +82,7 @@
 </div>
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../styles/theme";
 
     .input {
         display: flex;
@@ -94,7 +94,8 @@
         padding: 4px 8px;
         font-size: 0.75rem;
         color: $foreground-secondary;
-        backdrop-filter: blur(10px);
+        background: $background-secondary;
+        transition: all $transition;
 
         input,
         select {
@@ -133,7 +134,7 @@
         border-radius: 8px;
         position: relative;
         padding: 0;
-        transition: all 0.2s ease;
+        transition: all $transition;
 
         .toggle-slider {
             width: 12px;
@@ -144,7 +145,7 @@
             top: 50%;
             left: 2px;
             transform: translateY(-50%);
-            transition: all 0.2s ease;
+            transition: all $transition;
         }
 
         &.active {

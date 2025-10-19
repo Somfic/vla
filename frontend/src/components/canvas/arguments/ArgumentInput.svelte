@@ -22,13 +22,14 @@
 </div>
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../../styles/theme";
 
     .argument {
         display: flex;
         gap: $gap;
         align-items: center;
         justify-content: space-between;
+        transition: all $transition;
 
         .toggle {
             width: 32px;
@@ -39,9 +40,8 @@
             border-radius: 8px;
             position: relative;
             padding: 0;
-            transition: all 0.2s ease;
-
-            .toggle-slider {
+            transition: all $transition;
+            s .toggle-slider {
                 width: 12px;
                 height: 12px;
                 background-color: $foreground;
@@ -50,7 +50,7 @@
                 top: 50%;
                 left: 2px;
                 transform: translateY(-50%);
-                transition: all 0.2s ease;
+                transition: all $transition;
             }
 
             &.active {

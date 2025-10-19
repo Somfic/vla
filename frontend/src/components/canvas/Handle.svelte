@@ -60,7 +60,7 @@
 </div>
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../styles/theme";
 
     $handle-size: 10px;
     $handle-size-gap: 15px;
@@ -79,9 +79,7 @@
         z-index: 20000;
         border-width: 2px;
         background-color: $background;
-        transition:
-            background-color 0.3s,
-            border-color 0.3s;
+        transition: all $transition;    
     }
 
     :global(.input .svelte-flow__handle) {

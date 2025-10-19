@@ -15,6 +15,7 @@
         type ShortcutConfig,
     } from "$components/Shortcuts.svelte";
     import { shortcutContext } from "$actions/shortcutContext";
+    import Dock from "./Dock.svelte";
 
     let {
         graph = $bindable(),
@@ -47,14 +48,24 @@
     >
         <Background />
     </SvelteFlow>
+    <div class="dock">
+        <Dock {graph} />
+    </div>
 </div>
 
 <style lang="scss">
-    @import "$styles/theme";
+    @import "../../styles/theme";
 
     .canvas {
         flex-grow: 1;
         position: relative;
+
+        .dock {
+            position: absolute;
+            left: 50%;
+            bottom: $gap;
+            transform: translateX(-50%);
+        }
     }
 
     :global(.svelte-flow__attribution) {
