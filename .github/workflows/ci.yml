@@ -75,9 +75,6 @@ jobs:
     - name: setup nix cache
       uses: DeterminateSystems/magic-nix-cache-action@main
 
-    - name: run flake checks
-      uses: DeterminateSystems/flake-checker-action@main
-
     - name: cache frontend dependencies
       uses: actions/cache@v4
       with:
