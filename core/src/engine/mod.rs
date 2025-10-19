@@ -296,7 +296,10 @@ impl<R: Runtime> Engine<R> {
         // Mark node as running
         self.update_node_state(node_id, ExecutionPhase::Running, None);
 
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        // Artificial delay for debugging; only enabled in debug builds
+        if cfg!(debug_assertions) {
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
 
         trigger::set_current_node_id(node_id);
 
