@@ -41,7 +41,7 @@
             position: relative;
             padding: 0;
             transition: all $transition;
-            s .toggle-slider {
+            .toggle-slider {
                 width: 12px;
                 height: 12px;
                 background-color: $foreground;
