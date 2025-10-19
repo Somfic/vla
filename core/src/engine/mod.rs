@@ -149,7 +149,12 @@ impl<R: Runtime> Engine<R> {
     }
 
     /// Update node state and broadcast change
-    fn update_node_state(&mut self, node_id: &str, phase: ExecutionPhase, outputs: Option<Vec<BrickOutputValue>>) {
+    fn update_node_state(
+        &mut self,
+        node_id: &str,
+        phase: ExecutionPhase,
+        outputs: Option<Vec<BrickOutputValue>>,
+    ) {
         if let Some(node_state) = self.node_states.get_mut(node_id) {
             node_state.outputs = outputs;
 
