@@ -12,16 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: checkout code
       uses: actions/checkout@v5
 
-    - name: Setup Nix
+    - name: setup nix
       uses: DeterminateSystems/nix-installer-action@main
 
-    - name: Setup Nix cache
+    - name: setup nix cache
       uses: DeterminateSystems/magic-nix-cache-action@main
 
-    - name: Run flake checks
+    - name: run flake checks
       uses: DeterminateSystems/flake-checker-action@main
 
   check-frontend:
@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
 
     steps:
-    - name: Checkout code
+    - name: checkout code
       uses: actions/checkout@v5
 
     - name: setup nix
