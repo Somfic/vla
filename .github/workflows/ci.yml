@@ -2,19 +2,14 @@ name: ci
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
-  check:
-    name: check
+  check-nix:
+    name: check nix
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      # matrix:
-      #   platform: [ubuntu-latest, macos-latest]
 
     steps:
     - name: Checkout code
@@ -29,7 +24,72 @@ jobs:
     - name: Run flake checks
       uses: DeterminateSystems/flake-checker-action@main
 
-    - name: Cache Rust dependencies
+  check-frontend:
+    name: check frontend
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: setup nix
+      uses: DeterminateSystems/nix-installer-action@main
+
+    - name: setup nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+
+    - name: cache frontend dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          frontend/node_modules
+          frontend/.svelte-kit
+          ~/.bun/install/cache
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+
+    - name: install nix dependencies
+      run: nix develop --command true
+
+    - name: run checks
+      run: nix develop --command just check-frontend
+
+  check-core:
+    name: check core
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v5
+
+    - name: setup nix
+      uses: DeterminateSystems/nix-installer-action@main
+
+    - name: setup nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+
+    - name: run flake checks
+      uses: DeterminateSystems/flake-checker-action@main
+
+    - name: cache frontend dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          frontend/node_modules
+          frontend/.svelte-kit
+          ~/.bun/install/cache
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+
+    - name: cache core dependencies
       uses: actions/cache@v4
       with:
         path: |
@@ -42,22 +102,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-v2
 
-    - name: Cache frontend dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          frontend/node_modules
-          frontend/.svelte-kit
-          ~/.bun/install/cache
-        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/bun.lockb') }}
-        restore-keys: |
-          ${{ runner.os }}-frontend-
-
-    - name: Install nix dependencies
+    - name: install nix dependencies
       run: nix develop --command true
 
-    - name: Run checks
-      run: nix develop --command just check
-
-    # - name: Build Tauri app
-    #   run: nix develop --command just build
+    - name: check
+      run: nix develop --command just check-core
