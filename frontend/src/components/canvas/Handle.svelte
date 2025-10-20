@@ -79,15 +79,15 @@
         z-index: 20000;
         border-width: 2px;
         background-color: $background;
-        transition: all $transition;    
+        transition: all $transition;
     }
 
     :global(.input .svelte-flow__handle) {
-        left: calc(-1 * ($gap + 1px));
+        left: calc(-1 * ($gap2 + 1px));
     }
 
     :global(.output .svelte-flow__handle) {
-        right: calc(-1 * ($gap + 1px));
+        right: calc(-1 * ($gap2 + 1px));
     }
 
     // types
