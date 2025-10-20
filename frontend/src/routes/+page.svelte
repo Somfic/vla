@@ -21,6 +21,7 @@
     graph = updatedGraph;
     try {
       await api.save_graph(updatedGraph, "../graph.json");
+      await api.execute_graph(updatedGraph, "Normal");
     } catch (e) {
       console.error("Auto-save failed:", e);
     }

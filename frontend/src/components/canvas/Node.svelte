@@ -82,6 +82,16 @@
                 {/each}
             </div>
         </div>
+        <div class="footer">
+            {#if executionState?.elapsedMs != undefined}
+                <div class="pill">
+                    {#if executionState?.elapsedMs == 0}
+                        {"<"}
+                    {/if}
+                    {executionState?.elapsedMs}ms
+                </div>
+            {/if}
+        </div>
     </div>
 {/if}
 
@@ -94,10 +104,9 @@
         border: $border;
         border-radius: $border-radius;
         background-color: $background;
-        padding: $gap;
-        gap: $gap;
         transition: all $transition;
         outline: 2px solid transparent;
+        position: relative;
 
         &.phase-queued {
             outline-color: rgba($primary, 0.3);
@@ -111,6 +120,25 @@
 
         &.phase-completed {
             outline-color: rgba($primary, 0.3);
+        }
+
+        .header {
+            padding: $gap2;
+            border-bottom: $border;
+        }
+
+        .footer {
+            padding: $gap2;
+            border-top: $border;
+            display: flex;
+
+            .pill {
+                border-radius: $border-radius2;
+                border: $border;
+                padding: $gap $gap2;
+                font-size: $font-size;
+                color: $foreground-secondary;
+            }
         }
     }
 
@@ -134,6 +162,7 @@
 
     .inputs,
     .outputs {
+        padding: $gap2;
         display: flex;
         flex-direction: column;
 
@@ -142,7 +171,7 @@
             position: relative;
             display: flex;
             flex-grow: 1;
-            gap: $gap;
+            gap: $gap2;
             align-items: center;
         }
     }
@@ -154,6 +183,6 @@
     .arguments {
         display: flex;
         flex-direction: column;
-        gap: $gap;
+        gap: $gap2;
     }
 </style>

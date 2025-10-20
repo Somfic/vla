@@ -298,7 +298,7 @@ impl<R: Runtime> Engine<R> {
 
         // Artificial delay for debugging; only enabled in debug builds
         if cfg!(debug_assertions) {
-            std::thread::sleep(std::time::Duration::from_millis(100));
+            // std::thread::sleep(std::time::Duration::from_millis(100));
         }
 
         trigger::set_current_node_id(node_id);
