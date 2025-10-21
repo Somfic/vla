@@ -83,7 +83,7 @@
             </div>
         </div>
         <div class="footer">
-            {#if executionState?.elapsedMs != undefined}
+            {#if executionState?.elapsedMs !== undefined}
                 <div class="pill">
                     {#if executionState?.elapsedMs === 0}
                         {"<"}
