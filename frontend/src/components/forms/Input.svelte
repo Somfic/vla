@@ -94,7 +94,7 @@
         padding: 4px 8px;
         font-size: 0.75rem;
         color: $foreground-secondary;
-        background: $background-secondary;
+        background: $background-300;
         transition: all $transition;
 
         input,
@@ -129,7 +129,7 @@
         width: 32px;
         height: 16px;
         cursor: pointer;
-        background-color: $background-secondary;
+        background-color: $background-300;
         border: $border;
         border-radius: 8px;
         position: relative;
@@ -164,7 +164,7 @@
     }
 
     .text-input {
-        background-color: $background-secondary;
+        background-color: $background-300;
         border: $border;
         border-radius: 3px;
         color: $foreground;
@@ -188,7 +188,7 @@
         gap: $gap;
 
         input {
-            background-color: $background-secondary;
+            background-color: $background-300;
             border: $border;
             border-radius: 3px;
             color: $foreground;
@@ -213,7 +213,7 @@
             gap: 1px;
 
             button {
-                background-color: $background-secondary;
+                background-color: $background-300;
                 border: $border;
                 color: $foreground;
                 width: 16px;

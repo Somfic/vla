@@ -21,6 +21,19 @@
 {#if node.data.brick}
     <div class="node phase-{executionState?.phase.toLowerCase() ?? 'waiting'}">
         <div class="header">
+            {#each node.data.brick.execution_inputs as input}
+                <div class="input">
+                    <Handle
+                        input={{
+                            ...input,
+                            type: "flow",
+                            defaultValue: null,
+                        }}
+                        {node}
+                        onchange={() => saveNodeChanges()}
+                    />
+                </div>
+            {/each}
             {node.data.brick?.label}
         </div>
 
@@ -32,19 +45,6 @@
 
         <div class="handles">
             <div class="inputs">
-                {#each node.data.brick.execution_inputs as input}
-                    <div class="input">
-                        <Handle
-                            input={{
-                                ...input,
-                                type: "flow",
-                                defaultValue: null,
-                            }}
-                            {node}
-                            onchange={() => saveNodeChanges()}
-                        />
-                    </div>
-                {/each}
                 {#each node.data.brick.inputs as input, i}
                     <div class="input">
                         <Handle
@@ -103,7 +103,7 @@
         flex-direction: column;
         border: $border;
         border-radius: $border-radius;
-        background-color: $background;
+        background-color: $background-100;
         transition: all $transition;
         outline: 2px solid transparent;
         position: relative;
@@ -125,20 +125,31 @@
         .header {
             padding: $gap2;
             border-bottom: $border;
+            border-radius: $border-radius $border-radius 0 0;
+            display: flex;
+            align-items: center;
         }
 
         .footer {
             padding: $gap2;
             border-top: $border;
+            border-radius: 0 0 $border-radius $border-radius;
             display: flex;
 
             .pill {
                 border-radius: $border-radius2;
                 border: $border;
                 padding: $gap $gap2;
-                font-size: $font-size;
+                font-size: 10px;
                 color: $foreground-secondary;
             }
+        }
+
+        .header,
+        .footer {
+            background-color: $background-200;
+            font-size: 1rem;
+            min-height: calc(2 * $gap2 + 1rem);
         }
     }
 
@@ -150,10 +161,6 @@
         display: flex;
         justify-content: space-between;
         gap: $gap;
-    }
-
-    :global(.svelte-flow__node .selected) {
-        border-color: $primary;
     }
 
     .content {
@@ -171,7 +178,7 @@
             position: relative;
             display: flex;
             flex-grow: 1;
-            gap: $gap2;
+            gap: $gap;
             align-items: center;
         }
     }

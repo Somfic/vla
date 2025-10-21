@@ -34,7 +34,7 @@
     }
 
     .arguments {
-        background-color: $background-secondary;
+        background-color: $background-300;
         border: $border;
         border-radius: $border-radius;
         padding: $gap;
@@ -57,7 +57,7 @@
         }
 
         pre {
-            background-color: $background;
+            background-color: $background-100;
             color: $foreground;
             padding: 8px;
             border-radius: 4px;
