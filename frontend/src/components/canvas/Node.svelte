@@ -85,7 +85,7 @@
         <div class="footer">
             {#if executionState?.elapsedMs != undefined}
                 <div class="pill">
-                    {#if executionState?.elapsedMs == 0}
+                    {#if executionState?.elapsedMs === 0}
                         {"<"}
                     {/if}
                     {executionState?.elapsedMs}ms
