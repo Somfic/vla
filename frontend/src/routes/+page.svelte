@@ -9,8 +9,12 @@
   import Shortcuts, { type ShortcutConfig } from "$components/Shortcuts.svelte";
 
   let graph = $state<Graph | null>(null);
-  api.load_graph("../graph.json").then((g) => {
+  api.load_graph("../graph.json").then(async (g) => {
     graph = g;
+
+    setTimeout(async () => {
+      await api.execute_graph(g, "Normal");
+    }, 1);
   });
 
   api.graph_updated.on((updatedGraph) => {
@@ -73,7 +77,7 @@
   .content {
     display: flex;
     flex-grow: 1;
-    background-color: $background-secondary;
+    background-color: $background-300;
     margin: $gap;
     overflow: hidden;
     border: $border;

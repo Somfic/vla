@@ -78,7 +78,7 @@
         border-radius: 50%;
         z-index: 20000;
         border-width: 2px;
-        background-color: $background;
+        background-color: $background-100;
         transition: all $transition;
     }
 
@@ -105,7 +105,7 @@
 
     .type-flow :global(.svelte-flow__handle) {
         border-color: $flow-color;
-        border-radius: 0;
+        border-radius: 2px;
     }
 
     .connected {
