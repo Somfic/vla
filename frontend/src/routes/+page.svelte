@@ -7,14 +7,13 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import Spotlight from "$components/Spotlight.svelte";
   import Shortcuts, { type ShortcutConfig } from "$components/Shortcuts.svelte";
+  import { tick } from "svelte";
 
   let graph = $state<Graph | null>(null);
   api.load_graph("../graph.json").then(async (g) => {
     graph = g;
-
-    setTimeout(async () => {
-      await api.execute_graph(g, "Normal");
-    }, 1);
+    await tick();
+    await api.execute_graph(g, "Normal");
   });
 
   api.graph_updated.on((updatedGraph) => {
