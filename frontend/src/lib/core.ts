@@ -6,9 +6,34 @@ type TAURI_CHANNEL<T> = (response: T) => void
 
 export type ArgumentType = "string" | "number" | "boolean" | "enum"
 
-export type Brick = { id: string; label: string; description: string; keywords: string[]; category: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[]; execution_inputs: BrickExecutionInput[]; execution_outputs: BrickExecutionOutput[] }
+export type Brick = { id: string; label: string; description: string; keywords: string[]; category: string; arguments: BrickArgument[]; inputs: BrickInput[]; outputs: BrickOutput[]; execution_inputs: BrickExecutionInput[]; execution_outputs: BrickExecutionOutput[]; emissionType: BrickEmissionType }
 
 export type BrickArgument = { id: string; label: string; type: ArgumentType; enumOptions: string[] | null; defaultValue: string | null }
+
+/**
+ * Defines how a brick can be triggered for execution
+ */
+export type BrickEmissionType = 
+/**
+ * Traditional flow-based execution (triggered by other nodes)
+ */
+{ type: "flowTriggered" } | 
+/**
+ * Self-emitting: HTTP webhook listener
+ */
+{ type: "httpWebhook"; defaultPath: string; defaultMethod: string } | 
+/**
+ * Self-emitting: Timer/interval
+ */
+{ type: "timer"; defaultIntervalMs: number } | 
+/**
+ * Self-emitting: File system watcher
+ */
+{ type: "fileWatcher"; defaultPattern: string } | 
+/**
+ * Self-emitting: Manual trigger from UI
+ */
+{ type: "manualTrigger" }
 
 export type BrickExecutionInput = { id: string; label: string }
 

@@ -3,6 +3,7 @@ pub mod boolean_logic;
 pub mod constants;
 pub mod control_flow;
 pub mod debug;
+pub mod events;
 pub mod macros;
 #[cfg(test)]
 mod tests;
@@ -17,5 +18,6 @@ pub fn all_bricks() -> Vec<Brick> {
     bricks.extend(constants::all_bricks());
     bricks.extend(control_flow::all_bricks());
     bricks.extend(debug::all_bricks());
+    bricks.extend(events::all_bricks());
     bricks
 }

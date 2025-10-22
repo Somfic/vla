@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use super::events::{ExecutionEvent, HttpRequestData, FileEventType};
 
 /// Represents an execution trigger from a flow node
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -21,9 +22,99 @@ impl Trigger {
     }
 }
 
+/// Execution context that provides access to event data during brick execution
+/// Each variant corresponds to a specific emission type's data
+///
+/// New emission types can be added here without modifying existing code.
+/// Example: SpeechRecognized { transcript: String, confidence: f32 }
+#[derive(Debug, Clone)]
+pub enum ExecutionContext {
+    FlowTriggered,
+    HttpRequest(HttpRequestData),
+    TimerTick { tick_count: u64, timestamp: String },
+    FileChanged { path: String, event_type: FileEventType },
+    ManualTrigger { timestamp: String },
+    // Future: Add new variants as needed for new emission types
+}
+
+impl Default for ExecutionContext {
+    fn default() -> Self {
+        Self::FlowTriggered
+    }
+}
+
+impl ExecutionContext {
+    /// Create context from an execution event
+    pub fn from_event(event: &ExecutionEvent) -> Self {
+        match event {
+            ExecutionEvent::NodeTriggered { .. } => ExecutionContext::FlowTriggered,
+            ExecutionEvent::HttpRequest { request, .. } => {
+                ExecutionContext::HttpRequest(request.clone())
+            }
+            ExecutionEvent::TimerTick {
+                tick_count,
+                timestamp,
+                ..
+            } => ExecutionContext::TimerTick {
+                tick_count: *tick_count,
+                timestamp: timestamp.clone(),
+            },
+            ExecutionEvent::FileChanged {
+                path, event_type, ..
+            } => ExecutionContext::FileChanged {
+                path: path.clone(),
+                event_type: event_type.clone(),
+            },
+            ExecutionEvent::ManualTrigger { timestamp, .. } => {
+                ExecutionContext::ManualTrigger {
+                    timestamp: timestamp.clone(),
+                }
+            }
+        }
+    }
+
+    /// Get HTTP request data (if this is an HTTP event)
+    pub fn http_request(&self) -> Option<&HttpRequestData> {
+        match self {
+            ExecutionContext::HttpRequest(data) => Some(data),
+            _ => None,
+        }
+    }
+
+    /// Get timer tick data (if this is a timer event)
+    pub fn timer_tick(&self) -> Option<(u64, &str)> {
+        match self {
+            ExecutionContext::TimerTick {
+                tick_count,
+                timestamp,
+            } => Some((*tick_count, timestamp.as_str())),
+            _ => None,
+        }
+    }
+
+    /// Get file change data (if this is a file event)
+    pub fn file_change(&self) -> Option<(&str, &FileEventType)> {
+        match self {
+            ExecutionContext::FileChanged { path, event_type } => {
+                Some((path.as_str(), event_type))
+            }
+            _ => None,
+        }
+    }
+
+    /// Get manual trigger timestamp (if this is a manual trigger)
+    pub fn manual_trigger_timestamp(&self) -> Option<&str> {
+        match self {
+            ExecutionContext::ManualTrigger { timestamp } => Some(timestamp.as_str()),
+            _ => None,
+        }
+    }
+}
+
 thread_local! {
     static EXECUTION_TRIGGERS: RefCell<Vec<Trigger>> = RefCell::new(Vec::new());
     static CURRENT_NODE_ID: RefCell<Option<String>> = RefCell::new(None);
+    static EXECUTION_CONTEXT: RefCell<ExecutionContext> = RefCell::new(ExecutionContext::default());
 }
 
 /// Set the current node ID for trigger context
@@ -87,6 +178,28 @@ pub fn has_triggers() -> bool {
 /// Get the number of triggers currently set (for testing/debugging)
 pub fn trigger_count() -> usize {
     EXECUTION_TRIGGERS.with(|triggers| triggers.borrow().len())
+}
+
+/// Set the execution context for the current brick execution
+/// Called by ExecutionEngine before executing a brick
+pub fn set_execution_context(context: ExecutionContext) {
+    EXECUTION_CONTEXT.with(|ctx| {
+        *ctx.borrow_mut() = context;
+    });
+}
+
+/// Get a copy of the current execution context
+/// Called by bricks that need access to event data
+pub fn get_execution_context() -> ExecutionContext {
+    EXECUTION_CONTEXT.with(|ctx| ctx.borrow().clone())
+}
+
+/// Clear the execution context
+/// Called by ExecutionEngine after executing a brick
+pub fn clear_execution_context() {
+    EXECUTION_CONTEXT.with(|ctx| {
+        *ctx.borrow_mut() = ExecutionContext::default();
+    });
 }
 
 #[cfg(test)]

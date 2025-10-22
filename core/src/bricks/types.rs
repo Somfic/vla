@@ -1,3 +1,35 @@
+/// Defines how a brick can be triggered for execution
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum BrickEmissionType {
+    /// Traditional flow-based execution (triggered by other nodes)
+    FlowTriggered,
+
+    /// Self-emitting: HTTP webhook listener
+    #[serde(rename_all = "camelCase")]
+    HttpWebhook {
+        default_path: String,
+        default_method: String,
+    },
+
+    /// Self-emitting: Timer/interval
+    #[serde(rename_all = "camelCase")]
+    Timer { default_interval_ms: u32 },
+
+    /// Self-emitting: File system watcher
+    #[serde(rename_all = "camelCase")]
+    FileWatcher { default_pattern: String },
+
+    /// Self-emitting: Manual trigger from UI
+    ManualTrigger,
+}
+
+impl Default for BrickEmissionType {
+    fn default() -> Self {
+        Self::FlowTriggered
+    }
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 pub struct Brick {
     pub id: String,
@@ -10,6 +42,8 @@ pub struct Brick {
     pub outputs: Vec<BrickOutput>,
     pub execution_inputs: Vec<BrickExecutionInput>,
     pub execution_outputs: Vec<BrickExecutionOutput>,
+    #[serde(rename = "emissionType")]
+    pub emission_type: BrickEmissionType,
     #[serde(skip, default = "default_execution_fn")]
     pub execution: fn(Vec<BrickArgumentValue>, Vec<BrickInputValue>) -> Vec<BrickOutputValue>,
 }

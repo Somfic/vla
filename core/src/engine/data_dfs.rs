@@ -192,6 +192,7 @@ mod tests {
             } else {
                 vec![]
             },
+            emission_type: crate::bricks::types::BrickEmissionType::FlowTriggered,
             execution: |_args: Vec<BrickArgumentValue>, _inputs: Vec<BrickInputValue>| {
                 vec![BrickOutputValue {
                     id: "output".to_string(),

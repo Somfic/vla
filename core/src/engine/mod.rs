@@ -8,8 +8,15 @@ use crate::{
 };
 use tauri::{AppHandle, Runtime};
 pub mod data_dfs;
+pub mod emission_contexts; // Public for extensibility - users can create custom contexts
+pub mod events;
+pub mod listeners;
+
+use emission_contexts::EmissionContext;
 #[cfg(test)]
 mod flow_test;
+#[cfg(test)]
+mod self_emit_test;
 #[cfg(test)]
 mod tests;
 pub mod topological;
@@ -56,6 +63,8 @@ pub struct Engine<R: Runtime = tauri::Wry> {
     node_states: HashMap<String, NodeExecutionState>,
     /// Per-node execution start times
     node_start_times: HashMap<String, Instant>,
+    /// Listener registry for self-emitting nodes
+    listener_registry: Option<listeners::ListenerRegistry>,
 }
 
 // Test-friendly implementation for default runtime
@@ -96,6 +105,7 @@ impl Engine {
             execution_mode: ExecutionMode::Normal,
             node_states,
             node_start_times: HashMap::new(),
+            listener_registry: None,
         }
     }
 }
@@ -133,6 +143,7 @@ impl<R: Runtime> Engine<R> {
             execution_mode: ExecutionMode::Normal,
             node_states,
             node_start_times: HashMap::new(),
+            listener_registry: None,
         }
     }
 
@@ -225,11 +236,53 @@ impl<R: Runtime> Engine<R> {
         self.pending_data_deps.clear();
         self.node_start_times.clear();
 
+        // Stop any existing listeners
+        if let Some(mut registry) = self.listener_registry.take() {
+            let _ = registry.stop_all();
+        }
+
         // Reset all node states to Waiting
         let node_ids: Vec<String> = self.graph.nodes.iter().map(|n| n.id.clone()).collect();
         for node_id in node_ids {
             self.update_node_state(&node_id, ExecutionPhase::Waiting, None);
         }
+
+        // Create emission contexts for self-emitting nodes
+        let (mut registry, event_sender) = listeners::ListenerRegistry::new_with_trigger_channel();
+
+        // Scan for self-emitting nodes and create listeners
+        for node in &self.graph.nodes {
+            if let Some(brick) = &node.data.brick {
+                match &brick.emission_type {
+                    crate::bricks::types::BrickEmissionType::Timer { default_interval_ms } => {
+                        // Get interval from node arguments or use default
+                        let interval_ms = node.data.arguments
+                            .get("interval_ms")
+                            .and_then(|v| {
+                                // Strip quotes if present
+                                let v = v.trim_matches('"');
+                                v.parse::<u64>().ok()
+                            })
+                            .unwrap_or(*default_interval_ms as u64);
+
+                        self.debug_log(&format!("Creating timer listener for {} ({}ms)", node.id, interval_ms));
+
+                        // Create timer context and start it
+                        let mut context = Box::new(emission_contexts::TimerContext::new(interval_ms));
+                        if let Err(e) = context.start(node.id.clone(), event_sender.clone()) {
+                            self.debug_log(&format!("Failed to start timer context: {}", e));
+                        } else {
+                            // Store context in registry's listeners
+                            registry.listeners.push(context as Box<dyn emission_contexts::EmissionContext>);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        // Store registry (which holds the receiver internally)
+        self.listener_registry = Some(registry);
 
         // Find nodes that have execution outputs but no execution inputs (start nodes)
         // These are the entry points for execution flow
@@ -459,6 +512,25 @@ impl<R: Runtime> Iterator for Engine<R> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
+            // State 0: Check for events from self-emitting nodes
+            if let Some(registry) = &mut self.listener_registry {
+                if let Some(receiver) = registry.event_receiver() {
+                    if let Ok(event) = receiver.try_recv() {
+                        // Set execution context for the brick
+                        let ctx = trigger::ExecutionContext::from_event(&event);
+                        trigger::set_execution_context(ctx);
+
+                        // Queue the node for execution
+                        let node_id = event.target_node_id().to_string();
+                        self.debug_log(&format!("Event received for node: {}", node_id));
+                        self.update_node_state(&node_id, ExecutionPhase::Queued, None);
+                        self.queue.push_back(node_id.clone());
+
+                        // Don't return yet, let it go through normal flow processing
+                    }
+                }
+            }
+
             // State 1: Process pending data dependencies
             if let Some(data_node_id) = self.pending_data_deps.pop_front() {
                 return match self.execute_data_node(&data_node_id) {
@@ -487,17 +559,30 @@ impl<R: Runtime> Iterator for Engine<R> {
             }
 
             // State 3: Start new flow node from queue
-            let next_flow_node = self.queue.pop_front()?;
+            if let Some(next_flow_node) = self.queue.pop_front() {
+                // Resolve data dependencies for this flow node
+                let data_deps = self.resolve_data_dependencies(&next_flow_node);
 
-            // Resolve data dependencies for this flow node
-            let data_deps = self.resolve_data_dependencies(&next_flow_node);
-
-            // Queue data dependencies and set current flow node
-            for dep_node in &data_deps {
-                self.update_node_state(dep_node, ExecutionPhase::Queued, None);
+                // Queue data dependencies and set current flow node
+                for dep_node in &data_deps {
+                    self.update_node_state(dep_node, ExecutionPhase::Queued, None);
+                }
+                self.pending_data_deps.extend(data_deps);
+                self.current_flow_node = Some(next_flow_node);
+                continue;
             }
-            self.pending_data_deps.extend(data_deps);
-            self.current_flow_node = Some(next_flow_node);
+
+            // State 4: If listeners are active, keep polling for events
+            if let Some(registry) = &self.listener_registry {
+                if registry.has_active_listeners() {
+                    // Small sleep to avoid busy-waiting
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                    continue;
+                }
+            }
+
+            // No more work to do
+            return None;
         }
     }
 }
