@@ -1,16 +1,13 @@
 <script lang="ts">
-    import type { Graph, NodeExecutionState } from "$lib/core";
+    import type { Graph } from "$lib/core";
     import {
         Background,
         SvelteFlow,
-        Controls,
-        MiniMap,
-        SvelteFlowProvider,
     } from "@xyflow/svelte";
     import "@xyflow/svelte/dist/base.css";
     import Node from "$components/canvas/Node.svelte";
     import Edge from "$components/canvas/Edge.svelte";
-    import api, { setSaveCallback } from "$lib/api";
+    import { setSaveCallback } from "$lib/api";
     import Shortcuts, {
         type ShortcutConfig,
     } from "$components/Shortcuts.svelte";

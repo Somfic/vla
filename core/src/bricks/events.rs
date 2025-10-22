@@ -105,7 +105,9 @@ mod tests {
         // Check emission_type is Timer with correct interval
         assert!(matches!(
             &brick.emission_type,
-            crate::bricks::types::BrickEmissionType::Timer { default_interval_ms: 1000 }
+            crate::bricks::types::BrickEmissionType::Timer {
+                default_interval_ms: 1000
+            }
         ));
 
         // Should have one execution output

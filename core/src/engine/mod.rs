@@ -229,6 +229,16 @@ impl<R: Runtime> Engine<R> {
     }
 
     pub fn start(&mut self) {
+        // Create emission contexts for self-emitting nodes
+        let (event_sender, event_receiver) = std::sync::mpsc::channel();
+        self.start_with_event_channel(event_receiver, event_sender);
+    }
+
+    pub fn start_with_event_channel(
+        &mut self,
+        event_receiver: std::sync::mpsc::Receiver<events::ExecutionEvent>,
+        event_sender: std::sync::mpsc::Sender<events::ExecutionEvent>,
+    ) {
         // Clear previous execution state
         self.cache.clear();
         self.queue.clear();
@@ -247,16 +257,20 @@ impl<R: Runtime> Engine<R> {
             self.update_node_state(&node_id, ExecutionPhase::Waiting, None);
         }
 
-        // Create emission contexts for self-emitting nodes
-        let (mut registry, event_sender) = listeners::ListenerRegistry::new_with_trigger_channel();
+        // Create registry with the provided event receiver
+        let mut registry = listeners::ListenerRegistry::new_with_receiver(event_receiver);
 
         // Scan for self-emitting nodes and create listeners
         for node in &self.graph.nodes {
             if let Some(brick) = &node.data.brick {
                 match &brick.emission_type {
-                    crate::bricks::types::BrickEmissionType::Timer { default_interval_ms } => {
+                    crate::bricks::types::BrickEmissionType::Timer {
+                        default_interval_ms,
+                    } => {
                         // Get interval from node arguments or use default
-                        let interval_ms = node.data.arguments
+                        let interval_ms = node
+                            .data
+                            .arguments
                             .get("interval_ms")
                             .and_then(|v| {
                                 // Strip quotes if present
@@ -265,15 +279,38 @@ impl<R: Runtime> Engine<R> {
                             })
                             .unwrap_or(*default_interval_ms as u64);
 
-                        self.debug_log(&format!("Creating timer listener for {} ({}ms)", node.id, interval_ms));
+                        self.debug_log(&format!(
+                            "Creating timer listener for {} ({}ms)",
+                            node.id, interval_ms
+                        ));
 
                         // Create timer context and start it
-                        let mut context = Box::new(emission_contexts::TimerContext::new(interval_ms));
+                        let mut context =
+                            Box::new(emission_contexts::TimerContext::new(interval_ms));
                         if let Err(e) = context.start(node.id.clone(), event_sender.clone()) {
                             self.debug_log(&format!("Failed to start timer context: {}", e));
                         } else {
                             // Store context in registry's listeners
-                            registry.listeners.push(context as Box<dyn emission_contexts::EmissionContext>);
+                            registry
+                                .listeners
+                                .push(context as Box<dyn emission_contexts::EmissionContext>);
+                        }
+                    }
+                    crate::bricks::types::BrickEmissionType::ManualTrigger => {
+                        self.debug_log(&format!("Creating manual trigger context for {}", node.id));
+
+                        // Create manual trigger context and start it
+                        let mut context = Box::new(emission_contexts::ManualTriggerContext::new());
+                        if let Err(e) = context.start(node.id.clone(), event_sender.clone()) {
+                            self.debug_log(&format!(
+                                "Failed to start manual trigger context: {}",
+                                e
+                            ));
+                        } else {
+                            // Store context in registry's listeners
+                            registry
+                                .listeners
+                                .push(context as Box<dyn emission_contexts::EmissionContext>);
                         }
                     }
                     _ => {}
@@ -286,13 +323,22 @@ impl<R: Runtime> Engine<R> {
 
         // Find nodes that have execution outputs but no execution inputs (start nodes)
         // These are the entry points for execution flow
+        // IMPORTANT: Exclude self-emitting nodes (ManualTrigger, Timer, etc) as they
+        // should only execute when their events fire, not on engine start
         let start_nodes: Vec<String> = self
             .graph
             .nodes
             .iter()
             .filter(|node| {
                 if let Some(brick) = &node.data.brick {
-                    !brick.execution_outputs.is_empty() && brick.execution_inputs.is_empty()
+                    let is_start_node =
+                        !brick.execution_outputs.is_empty() && brick.execution_inputs.is_empty();
+                    let is_self_emitting = !matches!(
+                        brick.emission_type,
+                        crate::bricks::types::BrickEmissionType::FlowTriggered
+                    );
+                    // Only include if it's a start node AND not self-emitting
+                    is_start_node && !is_self_emitting
                 } else {
                     false
                 }
@@ -301,6 +347,7 @@ impl<R: Runtime> Engine<R> {
             .collect();
 
         // If no flow start nodes found, treat all nodes with no incoming edges as start nodes
+        // BUT exclude self-emitting nodes (they should only execute on events)
         if start_nodes.is_empty() {
             let nodes_with_incoming: std::collections::HashSet<String> =
                 self.graph.edges.iter().map(|e| e.target.clone()).collect();
@@ -309,7 +356,18 @@ impl<R: Runtime> Engine<R> {
                 .graph
                 .nodes
                 .iter()
-                .filter(|node| !nodes_with_incoming.contains(&node.id))
+                .filter(|node| {
+                    let has_no_incoming = !nodes_with_incoming.contains(&node.id);
+                    let is_not_self_emitting = if let Some(brick) = &node.data.brick {
+                        matches!(
+                            brick.emission_type,
+                            crate::bricks::types::BrickEmissionType::FlowTriggered
+                        )
+                    } else {
+                        true // No brick = not self-emitting
+                    };
+                    has_no_incoming && is_not_self_emitting
+                })
                 .map(|node| node.id.clone())
                 .collect();
 

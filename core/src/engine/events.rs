@@ -31,11 +31,7 @@ pub enum ExecutionEvent {
     },
 
     /// Manual trigger from UI
-    ManualTrigger {
-        node_id: String,
-        timestamp: String,
-    },
-
+    ManualTrigger { node_id: String, timestamp: String },
     // Future event types (speech detection, database triggers, etc.)
     // SpeechDetected { node_id: String, transcript: String },
     // DatabaseChanged { node_id: String, table: String, operation: String },

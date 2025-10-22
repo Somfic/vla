@@ -3,7 +3,9 @@
 mod tests {
     use crate::bricks::events::{manual_trigger_brick, timer_brick};
     use crate::engine::events::ExecutionEvent;
-    use crate::engine::listeners::{manual::ManualTriggerListener, timer::TimerListener, EventListener};
+    use crate::engine::listeners::{
+        manual::ManualTriggerListener, timer::TimerListener, EventListener,
+    };
     use crate::engine::trigger;
     use crate::prelude::*;
     use std::collections::BTreeMap;
@@ -53,7 +55,11 @@ mod tests {
         let mut event_count = 0;
         while let Ok(event) = receiver.try_recv() {
             match event {
-                ExecutionEvent::TimerTick { node_id, tick_count, .. } => {
+                ExecutionEvent::TimerTick {
+                    node_id,
+                    tick_count,
+                    ..
+                } => {
                     assert_eq!(node_id, "timer_node");
                     assert_eq!(tick_count, event_count);
                     event_count += 1;
@@ -62,7 +68,11 @@ mod tests {
             }
         }
 
-        assert!(event_count >= 2 && event_count <= 4, "Expected 2-4 events, got {}", event_count);
+        assert!(
+            event_count >= 2 && event_count <= 4,
+            "Expected 2-4 events, got {}",
+            event_count
+        );
 
         listener.stop().unwrap();
     }
