@@ -577,12 +577,23 @@ impl<R: Runtime> Iterator for Engine<R> {
                 if registry.has_active_listeners() {
                     // Small sleep to avoid busy-waiting
                     std::thread::sleep(std::time::Duration::from_millis(10));
-                    continue;
+                    // Yield control periodically to allow stop signal check
+                    // Return empty node ID to signal "waiting for events"
+                    return Some(Ok(String::new()));
                 }
             }
 
             // No more work to do
             return None;
+        }
+    }
+}
+
+impl<R: Runtime> Drop for Engine<R> {
+    fn drop(&mut self) {
+        // Stop all listeners when engine is dropped
+        if let Some(mut registry) = self.listener_registry.take() {
+            let _ = registry.stop_all();
         }
     }
 }

@@ -1,7 +1,25 @@
 use tauri::{AppHandle, Runtime};
+use std::sync::OnceLock;
+use tokio::sync::Mutex as TokioMutex;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::prelude::*;
 use crate::{bricks, canvas, engine::Engine};
+
+/// Global running engine handle
+static ENGINE_HANDLE: OnceLock<Arc<TokioMutex<Option<tokio::task::JoinHandle<()>>>>> = OnceLock::new();
+
+/// Global stop signal for the running engine (atomic for sync access from iterator)
+static STOP_ENGINE: OnceLock<Arc<AtomicBool>> = OnceLock::new();
+
+fn get_engine_handle() -> Arc<TokioMutex<Option<tokio::task::JoinHandle<()>>>> {
+    Arc::clone(ENGINE_HANDLE.get_or_init(|| Arc::new(TokioMutex::new(None))))
+}
+
+fn get_stop_signal() -> Arc<AtomicBool> {
+    Arc::clone(STOP_ENGINE.get_or_init(|| Arc::new(AtomicBool::new(false))))
+}
 
 /// Result of executing the entire graph
 #[derive(Clone, serde::Serialize, serde::Deserialize, specta::Type)]
@@ -94,6 +112,25 @@ impl CoreApi for CoreApiImpl {
         mut graph: Graph,
         mode: crate::engine::ExecutionMode,
     ) -> Result<ExecutionResult, String> {
+        // Signal any existing engine to stop
+        let stop_signal = get_stop_signal();
+        stop_signal.store(true, Ordering::SeqCst);
+
+        // Get the engine handle
+        let engine_handle = get_engine_handle();
+        let mut handle_guard = engine_handle.lock().await;
+
+        // Wait for old engine to stop
+        if let Some(old_handle) = handle_guard.take() {
+            // Abort the old task
+            old_handle.abort();
+            // Wait for it to finish
+            let _ = old_handle.await;
+        }
+
+        // Reset stop signal for new engine
+        stop_signal.store(false, Ordering::SeqCst);
+
         // Re-attach brick definitions (execution functions are skipped during serialization)
         for node in &mut graph.nodes {
             node.data.brick = canvas::get_brick(&node.data.brick_id);
@@ -101,25 +138,39 @@ impl CoreApi for CoreApiImpl {
 
         let total_nodes = graph.nodes.len() as u32;
 
-        // Create engine with the graph and app handle
-        let mut engine = Engine::with_app_handle(graph, app_handle);
-        engine.set_execution_mode(mode);
-        engine.start();
+        // Clone stop signal for the background task
+        let stop_signal_clone = Arc::clone(&stop_signal);
 
-        let mut execution_error = None;
+        // Spawn engine in background task
+        let handle = tokio::task::spawn_blocking(move || {
+            let mut engine = Engine::with_app_handle(graph, app_handle);
+            engine.set_execution_mode(mode);
+            engine.start();
 
-        // Execute all steps (events are automatically broadcast via engine)
-        for result in engine {
-            if let Err(e) = result {
-                execution_error = Some(e);
-                break;
+            // Execute all steps (events are automatically broadcast via engine)
+            for result in engine {
+                // Check stop signal
+                if stop_signal_clone.load(Ordering::SeqCst) {
+                    break;
+                }
+
+                if let Err(e) = result {
+                    eprintln!("Engine error: {}", e);
+                    break;
+                }
             }
-        }
+            // Engine dropped here, which stops all listeners
+        });
 
+        // Store the new handle
+        *handle_guard = Some(handle);
+        drop(handle_guard);
+
+        // Return immediately
         Ok(ExecutionResult {
             total_nodes,
-            success: execution_error.is_none(),
-            error: execution_error,
+            success: true,
+            error: None,
         })
     }
 }

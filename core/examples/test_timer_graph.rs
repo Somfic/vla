@@ -13,14 +13,14 @@ fn main() {
     let graph_json = fs::read_to_string("/Users/lucas/vla/graph.json")
         .expect("Failed to read graph.json");
 
-    let graph: Graph = serde_json::from_str(&graph_json)
+    let graph = Graph::from_json(graph_json)
         .expect("Failed to parse graph.json");
 
     println!("✓ Loaded graph with {} nodes and {} edges",
         graph.nodes.len(), graph.edges.len());
 
     // Create and start the engine
-    let mut engine = Engine::new_test(graph);
+    let mut engine: Engine = Engine::new(graph);
     engine.start();
 
     println!("✓ Engine started\n");
