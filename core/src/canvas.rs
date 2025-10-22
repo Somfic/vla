@@ -25,7 +25,7 @@ impl Graph {
             .map_err(|e| format!("Failed to format JSON: {}", e))
     }
 
-    fn from_json(json: String) -> Result<Self, String> {
+    pub fn from_json(json: String) -> Result<Self, String> {
         let mut graph: Graph =
             serde_json::from_str(&json).map_err(|e| format!("Failed to parse graph: {}", e))?;
 

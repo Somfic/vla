@@ -1,6 +1,5 @@
 use super::events::ExecutionEvent;
 use super::emission_contexts::EmissionContext;
-use crate::prelude::*;
 use std::sync::mpsc;
 
 pub mod manual;
@@ -29,7 +28,6 @@ pub trait EventListener: Send {
 pub struct ListenerRegistry {
     pub listeners: Vec<Box<dyn EmissionContext>>,
     event_receiver: Option<mpsc::Receiver<ExecutionEvent>>,
-    manual_trigger_sender: Option<mpsc::Sender<ExecutionEvent>>,
 }
 
 impl ListenerRegistry {
@@ -37,22 +35,19 @@ impl ListenerRegistry {
         Self {
             listeners: Vec::new(),
             event_receiver: None,
-            manual_trigger_sender: None,
         }
     }
 
     /// Create a new registry with a manual trigger channel
     pub fn new_with_trigger_channel() -> (Self, mpsc::Sender<ExecutionEvent>) {
         let (sender, receiver) = mpsc::channel();
-        let sender_clone = sender.clone();
 
-        let mut registry = Self {
+        let registry = Self {
             listeners: Vec::new(),
             event_receiver: Some(receiver),
-            manual_trigger_sender: Some(sender),
         };
 
-        (registry, sender_clone)
+        (registry, sender)
     }
 
     // NOTE: Old EventListener-based register method - kept for reference

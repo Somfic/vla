@@ -63,6 +63,7 @@
             type="text"
             class="nodrag"
             bind:value={rawValue}
+            onchange={() => onchange?.(rawValue)}
         />
     {:else if type === "enum" && enumValues}
         <select

@@ -43,7 +43,7 @@
         {nodeTypes}
         fitView
         onnodedragstop={save}
-        onconnectend={save}
+        onconnect={save}
         ondelete={save}
     >
         <Background />
