@@ -68,6 +68,7 @@ macro_rules! brick {
         $(#[description($description:expr)])?
         $(#[keywords($keywords:expr)])?
         #[category($category:expr)]
+        $(#[emission_type($($emission_type_args:tt)*)])?
         $(#[execution_input($($exec_input_args:tt)*)])*
         $(#[execution_output($($exec_output_args:tt)*)])*
         fn $fn_name:ident(
@@ -160,6 +161,7 @@ macro_rules! brick {
                     outputs,
                     execution_inputs,
                     execution_outputs,
+                    emission_type: brick!(@get_emission_type $($($emission_type_args)*)?),
                     execution: [<$fn_name _execution>],
                 }
             }
@@ -173,6 +175,7 @@ macro_rules! brick {
         $(#[description($description:expr)])?
         $(#[keywords($keywords:expr)])?
         #[category($category:expr)]
+        $(#[emission_type($($emission_type_args:tt)*)])?
         $(#[execution_input($($exec_input_args:tt)*)])*
         $(#[execution_output($($exec_output_args:tt)*)])*
         fn $fn_name:ident(
@@ -265,6 +268,7 @@ macro_rules! brick {
                     outputs,
                     execution_inputs,
                     execution_outputs,
+                    emission_type: brick!(@get_emission_type $($($emission_type_args)*)?),
                     execution: [<$fn_name _execution>],
                 }
             }
@@ -460,6 +464,7 @@ macro_rules! brick {
         $(#[description($description:expr)])?
         $(#[keywords($keywords:expr)])?
         #[category($category:expr)]
+        $(#[emission_type($($emission_type_args:tt)*)])?
         $(#[execution_input($($exec_input_args:tt)*)])*
         $(#[execution_output($($exec_output_args:tt)*)])*
         fn $fn_name:ident(
@@ -545,6 +550,7 @@ macro_rules! brick {
                     outputs,
                     execution_inputs,
                     execution_outputs,
+                    emission_type: brick!(@get_emission_type $($($emission_type_args)*)?),
                     execution: [<$fn_name _execution>],
                 }
             }
@@ -667,6 +673,30 @@ macro_rules! brick {
 
     // Helper: Get category (required, no default)
     (@get_category_or_default $category:expr) => { $category.to_string() };
+
+    // Helper: Parse emission_type attribute or use default (FlowTriggered)
+    (@get_emission_type Timer { default_interval_ms: $interval:expr }) => {
+        crate::bricks::types::BrickEmissionType::Timer {
+            default_interval_ms: $interval
+        }
+    };
+    (@get_emission_type ManualTrigger) => {
+        crate::bricks::types::BrickEmissionType::ManualTrigger
+    };
+    (@get_emission_type HttpWebhook { default_path: $path:expr, default_method: $method:expr }) => {
+        crate::bricks::types::BrickEmissionType::HttpWebhook {
+            default_path: $path.to_string(),
+            default_method: $method.to_string(),
+        }
+    };
+    (@get_emission_type FileWatcher { default_pattern: $pattern:expr }) => {
+        crate::bricks::types::BrickEmissionType::FileWatcher {
+            default_pattern: $pattern.to_string(),
+        }
+    };
+    (@get_emission_type) => {
+        crate::bricks::types::BrickEmissionType::FlowTriggered
+    };
 
     // Helper: Get custom default or type default
     (@get_custom_default_or_type_default $param_type:ident, $default:expr) => {
