@@ -41,6 +41,18 @@
             {#each node.data.brick.arguments as argument}
                 <ArgumentInput {argument} data={node.data} />
             {/each}
+
+            {#if node.data.brick.id === "manual_trigger"}
+                <button class="trigger-button nodrag" onclick={async () => {
+                    try {
+                        await api.trigger_manual_node(node.id);
+                    } catch (e) {
+                        console.error("Failed to trigger:", e);
+                    }
+                }}>
+                    Trigger
+                </button>
+            {/if}
         </div>
 
         <div class="handles">
@@ -191,5 +203,26 @@
         display: flex;
         flex-direction: column;
         gap: $gap2;
+
+        .trigger-button {
+            padding: $gap $gap2;
+            background: $primary;
+            color: white;
+            border: none;
+            border-radius: $border-radius;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: $font-weight-medium;
+            transition: all $transition;
+
+            &:hover {
+                background: lighten($primary, 10%);
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
     }
 </style>

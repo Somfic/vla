@@ -70,7 +70,7 @@ export type NodeExecutionState = { phase: ExecutionPhase; errorMessage: string |
 
 export type Point = { x: number; y: number }
 
-const ARGS_MAP = { '':'{"execute_graph":["graph","mode"],"get_brick":["brick_id"],"get_bricks":[],"graph_updated":["graph"],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"node_execution_updated":["update"],"save_graph":["graph","filename"]}' }
+const ARGS_MAP = { '':'{"execute_graph":["graph","mode"],"get_brick":["brick_id"],"get_bricks":[],"graph_updated":["graph"],"insert_node":["graph_path","brick_id","position"],"load_graph":["filename"],"node_execution_updated":["update"],"save_graph":["graph","filename"],"trigger_manual_node":["node_id"]}' }
 export type Router = { "": {execute_graph: (graph: Graph, mode: ExecutionMode) => Promise<ExecutionResult>, 
 get_brick: (brickId: string) => Promise<Brick | null>, 
 get_bricks: () => Promise<Brick[]>, 
@@ -78,7 +78,8 @@ graph_updated: (graph: Graph) => Promise<void>,
 insert_node: (graphPath: string, brickId: string, position: Point) => Promise<Graph>, 
 load_graph: (filename: string) => Promise<Graph>, 
 node_execution_updated: (update: ExecutionStateUpdate) => Promise<void>, 
-save_graph: (graph: Graph, filename: string) => Promise<string>} };
+save_graph: (graph: Graph, filename: string) => Promise<string>, 
+trigger_manual_node: (nodeId: string) => Promise<null>} };
 
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)

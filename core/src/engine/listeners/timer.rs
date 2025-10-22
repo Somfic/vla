@@ -83,7 +83,9 @@ impl EventListener for TimerListener {
 
         // Wait for the thread to finish
         if let Some(handle) = self.thread_handle.take() {
-            handle.join().map_err(|_| "Failed to join timer thread".to_string())?;
+            handle
+                .join()
+                .map_err(|_| "Failed to join timer thread".to_string())?;
         }
 
         Ok(())
@@ -144,7 +146,11 @@ mod tests {
             }
         }
 
-        assert!(event_count >= 3 && event_count <= 4, "Expected 3-4 ticks, got {}", event_count);
+        assert!(
+            event_count >= 3 && event_count <= 4,
+            "Expected 3-4 ticks, got {}",
+            event_count
+        );
 
         // Stop the listener
         listener.stop().unwrap();
@@ -152,7 +158,10 @@ mod tests {
 
         // Wait a bit to ensure no more events are sent
         thread::sleep(Duration::from_millis(200));
-        assert!(receiver.try_recv().is_err(), "Should not receive events after stop");
+        assert!(
+            receiver.try_recv().is_err(),
+            "Should not receive events after stop"
+        );
     }
 
     #[test]

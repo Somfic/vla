@@ -1,5 +1,5 @@
+use super::events::{ExecutionEvent, FileEventType, HttpRequestData};
 use std::cell::RefCell;
-use super::events::{ExecutionEvent, HttpRequestData, FileEventType};
 
 /// Represents an execution trigger from a flow node
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,9 +31,17 @@ impl Trigger {
 pub enum ExecutionContext {
     FlowTriggered,
     HttpRequest(HttpRequestData),
-    TimerTick { tick_count: u64, timestamp: String },
-    FileChanged { path: String, event_type: FileEventType },
-    ManualTrigger { timestamp: String },
+    TimerTick {
+        tick_count: u64,
+        timestamp: String,
+    },
+    FileChanged {
+        path: String,
+        event_type: FileEventType,
+    },
+    ManualTrigger {
+        timestamp: String,
+    },
     // Future: Add new variants as needed for new emission types
 }
 
@@ -65,11 +73,9 @@ impl ExecutionContext {
                 path: path.clone(),
                 event_type: event_type.clone(),
             },
-            ExecutionEvent::ManualTrigger { timestamp, .. } => {
-                ExecutionContext::ManualTrigger {
-                    timestamp: timestamp.clone(),
-                }
-            }
+            ExecutionEvent::ManualTrigger { timestamp, .. } => ExecutionContext::ManualTrigger {
+                timestamp: timestamp.clone(),
+            },
         }
     }
 
@@ -95,9 +101,7 @@ impl ExecutionContext {
     /// Get file change data (if this is a file event)
     pub fn file_change(&self) -> Option<(&str, &FileEventType)> {
         match self {
-            ExecutionContext::FileChanged { path, event_type } => {
-                Some((path.as_str(), event_type))
-            }
+            ExecutionContext::FileChanged { path, event_type } => Some((path.as_str(), event_type)),
             _ => None,
         }
     }

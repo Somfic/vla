@@ -1,5 +1,5 @@
-use super::events::ExecutionEvent;
 use super::emission_contexts::EmissionContext;
+use super::events::ExecutionEvent;
 use std::sync::mpsc;
 
 pub mod manual;
@@ -48,6 +48,14 @@ impl ListenerRegistry {
         };
 
         (registry, sender)
+    }
+
+    /// Create a new registry with an existing event receiver
+    pub fn new_with_receiver(event_receiver: mpsc::Receiver<ExecutionEvent>) -> Self {
+        Self {
+            listeners: Vec::new(),
+            event_receiver: Some(event_receiver),
+        }
     }
 
     // NOTE: Old EventListener-based register method - kept for reference

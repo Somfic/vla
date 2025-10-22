@@ -1,6 +1,5 @@
 /// Emission contexts - each self-emitting brick type has its own context
 /// that runs independently and emits events when ready
-
 use super::events::ExecutionEvent;
 use std::sync::mpsc::Sender;
 
@@ -8,7 +7,11 @@ use std::sync::mpsc::Sender;
 pub trait EmissionContext: Send {
     /// Start the context (spawn threads, set up listeners, etc.)
     /// The context will send ExecutionEvents through the sender when ready
-    fn start(&mut self, node_id: String, event_sender: Sender<ExecutionEvent>) -> Result<(), String>;
+    fn start(
+        &mut self,
+        node_id: String,
+        event_sender: Sender<ExecutionEvent>,
+    ) -> Result<(), String>;
 
     /// Stop the context (cleanup, join threads, etc.)
     fn stop(&mut self) -> Result<(), String>;
@@ -38,7 +41,11 @@ impl TimerContext {
 }
 
 impl EmissionContext for TimerContext {
-    fn start(&mut self, node_id: String, event_sender: Sender<ExecutionEvent>) -> Result<(), String> {
+    fn start(
+        &mut self,
+        node_id: String,
+        event_sender: Sender<ExecutionEvent>,
+    ) -> Result<(), String> {
         if *self.active.lock().unwrap() {
             return Err("Timer context already active".to_string());
         }
@@ -88,7 +95,9 @@ impl EmissionContext for TimerContext {
         *self.active.lock().unwrap() = false;
 
         if let Some(handle) = self.thread_handle.take() {
-            handle.join().map_err(|_| "Failed to join timer thread".to_string())?;
+            handle
+                .join()
+                .map_err(|_| "Failed to join timer thread".to_string())?;
         }
 
         Ok(())
@@ -151,7 +160,11 @@ impl ManualTriggerContext {
 }
 
 impl EmissionContext for ManualTriggerContext {
-    fn start(&mut self, node_id: String, event_sender: Sender<ExecutionEvent>) -> Result<(), String> {
+    fn start(
+        &mut self,
+        node_id: String,
+        event_sender: Sender<ExecutionEvent>,
+    ) -> Result<(), String> {
         if self.active {
             return Err("Manual trigger context already active".to_string());
         }
@@ -231,7 +244,11 @@ mod tests {
         let mut count = 0;
         while let Ok(event) = receiver.try_recv() {
             match event {
-                ExecutionEvent::TimerTick { node_id, tick_count, .. } => {
+                ExecutionEvent::TimerTick {
+                    node_id,
+                    tick_count,
+                    ..
+                } => {
                     assert_eq!(node_id, "test_node");
                     assert_eq!(tick_count, count);
                     count += 1;

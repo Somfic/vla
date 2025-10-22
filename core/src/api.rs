@@ -1,17 +1,25 @@
-use tauri::{AppHandle, Runtime};
-use std::sync::OnceLock;
-use tokio::sync::Mutex as TokioMutex;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::sync::OnceLock;
+use tauri::{AppHandle, Runtime};
+use tokio::sync::Mutex as TokioMutex;
 
 use crate::prelude::*;
 use crate::{bricks, canvas, engine::Engine};
 
+use crate::engine::events::ExecutionEvent;
+use std::sync::mpsc;
+
 /// Global running engine handle
-static ENGINE_HANDLE: OnceLock<Arc<TokioMutex<Option<tokio::task::JoinHandle<()>>>>> = OnceLock::new();
+static ENGINE_HANDLE: OnceLock<Arc<TokioMutex<Option<tokio::task::JoinHandle<()>>>>> =
+    OnceLock::new();
 
 /// Global stop signal for the running engine (atomic for sync access from iterator)
 static STOP_ENGINE: OnceLock<Arc<AtomicBool>> = OnceLock::new();
+
+/// Global event sender for manual triggers
+static EVENT_SENDER: OnceLock<Arc<TokioMutex<Option<mpsc::Sender<ExecutionEvent>>>>> =
+    OnceLock::new();
 
 fn get_engine_handle() -> Arc<TokioMutex<Option<tokio::task::JoinHandle<()>>>> {
     Arc::clone(ENGINE_HANDLE.get_or_init(|| Arc::new(TokioMutex::new(None))))
@@ -19,6 +27,10 @@ fn get_engine_handle() -> Arc<TokioMutex<Option<tokio::task::JoinHandle<()>>>> {
 
 fn get_stop_signal() -> Arc<AtomicBool> {
     Arc::clone(STOP_ENGINE.get_or_init(|| Arc::new(AtomicBool::new(false))))
+}
+
+fn get_event_sender() -> Arc<TokioMutex<Option<mpsc::Sender<ExecutionEvent>>>> {
+    Arc::clone(EVENT_SENDER.get_or_init(|| Arc::new(TokioMutex::new(None))))
 }
 
 /// Result of executing the entire graph
@@ -60,6 +72,11 @@ pub trait CoreApi {
         graph: Graph,
         mode: crate::engine::ExecutionMode,
     ) -> Result<ExecutionResult, String>;
+
+    async fn trigger_manual_node<R: Runtime>(
+        app_handle: AppHandle<R>,
+        node_id: String,
+    ) -> Result<(), String>;
 }
 
 #[derive(Clone)]
@@ -141,11 +158,20 @@ impl CoreApi for CoreApiImpl {
         // Clone stop signal for the background task
         let stop_signal_clone = Arc::clone(&stop_signal);
 
+        // Create event channel for manual triggers
+        let (event_tx, event_rx) = std::sync::mpsc::channel();
+
+        // Store the sender globally so trigger_manual_node can use it
+        {
+            let sender_guard = get_event_sender();
+            *sender_guard.lock().await = Some(event_tx.clone());
+        }
+
         // Spawn engine in background task
         let handle = tokio::task::spawn_blocking(move || {
             let mut engine = Engine::with_app_handle(graph, app_handle);
             engine.set_execution_mode(mode);
-            engine.start();
+            engine.start_with_event_channel(event_rx, event_tx);
 
             // Execute all steps (events are automatically broadcast via engine)
             for result in engine {
@@ -172,5 +198,39 @@ impl CoreApi for CoreApiImpl {
             success: true,
             error: None,
         })
+    }
+
+    async fn trigger_manual_node<R: Runtime>(
+        self,
+        _app_handle: AppHandle<R>,
+        node_id: String,
+    ) -> Result<(), String> {
+        // Get the event sender
+        let sender_guard = get_event_sender();
+        let sender_opt = sender_guard.lock().await;
+
+        if let Some(sender) = sender_opt.as_ref() {
+            // Create timestamp
+            let timestamp = {
+                use std::time::{SystemTime, UNIX_EPOCH};
+                let duration = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                format!("{}.{:03}", duration.as_secs(), duration.subsec_millis())
+            };
+
+            // Create manual trigger event
+            let event = ExecutionEvent::ManualTrigger {
+                node_id: node_id.clone(),
+                timestamp: timestamp.clone(),
+            };
+
+            // Send the event
+            sender
+                .send(event)
+                .map_err(|e| format!("Failed to send manual trigger event: {}", e))?;
+
+            Ok(())
+        } else {
+            Err("Engine not running".to_string())
+        }
     }
 }
