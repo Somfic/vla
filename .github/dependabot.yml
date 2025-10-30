@@ -6,7 +6,6 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "⬆️ "
-      include: "scope"
 
   - package-ecosystem: "cargo"
     directory: "/core"
@@ -14,7 +13,6 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "⬆️ "
-      include: "scope"
 
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
@@ -22,4 +20,3 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "⬆️ "
-      include: "scope"
