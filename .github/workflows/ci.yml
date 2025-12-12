@@ -42,7 +42,7 @@ jobs:
       uses: DeterminateSystems/magic-nix-cache-action@main
 
     - name: cache frontend dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           frontend/node_modules
@@ -76,7 +76,7 @@ jobs:
       uses: DeterminateSystems/magic-nix-cache-action@main
 
     - name: cache frontend dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           frontend/node_modules
@@ -87,7 +87,7 @@ jobs:
           ${{ runner.os }}-frontend-
 
     - name: cache core dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           core/target
