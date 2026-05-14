@@ -26,4 +26,5 @@ schema = { path = "../../schema" }
 jsonrpsee = { version = "0.26", features = ["server", "macros"] }
 tokio = { version = "1", features = ["full"] }
 async-trait = "0.1"
+arc-swap = "1.9.1"
 

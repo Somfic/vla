@@ -1,4 +1,6 @@
+mod shared;
 mod rpc;
+mod app;
 
 use std::sync::{Arc, Mutex};
 use tokio::sync::Notify;
