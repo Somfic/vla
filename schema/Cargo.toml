@@ -1,0 +1,12 @@
+[package]
+name = "schema"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+ts-rs = "11"
+jsonrpsee = { version = "0.26", default-features = false, features = ["macros", "server"] }
+schema-codegen = { path = "../schema-codegen" }
+thiserror = "2"
+serde_json = "1"

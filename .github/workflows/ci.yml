@@ -1,106 +1,56 @@
-name: ci
+name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main]
   pull_request:
-    branches: [ main, dev ]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   check-nix:
-    name: check nix
+    name: nix
     runs-on: ubuntu-latest
-
     steps:
-    - name: checkout code
-      uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/flake-checker-action@main
 
-    - name: setup nix
-      uses: DeterminateSystems/nix-installer-action@main
+  check-rust:
+    name: rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
 
-    - name: setup nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
-    - name: run flake checks
-      uses: DeterminateSystems/flake-checker-action@main
+      - uses: Swatinem/rust-cache@v2
+
+      - run: nix develop --command just check-rust
 
   check-frontend:
-    name: check frontend
+    name: frontend
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-
     steps:
-    - name: checkout code
-      uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - name: setup nix
-      uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
-    - name: setup nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: actions/cache@v4
+        with:
+          path: |
+            desktop/node_modules
+            desktop/.svelte-kit
+            web/node_modules
+            web/.svelte-kit
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-v1-${{ hashFiles('desktop/bun.lock', 'web/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-v1
 
-    - name: cache frontend dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          frontend/node_modules
-          frontend/.svelte-kit
-          ~/.bun/install/cache
-        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/bun.lockb') }}
-        restore-keys: |
-          ${{ runner.os }}-frontend-
-
-    - name: install nix dependencies
-      run: nix develop --command true
-
-    - name: run checks
-      run: nix develop --command just check-frontend
-
-  check-core:
-    name: check core
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-
-    steps:
-    - name: checkout code
-      uses: actions/checkout@v6
-
-    - name: setup nix
-      uses: DeterminateSystems/nix-installer-action@main
-
-    - name: setup nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
-
-    - name: cache frontend dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          frontend/node_modules
-          frontend/.svelte-kit
-          ~/.bun/install/cache
-        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/bun.lockb') }}
-        restore-keys: |
-          ${{ runner.os }}-frontend-
-
-    - name: cache core dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          core/target
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-        key: ${{ runner.os }}-cargo-v2-${{ hashFiles('core/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-v2
-
-    - name: install nix dependencies
-      run: nix develop --command true
-
-    - name: check
-      run: nix develop --command just check-core
+      - run: nix develop --command just check-desktop check-web

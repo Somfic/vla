@@ -1,0 +1,49 @@
+name: Dependabot Bun Lockfile
+
+on:
+  pull_request:
+    paths:
+      - desktop/package.json
+      - web/package.json
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    if: github.actor == 'dependabot[bot]'
+    name: update desktop/bun.lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+        working-directory: desktop
+
+      - uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "🔒 update desktop/bun.lock"
+          file_pattern: desktop/bun.lock
+
+  web:
+    if: github.actor == 'dependabot[bot]'
+    name: update web/bun.lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+        working-directory: web
+
+      - uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "🔒 update web/bun.lock"
+          file_pattern: web/bun.lock

@@ -1,0 +1,3 @@
+[workspace]
+members = ["desktop/src-tauri", "schema", "schema-codegen"]
+resolver = "2"
