@@ -1,0 +1,8 @@
+# Pin the ts-rs export directory for ALL cargo invocations (not just the
+# justfile recipes). Without this, a bare `cargo test` runs the ts-rs
+# `export_bindings` tests with no TS_RS_EXPORT_DIR and ts-rs falls back to its
+# default `<crate>/bindings/`, recreating codegen artifacts inside app/backend.
+# `relative = true` resolves against the parent of this .cargo dir (the
+# workspace root), so this is <workspace>/target/schema-bindings.
+[env]
+TS_RS_EXPORT_DIR = { value = "target/schema-bindings", relative = true }

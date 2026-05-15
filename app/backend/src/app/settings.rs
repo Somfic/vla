@@ -11,7 +11,10 @@ impl SettingsApi for App {
     }
 
     async fn update(&self, settings: Settings) -> Result<(), Error> {
-        self.settings.set(settings);
+        self.settings.set(settings.clone());
+        self.emit_changed(&settings).map_err(|e| Error::Internal {
+            message: e.to_string(),
+        })?;
         Ok(())
     }
 }

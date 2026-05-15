@@ -11,6 +11,9 @@ struct Param {
     ts_type: String,
     rust_type: String,
     docs: Vec<String>,
+    /// For a `tauri::ipc::Channel<T>` param: `Some((ts_inner, rust_inner))`.
+    /// When set, `ts_type`/`rust_type` are unused.
+    channel_inner: Option<(String, String)>,
 }
 
 struct Method {
@@ -31,10 +34,30 @@ struct Api {
     methods: Vec<Method>,
 }
 
+/// One backend→frontend event (one method of a `#[vla_events]` trait).
+struct Event {
+    rust_name: String,
+    ts_name: String,
+    /// Wire event name, `format!("{namespace}_{rust_name}")` (same scheme as commands).
+    wire: String,
+    payload_ts: String,
+    payload_rust: String,
+    docs: Vec<String>,
+}
+
+/// A `#[vla_events(namespace = "...")]` trait — a pure manifest, never implemented.
+struct EventApi {
+    namespace: String,
+    module: String,
+    class_name: String,
+    docs: Vec<String>,
+    events: Vec<Event>,
+}
+
 fn main() {
     let rust_only = std::env::args().skip(1).any(|a| a == "--rust-only");
 
-    let src_dir = Path::new("app/backend/src/api");
+    let src_dir = Path::new("app/backend/src");
     // ts-rs writes per-type intermediates here (TS_RS_EXPORT_DIR, set by the
     // justfile). It lives under target/ so no codegen artifact lands in /backend.
     let bindings_dir = std::env::var_os("TS_RS_EXPORT_DIR")
@@ -48,19 +71,20 @@ fn main() {
     let mut type_to_module: BTreeMap<String, String> = BTreeMap::new();
     let mut module_types: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut apis: Vec<Api> = Vec::new();
+    let mut event_apis: Vec<EventApi> = Vec::new();
     let mut imports: BTreeSet<String> = BTreeSet::new();
 
-    for entry in fs::read_dir(src_dir).expect("read schema/src") {
-        let entry = entry.unwrap();
-        let path = entry.path();
-        if !path.is_file() || path.extension().and_then(|e| e.to_str()) != Some("rs") {
-            continue;
-        }
+    let mut rs_files: Vec<PathBuf> = Vec::new();
+    collect_rs_files(src_dir, &mut rs_files);
+    rs_files.sort();
+    for path in &rs_files {
         let module = path.file_stem().unwrap().to_string_lossy().into_owned();
-        if module == "lib" {
+        // Skip module-tree plumbing and generated files; only files that
+        // actually contain #[vla_type]/#[vla_api] items become TS modules.
+        if matches!(module.as_str(), "lib" | "main" | "mod" | "_generated") {
             continue;
         }
-        let src = fs::read_to_string(&path).expect("read source file");
+        let src = fs::read_to_string(path).expect("read source file");
         let Ok(file) = syn::parse_file(&src) else {
             continue;
         };
@@ -77,8 +101,15 @@ fn main() {
                     module_types.entry(module.clone()).or_default().push(name);
                 }
                 Item::Trait(t) => {
-                    if let Some(namespace) = extract_namespace(t) {
+                    if let Some(namespace) = extract_attr_namespace(t, "vla_api") {
                         apis.push(parse_trait(t, namespace, module.clone(), &mut imports));
+                    } else if let Some(namespace) = extract_attr_namespace(t, "vla_events") {
+                        event_apis.push(parse_events_trait(
+                            t,
+                            namespace,
+                            module.clone(),
+                            &mut imports,
+                        ));
                     }
                 }
                 _ => {}
@@ -87,7 +118,8 @@ fn main() {
     }
 
     apis.sort_by(|a, b| a.namespace.cmp(&b.namespace));
-    write_tauri_handler(tauri_generated, &apis);
+    event_apis.sort_by(|a, b| a.namespace.cmp(&b.namespace));
+    write_tauri_handler(tauri_generated, &apis, &event_apis);
 
     if rust_only {
         return;
@@ -100,21 +132,60 @@ fn main() {
         .keys()
         .cloned()
         .chain(apis.iter().map(|a| a.module.clone()))
+        .chain(event_apis.iter().map(|a| a.module.clone()))
         .collect();
     for module in &all_modules {
         let types = module_types.get(module).cloned().unwrap_or_default();
         let api = apis.iter().find(|a| &a.module == module);
+        let event_api = event_apis.iter().find(|a| &a.module == module);
         write_namespace_file(
             client_dir,
             module,
             &types,
             api,
+            event_api,
             &per_type_dir,
             &type_to_module,
         );
     }
 
-    write_index(&client_dir.join("index.ts"), &apis, &type_to_module);
+    write_index(
+        &client_dir.join("index.ts"),
+        &apis,
+        &event_apis,
+        &type_to_module,
+    );
+}
+
+/// Recursively collects every `.rs` file under `dir`.
+fn collect_rs_files(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_rs_files(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
+            out.push(path);
+        }
+    }
+}
+
+/// Strips `[]` / ` | null` wrappers to get the underlying type name, so a
+/// `Vec<Brick>` return (`Brick[]`) still resolves its cross-module import.
+fn base_ts_name(ts: &str) -> &str {
+    let mut s = ts.trim();
+    loop {
+        if let Some(x) = s.strip_suffix(" | null") {
+            s = x.trim();
+        } else if let Some(x) = s.strip_suffix("[]") {
+            s = x.trim();
+        } else {
+            break;
+        }
+    }
+    s
 }
 
 fn sweep_stale_ts(dir: &Path) {
@@ -137,15 +208,22 @@ fn sweep_stale_ts(dir: &Path) {
     }
 }
 
-fn write_tauri_handler(out_path: &Path, apis: &[Api]) {
+fn write_tauri_handler(out_path: &Path, apis: &[Api], event_apis: &[EventApi]) {
     let mut out = String::new();
     out.push_str("// Generated by schema-codegen. Do not edit.\n\n");
     out.push_str("#![allow(clippy::needless_lifetimes)]\n\n");
+    out.push_str("// Note: command return types and event payload types are resolved\n");
+    out.push_str("// via `use crate::api::<module>::*;` below. Types that live outside\n");
+    out.push_str("// `api/` must be `pub use`-re-exported from their api module\n");
+    out.push_str("// (see `pub use crate::bricks::types::Brick;` in api/bricks.rs).\n");
     out.push_str("use crate::app::App;\n\n");
 
     let mut modules_used: BTreeSet<String> = BTreeSet::new();
     for api in apis {
         modules_used.insert(api.module.clone());
+    }
+    for ev in event_apis {
+        modules_used.insert(ev.module.clone());
     }
     modules_used.insert("error".to_string());
     for module in &modules_used {
@@ -160,7 +238,12 @@ fn write_tauri_handler(out_path: &Path, apis: &[Api]) {
             let param_decls: Vec<String> = m
                 .params
                 .iter()
-                .map(|p| format!("{}: {}", p.name, p.rust_type))
+                .map(|p| match &p.channel_inner {
+                    Some((_, rust_inner)) => {
+                        format!("{}: tauri::ipc::Channel<{rust_inner}>", p.name)
+                    }
+                    None => format!("{}: {}", p.name, p.rust_type),
+                })
                 .collect();
             let param_names: Vec<String> = m.params.iter().map(|p| p.name.clone()).collect();
             let mut all_params = vec!["state: tauri::State<'_, App>".to_string()];
@@ -186,6 +269,8 @@ fn write_tauri_handler(out_path: &Path, apis: &[Api]) {
             out.push_str("}\n\n");
         }
     }
+
+    write_emit_impls(&mut out, event_apis);
 
     out.push_str("pub fn invoke_handler<R: tauri::Runtime>(\n");
     out.push_str(") -> impl Fn(tauri::ipc::Invoke<R>) -> bool + Send + Sync + 'static {\n");
@@ -213,11 +298,69 @@ fn write_tauri_handler(out_path: &Path, apis: &[Api]) {
     fs::write(out_path, out).expect("write tauri _generated.rs");
 }
 
+/// Emits, per `#[vla_events]` namespace, an `impl App { emit_<event> }` block
+/// backed by the `AppHandle` stashed in `App` (no-op until the setup hook runs).
+fn write_emit_impls(out: &mut String, event_apis: &[EventApi]) {
+    // Two namespaces producing the same `emit_*` would be a duplicate `impl App`
+    // method (rustc error). Fail loudly at codegen time with a clear message.
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    for ev in event_apis {
+        for e in &ev.events {
+            if !seen.insert(e.rust_name.clone()) {
+                panic!(
+                    "duplicate event emitter `emit_{}` across namespaces; \
+                     rename the event",
+                    e.rust_name
+                );
+            }
+        }
+    }
+
+    for ev in event_apis {
+        if ev.events.is_empty() {
+            continue;
+        }
+        out.push_str("impl App {\n");
+        for e in &ev.events {
+            let payload = last_path_segment(&e.payload_rust);
+            out.push_str(&format!(
+                "    /// Emits the `{wire}` event to all frontends.\n",
+                wire = e.wire
+            ));
+            out.push_str("    #[allow(dead_code)]\n");
+            out.push_str(&format!(
+                "    pub fn emit_{name}(&self, payload: &{payload}) -> tauri::Result<()> {{\n",
+                name = e.rust_name,
+            ));
+            out.push_str("        match self.handle.get() {\n");
+            out.push_str(&format!(
+                "            Some(h) => ::tauri::Emitter::emit(&h, \"{wire}\", payload.clone()),\n",
+                wire = e.wire,
+            ));
+            out.push_str("            None => Ok(()),\n");
+            out.push_str("        }\n");
+            out.push_str("    }\n");
+        }
+        out.push_str("}\n\n");
+    }
+}
+
+/// Last `::` segment of a Rust type path (`crate::a::Foo` -> `Foo`), so the
+/// `use crate::api::<module>::*;` glob in `_generated.rs` resolves it. Generic
+/// types (`Vec<T>`, `Option<T>`) are std and passed through verbatim.
+fn last_path_segment(rust_ty: &str) -> String {
+    if rust_ty.contains('<') {
+        return rust_ty.to_string();
+    }
+    rust_ty.rsplit("::").next().unwrap_or(rust_ty).to_string()
+}
+
 fn write_namespace_file(
     client_dir: &Path,
     module: &str,
     types: &[String],
     api: Option<&Api>,
+    event_api: Option<&EventApi>,
     per_type_dir: &Path,
     type_to_module: &BTreeMap<String, String>,
 ) {
@@ -262,33 +405,62 @@ fn write_namespace_file(
         type_bodies.push(String::new());
     }
 
+    let add_cross = |ts: &str, cross: &mut BTreeMap<String, BTreeSet<String>>| {
+        let base = base_ts_name(ts);
+        if let Some(other_module) = type_to_module.get(base) {
+            if other_module != module {
+                cross
+                    .entry(other_module.clone())
+                    .or_default()
+                    .insert(base.to_string());
+            }
+        }
+    };
     if let Some(api) = api {
         for m in &api.methods {
             for p in &m.params {
-                if let Some(other_module) = type_to_module.get(&p.ts_type) {
-                    if other_module != module {
-                        cross_imports
-                            .entry(other_module.clone())
-                            .or_default()
-                            .insert(p.ts_type.clone());
-                    }
-                }
+                let ts = match &p.channel_inner {
+                    Some((ts_inner, _)) => ts_inner.as_str(),
+                    None => p.ts_type.as_str(),
+                };
+                add_cross(ts, &mut cross_imports);
             }
-            if let Some(other_module) = type_to_module.get(&m.ret_ts) {
-                if other_module != module {
-                    cross_imports
-                        .entry(other_module.clone())
-                        .or_default()
-                        .insert(m.ret_ts.clone());
-                }
-            }
+            add_cross(&m.ret_ts, &mut cross_imports);
+        }
+    }
+    if let Some(ev) = event_api {
+        for e in &ev.events {
+            add_cross(&e.payload_ts, &mut cross_imports);
         }
     }
 
     let mut out = String::new();
     out.push_str("// Generated by schema-codegen. Do not edit.\n\n");
-    if api.is_some() {
-        out.push_str("import { invoke } from \"./rpc\";\n");
+    let needs_invoke = api.is_some();
+    let needs_channel = api.is_some_and(|a| {
+        a.methods
+            .iter()
+            .any(|m| m.params.iter().any(|p| p.channel_inner.is_some()))
+    });
+    let needs_listen = event_api.is_some();
+    let mut rpc_named: Vec<&str> = Vec::new();
+    if needs_invoke {
+        rpc_named.push("invoke");
+    }
+    if needs_channel {
+        rpc_named.push("Channel");
+    }
+    if needs_listen {
+        rpc_named.push("listen");
+    }
+    if !rpc_named.is_empty() {
+        out.push_str(&format!(
+            "import {{ {} }} from \"./rpc\";\n",
+            rpc_named.join(", ")
+        ));
+    }
+    if needs_listen {
+        out.push_str("import type { UnlistenFn } from \"./rpc\";\n");
     }
     for (m, names) in &cross_imports {
         let list = names.iter().cloned().collect::<Vec<_>>().join(", ");
@@ -309,6 +481,9 @@ fn write_namespace_file(
     if let Some(api) = api {
         emit_sub_class(&mut out, api);
     }
+    if let Some(ev) = event_api {
+        emit_events_class(&mut out, ev);
+    }
 
     let dest = client_dir.join(format!("{module}.ts"));
     if let Some(parent) = dest.parent() {
@@ -317,14 +492,33 @@ fn write_namespace_file(
     fs::write(&dest, out).expect("write namespace file");
 }
 
-fn write_index(out_path: &Path, apis: &[Api], type_to_module: &BTreeMap<String, String>) {
+fn write_index(
+    out_path: &Path,
+    apis: &[Api],
+    event_apis: &[EventApi],
+    type_to_module: &BTreeMap<String, String>,
+) {
     let mut out = String::new();
     out.push_str("// Generated by schema-codegen. Do not edit.\n\n");
+
+    // One import line per module, combining its command + events classes.
+    let mut module_classes: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for api in apis {
+        module_classes
+            .entry(api.module.clone())
+            .or_default()
+            .push(api.class_name.clone());
+    }
+    for ev in event_apis {
+        module_classes
+            .entry(ev.module.clone())
+            .or_default()
+            .push(ev.class_name.clone());
+    }
+    for (module, classes) in &module_classes {
         out.push_str(&format!(
-            "import {{ {cls} }} from \"./{module}\";\n",
-            cls = api.class_name,
-            module = api.module
+            "import {{ {} }} from \"./{module}\";\n",
+            classes.join(", ")
         ));
     }
     out.push('\n');
@@ -346,6 +540,14 @@ fn write_index(out_path: &Path, apis: &[Api], type_to_module: &BTreeMap<String, 
             cls = api.class_name
         ));
     }
+    for ev in event_apis {
+        emit_jsdoc(&mut out, &ev.docs, "\t");
+        out.push_str(&format!(
+            "\t{ns}Events: {cls};\n",
+            ns = ev.namespace,
+            cls = ev.class_name
+        ));
+    }
     out.push_str("\n\tconstructor() {\n");
     for api in apis {
         out.push_str(&format!(
@@ -354,8 +556,17 @@ fn write_index(out_path: &Path, apis: &[Api], type_to_module: &BTreeMap<String, 
             cls = api.class_name
         ));
     }
+    for ev in event_apis {
+        out.push_str(&format!(
+            "\t\tthis.{ns}Events = new {cls}();\n",
+            ns = ev.namespace,
+            cls = ev.class_name
+        ));
+    }
     out.push_str("\t}\n");
-    out.push_str("}\n");
+    out.push_str("}\n\n");
+    out.push_str("/** Shared singleton client. Import this instead of constructing `Api`. */\n");
+    out.push_str("export const api = new Api();\n");
 
     if let Some(parent) = out_path.parent() {
         fs::create_dir_all(parent).expect("create client dir");
@@ -386,14 +597,27 @@ fn parse_trait(
                 Pat::Ident(p) => p.ident.to_string(),
                 _ => panic!("unsupported param pattern in {}", method.sig.ident),
             };
-            let ts_type = rust_type_to_ts(&pat.ty, imports);
-            let rust_type = rust_type_to_string(&pat.ty);
             let docs = extract_docs(&pat.attrs);
+            let (ts_type, rust_type, channel_inner) = if let Some(inner) = channel_inner_ty(&pat.ty)
+            {
+                (
+                    String::new(),
+                    String::new(),
+                    Some((rust_type_to_ts(inner, imports), rust_type_to_string(inner))),
+                )
+            } else {
+                (
+                    rust_type_to_ts(&pat.ty, imports),
+                    rust_type_to_string(&pat.ty),
+                    None,
+                )
+            };
             params.push(Param {
                 name,
                 ts_type,
                 rust_type,
                 docs,
+                channel_inner,
             });
         }
 
@@ -424,6 +648,56 @@ fn parse_trait(
     }
 }
 
+/// `Some(&T)` if `ty` is `Channel<T>` / `tauri::ipc::Channel<T>`.
+fn channel_inner_ty(ty: &Type) -> Option<&Type> {
+    if let Type::Path(p) = ty {
+        let seg = p.path.segments.last()?;
+        if seg.ident == "Channel" {
+            return first_generic(&seg.arguments);
+        }
+    }
+    None
+}
+
+fn parse_events_trait(
+    t: &ItemTrait,
+    namespace: String,
+    module: String,
+    imports: &mut BTreeSet<String>,
+) -> EventApi {
+    let mut events = Vec::new();
+    for item in &t.items {
+        let TraitItem::Fn(method) = item else {
+            continue;
+        };
+        let rust_name = method.sig.ident.to_string();
+        let docs = extract_docs(&method.attrs);
+        // An event signature carries exactly one typed param: the payload.
+        let mut payload_ts = "void".to_string();
+        let mut payload_rust = "()".to_string();
+        for arg in &method.sig.inputs {
+            let FnArg::Typed(pat) = arg else { continue };
+            payload_ts = rust_type_to_ts(&pat.ty, imports);
+            payload_rust = rust_type_to_string(&pat.ty);
+        }
+        events.push(Event {
+            ts_name: snake_to_camel(&rust_name),
+            wire: format!("{namespace}_{rust_name}"),
+            docs,
+            rust_name,
+            payload_ts,
+            payload_rust,
+        });
+    }
+    EventApi {
+        namespace,
+        module,
+        class_name: t.ident.to_string(),
+        docs: extract_docs(&t.attrs),
+        events,
+    }
+}
+
 fn emit_sub_class(out: &mut String, api: &Api) {
     out.push('\n');
     emit_jsdoc(out, &api.docs, "");
@@ -433,20 +707,45 @@ fn emit_sub_class(out: &mut String, api: &Api) {
         let param_decl = m
             .params
             .iter()
-            .map(|p| format!("{}: {}", p.name, p.ts_type))
+            .map(|p| match &p.channel_inner {
+                Some((ts_inner, _)) => format!("{}: (message: {ts_inner}) => void", p.name),
+                None => format!("{}: {}", p.name, p.ts_type),
+            })
             .collect::<Vec<_>>()
             .join(", ");
+
+        // Channel params: build a Channel, wire its onmessage to the callback.
+        let channel_setup: String = m
+            .params
+            .iter()
+            .filter_map(|p| {
+                p.channel_inner.as_ref().map(|(ts_inner, _)| {
+                    format!(
+                        "\t\tconst __{n} = new Channel<{ts_inner}>();\n\t\t__{n}.onmessage = {n};\n",
+                        n = p.name,
+                    )
+                })
+            })
+            .collect();
+
         let invoke_args = if m.params.is_empty() {
             String::new()
         } else {
-            let names = m
+            let pairs = m
                 .params
                 .iter()
-                .map(|p| p.name.clone())
+                .map(|p| {
+                    if p.channel_inner.is_some() {
+                        format!("{n}: __{n}", n = p.name)
+                    } else {
+                        p.name.clone()
+                    }
+                })
                 .collect::<Vec<_>>()
                 .join(", ");
-            format!(", {{ {names} }}")
+            format!(", {{ {pairs} }}")
         };
+
         out.push('\n');
         emit_method_jsdoc(out, &m.docs, &m.params, "\t");
         out.push_str(&format!(
@@ -455,6 +754,7 @@ fn emit_sub_class(out: &mut String, api: &Api) {
             decl = param_decl,
             ret = m.ret_ts,
         ));
+        out.push_str(&channel_setup);
         out.push_str(&format!(
             "\t\treturn invoke(\"{cmd}\"{invoke_args});\n",
             cmd = m.command,
@@ -464,9 +764,40 @@ fn emit_sub_class(out: &mut String, api: &Api) {
     out.push_str("}\n");
 }
 
-fn extract_namespace(t: &ItemTrait) -> Option<String> {
+fn capitalize(s: &str) -> String {
+    let mut chars = s.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
+
+fn emit_events_class(out: &mut String, ev: &EventApi) {
+    out.push('\n');
+    emit_jsdoc(out, &ev.docs, "");
+    out.push_str(&format!("export class {} {{\n", ev.class_name));
+
+    for e in &ev.events {
+        out.push('\n');
+        emit_jsdoc(out, &e.docs, "\t");
+        out.push_str(&format!(
+            "\ton{cap}(handler: (payload: {pl}) => void): Promise<UnlistenFn> {{\n",
+            cap = capitalize(&e.ts_name),
+            pl = e.payload_ts,
+        ));
+        out.push_str(&format!(
+            "\t\treturn listen<{pl}>(\"{wire}\", handler);\n",
+            pl = e.payload_ts,
+            wire = e.wire,
+        ));
+        out.push_str("\t}\n");
+    }
+    out.push_str("}\n");
+}
+
+fn extract_attr_namespace(t: &ItemTrait, attr_name: &str) -> Option<String> {
     for attr in &t.attrs {
-        if !attr.path().is_ident("vla_api") {
+        if !attr.path().is_ident(attr_name) {
             continue;
         }
         let Meta::List(list) = &attr.meta else {

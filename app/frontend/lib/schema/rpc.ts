@@ -1,5 +1,11 @@
-import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import { invoke as tauriInvoke, Channel } from "@tauri-apps/api/core";
+import { listen as tauriListen, type UnlistenFn } from "@tauri-apps/api/event";
 import type { Error as RpcErrorPayload } from "./error";
+
+// Re-exported so generated namespace files import event/stream primitives from
+// here (single source of truth, same as `invoke`).
+export { Channel };
+export type { UnlistenFn };
 
 export class RpcError extends Error {
 	payload: RpcErrorPayload;
@@ -20,6 +26,17 @@ export async function invoke<T>(command: string, args?: Record<string, unknown>)
 		}
 		throw err;
 	}
+}
+
+/**
+ * Subscribe to a backend broadcast event. Unwraps the Tauri event envelope and
+ * passes the typed payload straight to `handler`. Returns an unlisten fn.
+ */
+export async function listen<T>(
+	event: string,
+	handler: (payload: T) => void,
+): Promise<UnlistenFn> {
+	return tauriListen<T>(event, (e) => handler(e.payload));
 }
 
 function isErrorPayload(value: unknown): value is RpcErrorPayload {
