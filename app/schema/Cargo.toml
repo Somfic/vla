@@ -1,0 +1,16 @@
+[package]
+name = "schema"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[[bin]]
+name = "codegen"
+path = "src/bin/codegen.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"

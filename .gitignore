@@ -1,6 +1,5 @@
 .DS_Store
 node_modules
-/build
 **/.svelte-kit
 /package
 .env
@@ -13,11 +12,9 @@ vite.config.ts.timestamp-*
 graph.json
 .direnv
 .claude/
-desktop/build
-web/build
-schema/bindings/
-schema/client/*.ts
-!schema/client/rpc.ts
-schema/src/_generated.rs
-web/src/lib/schema/
-desktop/src/lib/schema/
+app/build
+app/backend/bindings/
+app/backend/client/*.ts
+!app/backend/client/rpc.ts
+app/backend/src/_generated.rs
+app/frontend/lib/schema/

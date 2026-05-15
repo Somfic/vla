@@ -4,55 +4,43 @@ default:
     just dev
 
 dev:
-    cd desktop && bun install
-    cd desktop && bun run tauri dev
-
-dev-web:
-    cd web && bun install
-    cd web && bun run dev
+    cd app && bun install
+    cd app && bun run tauri dev
 
 build:
-    cd desktop && bun install
-    cd desktop && bun run tauri build
-
-build-web:
-    cd web && bun install
-    cd web && bun run build
+    cd app && bun install
+    cd app && bun run tauri build
 
 schema: schema-gen sync-schema
 
 schema-gen:
-    cargo run -p schema-codegen --bin codegen --quiet -- --rust-only
-    cargo test -p schema export_bindings --quiet
-    cargo run -p schema-codegen --bin codegen --quiet
+    cargo run -p schema --quiet -- --rust-only
+    cargo test -p vla export_bindings --quiet
+    cargo run -p schema --quiet
+    cargo fmt -p vla
 
 sync-schema:
-    rm -rf web/src/lib/schema desktop/src/lib/schema
-    mkdir -p web/src/lib/schema desktop/src/lib/schema
-    cp schema/client/*.ts web/src/lib/schema/
-    cp schema/client/*.ts desktop/src/lib/schema/
+    rm -rf app/frontend/lib/schema
+    mkdir -p app/frontend/lib/schema
+    cp app/backend/client/*.ts app/frontend/lib/schema/
 
-check: check-rust check-desktop check-web
+check: check-rust check-app
 
 check-rust: schema
     cargo fmt --all -- --check
     cargo clippy --workspace --all-targets -- -D warnings
     cargo test --workspace
 
-check-desktop: schema
-    cd desktop && bun install
-    cd desktop && bun run check
-
-check-web: schema
-    cd web && bun install
-    cd web && bun run check
+check-app: schema
+    cd app && bun install
+    cd app && bun run check
 
 fmt:
     cargo fmt --all
 
 clean:
-    rm -f schema/src/_generated.rs
-    rm -rf schema/bindings
-    find schema/client -maxdepth 1 -name '*.ts' ! -name 'rpc.ts' -delete
-    rm -rf web/src/lib/schema desktop/src/lib/schema
+    rm -f app/backend/src/_generated.rs
+    rm -rf app/backend/bindings
+    find app/backend/client -maxdepth 1 -name '*.ts' ! -name 'rpc.ts' -delete
+    rm -rf app/frontend/lib/schema
     rm -rf target/bootstrap
