@@ -26,6 +26,7 @@
           cairo
           gdk-pixbuf
           glib
+          glib-networking
           dbus
           openssl
           librsvg
@@ -58,6 +59,7 @@
               gdk-pixbuf
               glib
               gtk3
+              glib-networking
               harfbuzz
               librsvg
               libsoup_3
@@ -69,8 +71,15 @@
 
           shellHook = ''
             export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath libraries}:$LD_LIBRARY_PATH"
+
+            export LD_LIBRARY_PATH="/run/opengl-driver/lib:$LD_LIBRARY_PATH"
+            export __EGL_VENDOR_LIBRARY_FILENAMES="/run/opengl-driver/share/glvnd/egl_vendor.d/10_nvidia.json"
+            export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
             export XDG_DATA_DIRS="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:$XDG_DATA_DIRS"
+            export GIO_EXTRA_MODULES="${pkgs.glib-networking}/lib/gio/modules"
             export WEBKIT_DISABLE_COMPOSITING_MODE=1
+            export WEBKIT_DISABLE_DMABUF_RENDERER=1
           '';
 
           RUST_BACKTRACE = "1";
