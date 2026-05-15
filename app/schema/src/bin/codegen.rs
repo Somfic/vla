@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use syn::{
     Expr, ExprLit, FnArg, GenericArgument, Item, ItemTrait, Lit, Meta, Pat, PathArguments,
     ReturnType, TraitItem, Type,
@@ -35,9 +35,14 @@ fn main() {
     let rust_only = std::env::args().skip(1).any(|a| a == "--rust-only");
 
     let src_dir = Path::new("app/backend/src/api");
-    let bindings_dir = Path::new("app/backend/bindings");
+    // ts-rs writes per-type intermediates here (TS_RS_EXPORT_DIR, set by the
+    // justfile). It lives under target/ so no codegen artifact lands in /backend.
+    let bindings_dir = std::env::var_os("TS_RS_EXPORT_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("target/schema-bindings"));
     let per_type_dir = bindings_dir.join("_per_type");
-    let client_dir = Path::new("app/backend/client");
+    // Final namespace files are written straight into the frontend.
+    let client_dir = Path::new("app/frontend/lib/schema");
     let tauri_generated = Path::new("app/backend/src/_generated.rs");
 
     let mut type_to_module: BTreeMap<String, String> = BTreeMap::new();
@@ -88,7 +93,7 @@ fn main() {
         return;
     }
 
-    sweep_stale_ts(bindings_dir);
+    sweep_stale_ts(&bindings_dir);
     sweep_stale_ts(client_dir);
 
     let all_modules: BTreeSet<String> = module_types

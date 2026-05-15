@@ -11,7 +11,7 @@ pub fn vla_type(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
     quote! {
         #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize, ::ts_rs::TS)]
-        #[ts(export, export_to = "../bindings/_per_type/")]
+        #[ts(export, export_to = "_per_type/")]
         #input
     }
     .into()

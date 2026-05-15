@@ -13,8 +13,6 @@ graph.json
 .direnv
 .claude/
 app/build
-app/backend/bindings/
-app/backend/client/*.ts
-!app/backend/client/rpc.ts
 app/backend/src/_generated.rs
-app/frontend/lib/schema/
+app/frontend/lib/schema/*
+!app/frontend/lib/schema/rpc.ts
