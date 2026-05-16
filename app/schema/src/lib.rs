@@ -50,17 +50,76 @@ fn parse_namespace(attr: TokenStream, macro_name: &str) -> Result<String, TokenS
     })
 }
 
+/// On a `trait` this declares an API namespace: it requires
+/// `namespace = "..."` (codegen reads it from source; missing it should fail
+/// loudly) and injects `#[async_trait]`. On an `impl ... for App` block it
+/// takes no arguments and is just shorthand for `#[async_trait]`.
 #[proc_macro_attribute]
 pub fn vla_api(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let namespace = match parse_namespace(attr, "vla_api") {
-        Ok(n) => n,
-        Err(ts) => return ts,
-    };
-    let _ = namespace;
-    let input = parse_macro_input!(item as ItemTrait);
+    let input = parse_macro_input!(item as syn::Item);
+    match input {
+        syn::Item::Trait(t) => {
+            if let Err(ts) = parse_namespace(attr, "vla_api") {
+                return ts;
+            }
+            quote! {
+                #[::async_trait::async_trait]
+                #t
+            }
+            .into()
+        }
+        syn::Item::Impl(i) => quote! {
+            #[::async_trait::async_trait]
+            #i
+        }
+        .into(),
+        other => syn::Error::new_spanned(other, "#[vla_api] expects a trait or impl block")
+            .to_compile_error()
+            .into(),
+    }
+}
+
+/// Marks an `async fn <name>(app: crate::app::App)` as a background service.
+/// The async body is rewritten into a sync fn that spawns it as a detached
+/// task on Tauri's runtime, so authors just write the loop — no manual
+/// `spawn`. Codegen collects every `#[vla_service]` into
+/// `_generated::start_services` (it reads the fn from source, like
+/// `#[vla_api]`), which the Tauri setup hook calls once on startup.
+#[proc_macro_attribute]
+pub fn vla_service(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let func = parse_macro_input!(item as syn::ItemFn);
+    if func.sig.asyncness.is_none() {
+        return syn::Error::new_spanned(&func.sig, "#[vla_service] requires an `async fn`")
+            .to_compile_error()
+            .into();
+    }
+    let attrs = &func.attrs;
+    let vis = &func.vis;
+    let ident = &func.sig.ident;
+    let inputs = &func.sig.inputs;
+    let block = &func.block;
+    // The spawned task must be `'static`, so it can't borrow the caller's
+    // `&App`. Each borrowed param is cloned into an owned binding (a cheap
+    // `Arc` clone) that the `async move` captures.
+    let owned: Vec<_> = inputs
+        .iter()
+        .filter_map(|arg| {
+            let syn::FnArg::Typed(pat) = arg else {
+                return None;
+            };
+            let syn::Pat::Ident(p) = &*pat.pat else {
+                return None;
+            };
+            let name = &p.ident;
+            Some(quote! { let #name = (*#name).clone(); })
+        })
+        .collect();
     quote! {
-        #[::async_trait::async_trait]
-        #input
+        #(#attrs)*
+        #vis fn #ident(#inputs) {
+            #(#owned)*
+            ::tauri::async_runtime::spawn(async move #block);
+        }
     }
     .into()
 }

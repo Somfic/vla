@@ -1,0 +1,19 @@
+[package]
+name = "schema-codegen"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+# Thin CLI wrapper around `generate`, used by the justfile for the full
+# (TS + ts-rs) pass. The rust-only pass also runs from `app/backend/build.rs`
+# via the library, so the backend always compiles against a fresh _generated.rs.
+[[bin]]
+name = "codegen"
+path = "src/main.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"

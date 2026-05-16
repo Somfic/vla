@@ -6,11 +6,8 @@
     let bricks = $state(api.bricks.getBricks());
 
     let clock = $state("—");
-    onMount(() => {
-        const unlisten = api.clockEvents.onTick((tick) => {
-            clock = tick.utc;
-        });
-        return () => unlisten.then((stop) => stop());
+    api.clockEvents.onTick((tick) => {
+        clock = tick.utc;
     });
 </script>
 

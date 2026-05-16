@@ -1,3 +1,6 @@
+//! Shared error type returned by `App` command impls and surfaced to the
+//! frontend (`#[vla_type]`).
+
 use schema::vla_type;
 
 #[derive(thiserror::Error)]

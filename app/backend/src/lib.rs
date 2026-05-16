@@ -1,10 +1,8 @@
 mod _generated;
-mod api;
 mod app;
 mod bricks;
 mod engine;
 mod prelude;
-mod services;
 mod shared;
 
 #[macro_export]
@@ -33,7 +31,7 @@ pub fn run() {
             let handle = app.handle().clone();
             let app_state = app.state::<App>().inner().clone();
             app_state.handle.set(Some(handle));
-            services::start(&app_state);
+            _generated::start_services(&app_state);
             Ok(())
         })
         .invoke_handler(_generated::invoke_handler())

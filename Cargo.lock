@@ -2819,6 +2819,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "schema-codegen"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "schemars"
 version = "0.8.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4132,12 +4141,14 @@ dependencies = [
  "async-trait",
  "paste",
  "schema",
+ "schema-codegen",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
  "thiserror 2.0.18",
+ "tokio",
  "ts-rs",
 ]
 

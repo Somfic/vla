@@ -18,9 +18,9 @@ build:
 schema: schema-gen
 
 schema-gen:
-    cargo run -p schema --quiet -- --rust-only
+    cargo run -p schema-codegen --quiet -- --rust-only
     cargo test -p vla export_bindings --quiet
-    cargo run -p schema --quiet
+    cargo run -p schema-codegen --quiet
     cargo fmt -p vla
 
 check: check-rust check-app

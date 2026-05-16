@@ -1,3 +1,3 @@
 [workspace]
-members = ["app/backend", "app/schema"]
+members = ["app/backend", "app/schema", "app/schema-codegen"]
 resolver = "2"
