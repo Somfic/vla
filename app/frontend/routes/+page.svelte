@@ -1,29 +1,49 @@
-<script>
-    import { api } from "$lib/schema";
-    import { Button, Card, Data, Field, Page } from "glow";
-    import { onMount } from "svelte";
+<script lang="ts">
+	import { SvelteFlowProvider } from "@xyflow/svelte";
+	import { CommandPalette, commands } from "glow";
+	import { onMount } from "svelte";
+	import Canvas from "$components/canvas/Canvas.svelte";
+	import { graph } from "$lib/graph.svelte";
+	import { api } from "$lib/schema";
 
-    let bricks = $state(api.bricks.getBricks());
-
-    let clock = $state("—");
-    api.clockEvents.onTick((tick) => {
-        clock = tick.utc;
-    });
+	// Register every brick from the catalog as a glow command. Selecting one
+	// drops a node onto the in-memory canvas.
+	onMount(() => {
+		let unregister: (() => void) | undefined;
+		api.bricks.getBricks().then((bricks) => {
+			unregister = commands.registerMany(
+				bricks.map((brick) => ({
+					id: brick.id,
+					label: brick.label,
+					description: brick.description,
+					group: brick.category || "Uncategorized",
+					keywords: [brick.category, ...brick.keywords],
+					perform: () => {
+						// Cascade so stacked inserts don't fully overlap.
+						const n = graph.nodes.length;
+						graph.addNode(brick, { x: 60 * n, y: 40 * n });
+					},
+				})),
+			);
+		});
+		return () => unregister?.();
+	});
 </script>
 
-<Page title="Test" layout="contained">
-    <Card title="Clock" subtitle="Backend event, every second (UTC)">
-        {clock}
-    </Card>
-    {#await bricks then bricks}
-        {#each bricks as brick}
-            <Card title={brick.label} subtitle={brick.description}>
-                {#each brick.inputs as input}
-                    <Field label={input.label} hint={input.type}>
-                        {input.id}
-                    </Field>
-                {/each}
-            </Card>
-        {/each}
-    {/await}
-</Page>
+<CommandPalette hotkey=" " placeholder="Search bricks..." />
+
+<div class="editor">
+	<SvelteFlowProvider>
+		<Canvas />
+	</SvelteFlowProvider>
+</div>
+
+<style lang="scss">
+	.editor {
+		display: flex;
+		flex-grow: 1;
+		width: 100%;
+		height: 100vh;
+		overflow: hidden;
+	}
+</style>

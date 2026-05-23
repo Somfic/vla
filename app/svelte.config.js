@@ -17,6 +17,9 @@ const config = {
       lib: "frontend/lib",
       routes: "frontend/routes",
     },
+    alias: {
+      $components: "frontend/components",
+    },
   },
 };
 
